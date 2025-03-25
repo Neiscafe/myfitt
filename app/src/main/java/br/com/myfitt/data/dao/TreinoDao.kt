@@ -1,0 +1,21 @@
+package br.com.myfitt.data.dao
+
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import br.com.myfitt.data.entity.TreinoEntity
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface TreinoDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(treino: TreinoEntity)
+
+    @Query("SELECT * FROM treinos WHERE planilhaId = :planilhaId ORDER BY data ASC")
+    fun getTreinosByPlanilha(planilhaId: Int): Flow<List<TreinoEntity>>
+
+    @Delete
+    suspend fun delete(treino: TreinoEntity)
+}
