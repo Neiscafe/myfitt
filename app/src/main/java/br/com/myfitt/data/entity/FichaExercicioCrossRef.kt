@@ -26,5 +26,4 @@ import androidx.room.Index
 data class FichaExercicioCrossRef(
     val fichaId: Int,
     val exercicioId: Int,
-
 )

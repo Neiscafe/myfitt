@@ -33,7 +33,6 @@ class TreinoExercicioRepository(
         if (exercicio == null) {
             exercicio =
                 exercicioRepository.insertExercicio(Exercicio(nome = treinoExercicio.exercicioNome))
-                    .toDomain()
         }
         dao.insertCrossRef(treinoExercicio.copy(exercicioId = exercicio.id).toEntity())
     }

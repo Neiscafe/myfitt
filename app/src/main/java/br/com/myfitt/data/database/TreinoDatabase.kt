@@ -22,7 +22,7 @@ import br.com.myfitt.data.entity.TreinoExercicioCrossRef
     version = 5,
     autoMigrations = [AutoMigration(1, 2), AutoMigration(2, 3), AutoMigration(
         3, 4
-    ), AutoMigration(4, 5)],
+    ), AutoMigration(4, 5, Specs_4_5::class)],
     exportSchema = true
 )
 abstract class TreinoDatabase : RoomDatabase() {
