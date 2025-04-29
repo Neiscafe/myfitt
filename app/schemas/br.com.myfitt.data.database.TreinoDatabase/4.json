@@ -1,0 +1,388 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "c8af6888fc5f91cc03231f7b9775e7b2",
+    "entities": [
+      {
+        "tableName": "planilhas",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `nome` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nome",
+            "columnName": "nome",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "treinos",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `planilhaId` INTEGER NOT NULL, `data` TEXT NOT NULL, `nome` TEXT NOT NULL, FOREIGN KEY(`planilhaId`) REFERENCES `planilhas`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "planilhaId",
+            "columnName": "planilhaId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "data",
+            "columnName": "data",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nome",
+            "columnName": "nome",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_treinos_planilhaId",
+            "unique": false,
+            "columnNames": [
+              "planilhaId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_treinos_planilhaId` ON `${TABLE_NAME}` (`planilhaId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "planilhas",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "planilhaId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "exercicios",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`nome` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `habilitado` INTEGER NOT NULL DEFAULT 1, `dataDesabilitado` TEXT, `exercicioTipoId` INTEGER DEFAULT NULL, FOREIGN KEY(`exercicioTipoId`) REFERENCES `exercicio_tipo`(`id`) ON UPDATE CASCADE ON DELETE SET NULL )",
+        "fields": [
+          {
+            "fieldPath": "nome",
+            "columnName": "nome",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "habilitado",
+            "columnName": "habilitado",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "1"
+          },
+          {
+            "fieldPath": "dataDesabilitado",
+            "columnName": "dataDesabilitado",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "exercicioTipoId",
+            "columnName": "exercicioTipoId",
+            "affinity": "INTEGER",
+            "notNull": false,
+            "defaultValue": "NULL"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_exercicios_exercicioTipoId",
+            "unique": false,
+            "columnNames": [
+              "exercicioTipoId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_exercicios_exercicioTipoId` ON `${TABLE_NAME}` (`exercicioTipoId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "exercicio_tipo",
+            "onDelete": "SET NULL",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "exercicioTipoId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "treino_exercicio",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`treinoId` INTEGER NOT NULL, `exercicioId` INTEGER NOT NULL, `series` INTEGER NOT NULL, `posicao` INTEGER NOT NULL, `pesoKg` REAL NOT NULL, `repeticoes` INTEGER NOT NULL, `observacao` TEXT, PRIMARY KEY(`treinoId`, `exercicioId`), FOREIGN KEY(`treinoId`) REFERENCES `treinos`(`id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`exercicioId`) REFERENCES `exercicios`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "treinoId",
+            "columnName": "treinoId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exercicioId",
+            "columnName": "exercicioId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "series",
+            "columnName": "series",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posicao",
+            "columnName": "posicao",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pesoKg",
+            "columnName": "pesoKg",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "repeticoes",
+            "columnName": "repeticoes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "observacao",
+            "columnName": "observacao",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "treinoId",
+            "exercicioId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_treino_exercicio_treinoId",
+            "unique": false,
+            "columnNames": [
+              "treinoId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_treino_exercicio_treinoId` ON `${TABLE_NAME}` (`treinoId`)"
+          },
+          {
+            "name": "index_treino_exercicio_exercicioId",
+            "unique": false,
+            "columnNames": [
+              "exercicioId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_treino_exercicio_exercicioId` ON `${TABLE_NAME}` (`exercicioId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "treinos",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "treinoId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "exercicios",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "exercicioId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "exercicio_tipo",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `nome` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nome",
+            "columnName": "nome",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "rotina",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `nome` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nome",
+            "columnName": "nome",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "rotina_exercicio",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`rotinaId` INTEGER NOT NULL, `exercicioId` INTEGER NOT NULL, PRIMARY KEY(`rotinaId`, `exercicioId`), FOREIGN KEY(`rotinaId`) REFERENCES `rotina`(`id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`exercicioId`) REFERENCES `exercicios`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "rotinaId",
+            "columnName": "rotinaId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exercicioId",
+            "columnName": "exercicioId",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "rotinaId",
+            "exercicioId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_rotina_exercicio_rotinaId",
+            "unique": false,
+            "columnNames": [
+              "rotinaId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_rotina_exercicio_rotinaId` ON `${TABLE_NAME}` (`rotinaId`)"
+          },
+          {
+            "name": "index_rotina_exercicio_exercicioId",
+            "unique": false,
+            "columnNames": [
+              "exercicioId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_rotina_exercicio_exercicioId` ON `${TABLE_NAME}` (`exercicioId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "rotina",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "rotinaId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "exercicios",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "exercicioId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c8af6888fc5f91cc03231f7b9775e7b2')"
+    ]
+  }
+}

@@ -9,14 +9,17 @@ import br.com.myfitt.data.dao.PlanilhaDao
 import br.com.myfitt.data.dao.TreinoDao
 import br.com.myfitt.data.dao.TreinoExercicioDao
 import br.com.myfitt.data.entity.ExercicioEntity
+import br.com.myfitt.data.entity.ExercicioTipoEntity
 import br.com.myfitt.data.entity.PlanilhaEntity
+import br.com.myfitt.data.entity.RotinaEntity
+import br.com.myfitt.data.entity.RotinaExercicioCrossRef
 import br.com.myfitt.data.entity.TreinoEntity
 import br.com.myfitt.data.entity.TreinoExercicioCrossRef
 
 @Database(
-    entities = [PlanilhaEntity::class, TreinoEntity::class, ExercicioEntity::class, TreinoExercicioCrossRef::class],
-    version = 3,
-    autoMigrations = [AutoMigration(1,2), AutoMigration(2,3)],
+    entities = [PlanilhaEntity::class, TreinoEntity::class, ExercicioEntity::class, TreinoExercicioCrossRef::class, ExercicioTipoEntity::class, RotinaEntity::class, RotinaExercicioCrossRef::class],
+    version = 4,
+    autoMigrations = [AutoMigration(1, 2), AutoMigration(2, 3), AutoMigration(3,4)],
     exportSchema = true
 )
 abstract class TreinoDatabase : RoomDatabase() {
