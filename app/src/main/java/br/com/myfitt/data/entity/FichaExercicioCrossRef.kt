@@ -6,12 +6,12 @@ import androidx.room.ForeignKey.Companion.CASCADE
 import androidx.room.Index
 
 @Entity(
-    tableName = "rotina_exercicio",
-    primaryKeys = ["rotinaId", "exercicioId"],
+    tableName = "ficha_exercicio",
+    primaryKeys = ["fichaId", "exercicioId"],
     foreignKeys = [ForeignKey(
-        entity = RotinaEntity::class,
+        entity = DivisaoEntity::class,
         parentColumns = ["id"],
-        childColumns = ["rotinaId"],
+        childColumns = ["fichaId"],
         onUpdate = CASCADE,
         onDelete = CASCADE
     ), ForeignKey(
@@ -21,10 +21,10 @@ import androidx.room.Index
         onUpdate = CASCADE,
         onDelete = CASCADE
     )],
-    indices = [Index("rotinaId"), Index("exercicioId")]
+    indices = [Index("fichaId"), Index("exercicioId")]
 )
-data class RotinaExercicioCrossRef(
-    val rotinaId: Int,
+data class FichaExercicioCrossRef(
+    val fichaId: Int,
     val exercicioId: Int,
 
 )
