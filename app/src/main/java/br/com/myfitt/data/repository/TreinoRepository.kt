@@ -10,9 +10,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 class TreinoRepository(private val dao: TreinoDao) {
-    suspend fun insertTreino(treino: Treino) = withContext(
+    suspend fun insertTreino(treino: Treino): Int = withContext(
         Dispatchers.IO
-    ) { dao.insert(treino.toEntity()) }
+    ) { dao.insert(treino.toEntity()).toInt() }
 
     fun getTreinosByPlanilha(planilhaId: Int): Flow<List<Treino>> =
         dao.getTreinosByPlanilha(planilhaId).map { it.map { it.toDomain() } }

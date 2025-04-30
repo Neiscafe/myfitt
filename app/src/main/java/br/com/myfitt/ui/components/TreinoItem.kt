@@ -22,8 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import br.com.myfitt.domain.models.Treino
-import br.com.myfitt.domain.models.TreinoExercicioComNome
-import br.com.myfitt.ui.screens.DateUtil
+import br.com.myfitt.domain.utils.DateUtil
 
 @Composable
 fun TreinoItem(

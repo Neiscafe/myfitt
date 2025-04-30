@@ -11,9 +11,9 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TreinoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(treino: TreinoEntity)
+    suspend fun insert(treino: TreinoEntity): Long
 
-    @Query("SELECT * FROM treinos WHERE planilhaId = :planilhaId ORDER BY data ASC")
+    @Query("SELECT * FROM treinos WHERE planilhaId = :planilhaId ORDER BY data DESC")
     fun getTreinosByPlanilha(planilhaId: Int): Flow<List<TreinoEntity>>
 
     @Delete

@@ -24,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import br.com.myfitt.domain.models.Treino
-import br.com.myfitt.ui.screens.DateUtil
 
 @Composable
 fun TreinoSemanaItem(
