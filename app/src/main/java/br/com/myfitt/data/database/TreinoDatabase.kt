@@ -8,6 +8,7 @@ import br.com.myfitt.data.dao.DivisaoDao
 import br.com.myfitt.data.dao.ExercicioDao
 import br.com.myfitt.data.dao.PlanilhaDao
 import br.com.myfitt.data.dao.FichaDao
+import br.com.myfitt.data.dao.FichaExercicioDao
 import br.com.myfitt.data.dao.TreinoDao
 import br.com.myfitt.data.dao.TreinoExercicioDao
 import br.com.myfitt.data.entity.ExercicioEntity
@@ -34,4 +35,5 @@ abstract class TreinoDatabase : RoomDatabase() {
     abstract fun exercicioDao(): ExercicioDao
     abstract fun fichaDao(): FichaDao
     abstract fun divisaoDao(): DivisaoDao
+    abstract fun fichaExercicioDao(): FichaExercicioDao
 }

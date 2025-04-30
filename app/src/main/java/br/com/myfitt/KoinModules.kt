@@ -10,7 +10,9 @@ import br.com.myfitt.data.repository.TreinoExercicioRepository
 import br.com.myfitt.data.repository.TreinoRepository
 import br.com.myfitt.domain.models.Divisao
 import br.com.myfitt.ui.viewModels.CriarTreinoViewModel
+import br.com.myfitt.ui.viewModels.DivisaoViewModel
 import br.com.myfitt.ui.viewModels.ExercicioViewModel
+import br.com.myfitt.ui.viewModels.FichasViewModel
 import br.com.myfitt.ui.viewModels.PlanilhaViewModel
 import br.com.myfitt.ui.viewModels.TreinoViewModel
 import org.koin.android.ext.koin.androidApplication
@@ -41,5 +43,7 @@ val viewModelModule = module {
     viewModel { PlanilhaViewModel(get()) }
     viewModel { TreinoViewModel(get()) }
     viewModel { CriarTreinoViewModel(get(), get(), get()) }
+    viewModel { FichasViewModel(it.get(), get()) }
+    viewModel{ DivisaoViewModel(get()) }
 }
 val appModule = listOf(repositoryModule, daoModule, databaseModule, viewModelModule)

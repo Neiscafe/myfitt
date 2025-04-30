@@ -1,5 +1,9 @@
 package br.com.myfitt.data.entity
 
+import androidx.room.Embedded
+import androidx.room.Junction
+import androidx.room.Relation
+import br.com.myfitt.domain.models.Exercicio
 import br.com.myfitt.domain.models.TipoExercicio
 
 data class ExercicioComTipoDto(
