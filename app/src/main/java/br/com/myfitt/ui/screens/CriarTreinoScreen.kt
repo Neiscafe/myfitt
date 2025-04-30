@@ -108,12 +108,13 @@ fun CriarTreinoScreen(
                 it?.let {
                     viewModel.getFichas(it.id)
                 }
-            })
+            }, "Divisão")
 
         DropdownTextField<Ficha>(
             fichas.value,
             getValue = { (it?.nome ?: "NENHUM").uppercase() },
-            onSelectedChanged = { fichaSelecionada = it }, enabled = fichaEnabled
+            onSelectedChanged = { fichaSelecionada = it }, enabled = fichaEnabled,
+            hint = "Ficha",
         )
 
         OutlinedTextField(

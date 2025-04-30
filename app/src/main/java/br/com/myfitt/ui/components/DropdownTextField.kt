@@ -1,5 +1,6 @@
 package br.com.myfitt.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,6 +26,7 @@ fun <T> DropdownTextField(
     items: List<T?>,
     getValue: (T?) -> String,
     onSelectedChanged: (T?) -> Unit,
+    hint: String,
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
@@ -44,6 +46,7 @@ fun <T> DropdownTextField(
             OutlinedTextField(
                 readOnly = true,
                 enabled = enabled,
+                label = { Text(hint, Modifier.background(Color.Transparent)) },
                 value = getValue(_selected.value),
                 modifier = Modifier
                     .fillMaxWidth()
