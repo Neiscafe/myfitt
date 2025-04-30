@@ -9,17 +9,13 @@ import androidx.room.Index
     tableName = "ficha_exercicio",
     primaryKeys = ["fichaId", "exercicioId"],
     foreignKeys = [ForeignKey(
-        entity = DivisaoEntity::class,
+        entity = FichaEntity::class,
         parentColumns = ["id"],
         childColumns = ["fichaId"],
-        onUpdate = CASCADE,
-        onDelete = CASCADE
     ), ForeignKey(
         entity = ExercicioEntity::class,
         parentColumns = ["id"],
         childColumns = ["exercicioId"],
-        onUpdate = CASCADE,
-        onDelete = CASCADE
     )],
     indices = [Index("fichaId"), Index("exercicioId")]
 )

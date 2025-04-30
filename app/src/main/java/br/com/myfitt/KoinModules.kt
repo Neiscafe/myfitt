@@ -29,14 +29,15 @@ val daoModule = module {
     single { get<TreinoDatabase>().planilhaDao() }
     single { get<TreinoDatabase>().divisaoDao() }
     single { get<TreinoDatabase>().fichaDao() }
+    single { get<TreinoDatabase>().fichaExercicioDao() }
 }
 val repositoryModule = module {
     single { TreinoExercicioRepository(get(), get()) }
     single { ExercicioRepository(get()) }
     single { TreinoRepository(get()) }
     single { PlanilhaRepository(get()) }
-    single{ FichaRepository(get()) }
-    single{ DivisaoRepository(get()) }
+    single { FichaRepository(get(), get()) }
+    single { DivisaoRepository(get()) }
 }
 val viewModelModule = module {
     viewModel { ExercicioViewModel(it.get(), get(), get()) }
@@ -44,6 +45,6 @@ val viewModelModule = module {
     viewModel { TreinoViewModel(get()) }
     viewModel { CriarTreinoViewModel(get(), get(), get()) }
     viewModel { FichasViewModel(it.get(), get()) }
-    viewModel{ DivisaoViewModel(get()) }
+    viewModel { DivisaoViewModel(get()) }
 }
 val appModule = listOf(repositoryModule, daoModule, databaseModule, viewModelModule)

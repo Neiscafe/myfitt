@@ -12,8 +12,6 @@ import androidx.room.PrimaryKey
         ExercicioTipoEntity::class,
         parentColumns = ["id"],
         childColumns = ["exercicioTipoId"],
-        onDelete = ForeignKey.Companion.SET_NULL,
-        onUpdate = CASCADE
     )], indices = [Index("exercicioTipoId")]
 )
 data class ExercicioEntity(

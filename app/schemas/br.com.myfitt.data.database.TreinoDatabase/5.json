@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 5,
-    "identityHash": "4012481900351d3d46adc3931076e5c6",
+    "identityHash": "db2c98c125ca11f927961c0ac1993047",
     "entities": [
       {
         "tableName": "planilhas",
@@ -92,7 +92,7 @@
       },
       {
         "tableName": "exercicios",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`nome` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `habilitado` INTEGER NOT NULL DEFAULT 1, `dataDesabilitado` TEXT, `exercicioTipoId` INTEGER DEFAULT NULL, FOREIGN KEY(`exercicioTipoId`) REFERENCES `exercicio_tipo`(`id`) ON UPDATE CASCADE ON DELETE SET NULL )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`nome` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `habilitado` INTEGER NOT NULL DEFAULT 1, `dataDesabilitado` TEXT, `exercicioTipoId` INTEGER DEFAULT NULL, FOREIGN KEY(`exercicioTipoId`) REFERENCES `exercicio_tipo`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "nome",
@@ -147,8 +147,8 @@
         "foreignKeys": [
           {
             "table": "exercicio_tipo",
-            "onDelete": "SET NULL",
-            "onUpdate": "CASCADE",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
             "columns": [
               "exercicioTipoId"
             ],
@@ -311,7 +311,7 @@
       },
       {
         "tableName": "ficha_exercicio",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fichaId` INTEGER NOT NULL, `exercicioId` INTEGER NOT NULL, PRIMARY KEY(`fichaId`, `exercicioId`), FOREIGN KEY(`fichaId`) REFERENCES `divisao`(`id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`exercicioId`) REFERENCES `exercicios`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fichaId` INTEGER NOT NULL, `exercicioId` INTEGER NOT NULL, PRIMARY KEY(`fichaId`, `exercicioId`), FOREIGN KEY(`fichaId`) REFERENCES `ficha`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`exercicioId`) REFERENCES `exercicios`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "fichaId",
@@ -355,9 +355,9 @@
         ],
         "foreignKeys": [
           {
-            "table": "divisao",
-            "onDelete": "CASCADE",
-            "onUpdate": "CASCADE",
+            "table": "ficha",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
             "columns": [
               "fichaId"
             ],
@@ -367,8 +367,8 @@
           },
           {
             "table": "exercicios",
-            "onDelete": "CASCADE",
-            "onUpdate": "CASCADE",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
             "columns": [
               "exercicioId"
             ],
@@ -445,7 +445,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4012481900351d3d46adc3931076e5c6')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'db2c98c125ca11f927961c0ac1993047')"
     ]
   }
 }

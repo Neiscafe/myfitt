@@ -23,6 +23,6 @@ class FichaRepository(private val fichaDao: FichaDao, private val fichaExercicio
     }
 
     fun getFichaByIdFlow(fichaId: Int): Flow<Ficha> {
-        return fichaExercicioDao.getFichaExercicioByIdFlow(fichaId).map { it. }
+        return fichaExercicioDao.getFichaExercicioByIdFlow(fichaId).map { it.toDomain() }
     }
 }
