@@ -9,3 +9,6 @@ fun DivisaoEntity.toDomain(): Divisao{
         nome = this.nome
     )
 }
+fun Divisao.toEntity(): DivisaoEntity{
+    return DivisaoEntity(id = id, nome = nome)
+}
