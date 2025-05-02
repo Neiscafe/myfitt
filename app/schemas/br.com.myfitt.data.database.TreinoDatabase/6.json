@@ -92,7 +92,7 @@
       },
       {
         "tableName": "exercicios",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`nome` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `habilitado` INTEGER NOT NULL DEFAULT 1, `dataDesabilitado` TEXT, `exercicioTipoId` INTEGER DEFAULT NULL, FOREIGN KEY(`exercicioTipoId`) REFERENCES `exercicio_tipo`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`nome` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `habilitado` INTEGER NOT NULL DEFAULT 1, `dataDesabilitado` TEXT DEFAULT NULL, `exercicioTipoId` INTEGER DEFAULT NULL, FOREIGN KEY(`exercicioTipoId`) REFERENCES `exercicio_tipo`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "nome",
@@ -147,8 +147,8 @@
         "foreignKeys": [
           {
             "table": "exercicio_tipo",
-            "onDelete": "NO ACTION",
-            "onUpdate": "NO ACTION",
+            "onDelete": "SET NULL",
+            "onUpdate": "CASCADE",
             "columns": [
               "exercicioTipoId"
             ],
