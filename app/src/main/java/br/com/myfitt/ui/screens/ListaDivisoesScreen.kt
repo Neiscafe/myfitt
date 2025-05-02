@@ -30,7 +30,7 @@ fun ListaDivisoesScreen(
     var nomeDivisao by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
     Column(modifier = modifier.padding(10.dp, 30.dp, 10.dp, 0.dp)) {
-        Text(text = "Suas planilhas", style = MaterialTheme.typography.titleLarge)
+        Text(text = "Suas divisões", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(16.dp))
         Row(
             modifier = Modifier

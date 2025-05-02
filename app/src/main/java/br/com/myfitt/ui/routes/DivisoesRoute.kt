@@ -8,7 +8,7 @@ import br.com.myfitt.ui.screens.ListaDivisoesScreen
 fun NavGraphBuilder.listaDivisoesRoute(navController: NavController){
     composable(Routes.LISTA_DIVISOES.name){
         ListaDivisoesScreen(navigate = {
-            navController.navigate(Routes.LISTA_PLANILHAS.name+"/$it")
+            navController.navigate(Routes.LISTA_FICHAS_DIVISAO.name+"/$it")
         })
     }
 }

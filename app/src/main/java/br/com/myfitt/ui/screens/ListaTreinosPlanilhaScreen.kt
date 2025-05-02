@@ -39,8 +39,9 @@ import java.util.Locale
 @Composable
 fun ListaTreinosPlanilhaScreen(
     planilhaId: Int,
-    treinosPlanilhaViewModel: TreinosPlanilhaViewModel = koinViewModel(),
     navigate: (Int) -> Unit,
+    goToDivisoes: () -> Unit,
+    treinosPlanilhaViewModel: TreinosPlanilhaViewModel = koinViewModel(),
 ) {
     val treinos by treinosPlanilhaViewModel.getTreinosByPlanilha(planilhaId)
         .collectAsState(initial = emptyList())
@@ -80,7 +81,8 @@ fun ListaTreinosPlanilhaScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(value = nomeDoTreino,
+            OutlinedTextField(
+                value = nomeDoTreino,
                 placeholder = {
                     Text("Crie seu treino...")
                 },
@@ -116,7 +118,8 @@ fun ListaTreinosPlanilhaScreen(
                 Button(modifier = Modifier
                     .fillMaxHeight()
                     .background(
-                        color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(10)
                     ), onClick = {
                     scope.launch {
                         if (dataTreino.isNotEmpty()) {
@@ -133,11 +136,36 @@ fun ListaTreinosPlanilhaScreen(
                 }
             }
         }
-        Row() {
-            DropdownTextField<Unit>(listOf(), { "Nenhum" }, {}, "Divisão", modifier = Modifier.fillMaxWidth(0.5f).height(
-                IntrinsicSize.Min))
-            DropdownTextField<Unit>(listOf(), { "Nenhum" }, {}, "Próxima ficha", modifier =  Modifier.fillMaxWidth().height(
-                IntrinsicSize.Min))
+        Column {
+            Row() {
+                DropdownTextField<Unit>(
+                    listOf(),
+                    { it?.toString() ?: "Nenhuma" },
+                    {},
+                    "Divisão",
+                    modifier = Modifier
+                        .fillMaxWidth(0.5f)
+                        .height(
+                            IntrinsicSize.Min
+                        )
+                )
+                DropdownTextField<Unit>(
+                    listOf(),
+                    { it?.toString() ?: "Nenhuma" },
+                    {},
+                    "Próxima ficha",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(
+                            IntrinsicSize.Min
+                        )
+                )
+            }
+            Button(modifier = Modifier.fillMaxWidth(), onClick = {
+                goToDivisoes()
+            }) {
+                Text("Buscar divisões e fichas")
+            }
         }
         LazyColumn(
             modifier = Modifier.fillMaxHeight(),

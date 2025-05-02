@@ -18,9 +18,9 @@ fun NavGraphBuilder.listaTreinosPlanilhaRoute(navController: NavController) {
         })
     ) {
         ListaTreinosPlanilhaScreen(
-            it.arguments?.getInt(PLANILHA_ID)!!
-        ) {
+            it.arguments?.getInt(PLANILHA_ID)!!,
+         {
             navController.navigate(Routes.LISTA_EXERCICIOS_TREINO.name + "/$it")
-        }
+        }, {navController.navigate(Routes.LISTA_DIVISOES.name)})
     }
 }
