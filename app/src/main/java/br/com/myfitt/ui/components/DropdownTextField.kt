@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -29,17 +30,16 @@ fun <T> DropdownTextField(
     hint: String,
     acceptsNull: Boolean = true,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier.width(IntrinsicSize.Min)
+        .height(IntrinsicSize.Min)
 ) {
     val _expanded = remember { mutableStateOf(false) }
-    val _selected = remember { mutableStateOf(items.first()) }
+    val _selected = remember { mutableStateOf(items.firstOrNull()) }
     LaunchedEffect(_selected) {
         onSelectedChanged(_selected.value)
     }
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min)
+        modifier = modifier
     ) {
         ExposedDropdownMenuBox(
             expanded = _expanded.value && enabled,
@@ -48,7 +48,7 @@ fun <T> DropdownTextField(
                 readOnly = true,
                 enabled = enabled,
                 label = { Text(hint, Modifier.background(Color.Transparent)) },
-                value = getValue(_selected.value?:items.first()!!),
+                value = getValue(_selected.value?:items.firstOrNull()),
                 modifier = Modifier
                     .fillMaxWidth()
                     .menuAnchor(MenuAnchorType.PrimaryNotEditable),
@@ -60,6 +60,14 @@ fun <T> DropdownTextField(
             )
             ExposedDropdownMenu(expanded = _expanded.value && enabled,
                 onDismissRequest = { _expanded.value = false }) {
+                if(items.isEmpty()){
+                    DropdownMenuItem(onClick = {
+                        if (_selected.value != null) {
+                            _selected.value = null
+                        }
+                        _expanded.value = false
+                    }, text = { Text(getValue(null)) })
+                }
                 items.forEach {
                     DropdownMenuItem(onClick = {
                         if (_selected.value != it) {

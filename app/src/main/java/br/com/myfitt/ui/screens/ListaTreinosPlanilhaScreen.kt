@@ -26,6 +26,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import br.com.myfitt.domain.models.Treino
 import br.com.myfitt.domain.utils.DateUtil
+import br.com.myfitt.ui.components.DropdownTextField
 import br.com.myfitt.ui.components.TreinoSemanaItem
 import br.com.myfitt.ui.viewModels.TreinosPlanilhaViewModel
 import kotlinx.coroutines.launch
@@ -131,6 +132,12 @@ fun ListaTreinosPlanilhaScreen(
                     Icon(Icons.Default.Add, "Criar")
                 }
             }
+        }
+        Row() {
+            DropdownTextField<Unit>(listOf(), { "Nenhum" }, {}, "Divisão", modifier = Modifier.fillMaxWidth(0.5f).height(
+                IntrinsicSize.Min))
+            DropdownTextField<Unit>(listOf(), { "Nenhum" }, {}, "Próxima ficha", modifier =  Modifier.fillMaxWidth().height(
+                IntrinsicSize.Min))
         }
         LazyColumn(
             modifier = Modifier.fillMaxHeight(),

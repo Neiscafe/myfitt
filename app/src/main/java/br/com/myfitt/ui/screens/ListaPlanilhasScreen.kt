@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import br.com.myfitt.domain.models.Planilha
+import br.com.myfitt.ui.components.DropdownTextField
 import br.com.myfitt.ui.viewModels.ListaPlanilhasViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -60,7 +61,6 @@ fun ListaPlanilhasScreen(
                 Icon(Icons.Default.Add, "Criar")
             }
         }
-
         LazyColumn(
             modifier = Modifier.fillMaxHeight(),
             contentPadding = PaddingValues(0.dp, 8.dp, 0.dp, 0.dp),
