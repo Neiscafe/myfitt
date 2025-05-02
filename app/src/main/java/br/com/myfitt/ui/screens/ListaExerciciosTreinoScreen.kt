@@ -2,18 +2,14 @@ package br.com.myfitt.ui.screens
 
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
-import androidx.compose.material3.ExposedDropdownMenuDefaults.TrailingIcon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,37 +17,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.myfitt.domain.models.Exercicio
-import br.com.myfitt.domain.models.TreinoExercicioComNome
 import br.com.myfitt.ui.components.ExercicioItem
-import br.com.myfitt.ui.viewModels.ExercicioViewModel
+import br.com.myfitt.ui.components.SuggestionDropdown
+import br.com.myfitt.ui.viewModels.ExerciciosTreinoViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExercicioScreen(
-    treinoId: Int, exercicioViewModel: ExercicioViewModel = koinViewModel(parameters = {
+fun ListaExerciciosTreinoScreen(
+    treinoId: Int,
+    exerciciosTreinoViewModel: ExerciciosTreinoViewModel = koinViewModel(parameters = {
         parametersOf(treinoId)
     })
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
-    val exerciciosDoTreino by exercicioViewModel.getExerciciosByTreino()
-        .collectAsStateWithLifecycle(
-            initialValue = emptyList(), lifecycle = LocalLifecycleOwner.current.lifecycle
-        )
-    var exercicioDigitado by remember { mutableStateOf("") }
-    val sugestoesDeExercicio by exercicioViewModel.getSugestoes(exercicioDigitado)
-        .collectAsState(initial = emptyList())
-
-    var dropDownExpanded by remember { mutableStateOf(sugestoesDeExercicio.isNotEmpty()) }
+    val exerciciosDoTreino by exerciciosTreinoViewModel.exerciciosByTreino.collectAsState()
+    val exercicioDigitado = remember { mutableStateOf("") }
     var showDialog = remember { mutableStateOf<Exercicio?>(null) }
     if (showDialog.value != null) {
         AlertDialog( // 3
@@ -68,7 +54,7 @@ fun ExercicioScreen(
             },
             confirmButton = { // 6
                 Button(onClick = {
-                    exercicioViewModel.deleteExercicio(showDialog.value!!)
+                    exerciciosTreinoViewModel.deleteExercicio(showDialog.value!!)
                     showDialog.value = null
                 }) {
                     Text(
@@ -108,72 +94,26 @@ fun ExercicioScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ExposedDropdownMenuBox(modifier = Modifier.fillMaxWidth(0.8f),
-                expanded = dropDownExpanded,
-                onExpandedChange = { dropDownExpanded = !dropDownExpanded }) {
-                OutlinedTextField(value = exercicioDigitado,
-                    keyboardOptions = KeyboardOptions(
-                        autoCorrectEnabled = false, imeAction = ImeAction.Search
-                    ),
-                    keyboardActions = KeyboardActions(onSearch = {
-                        if (exercicioDigitado.isNotEmpty()) {
-                            exercicioViewModel.insertExercicio(
-                                TreinoExercicioComNome(
-                                    treinoId = treinoId,
-                                    exercicioNome = exercicioDigitado,
-                                    posicao = exerciciosDoTreino.size,
-                                )
-                            )
-                            exercicioDigitado = ""
-                        }
-                    }),
-                    onValueChange = {
-                        exercicioViewModel.getSugestoes(it)
-                        exercicioDigitado = it
-                    },
-                    modifier = Modifier
-                        .menuAnchor(MenuAnchorType.PrimaryEditable)
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    trailingIcon = { TrailingIcon(expanded = dropDownExpanded) },
-                    textStyle = TextStyle(Color.Black),
-                    singleLine = true
+            SuggestionDropdown(
+                exercicioDigitado,
+                { exerciciosTreinoViewModel.getSugestoes(it) },
+                onSuggestionClicked = {
+                    exerciciosTreinoViewModel.insertExercicio(it)
+                },
+                trailingIcon = Icons.Outlined.Delete,
+                onIconClick = { exerciciosTreinoViewModel.deleteExercicio(it) },
+                modifier = Modifier.width(
+                    IntrinsicSize.Min
                 )
-                ExposedDropdownMenu(dropDownExpanded,
-                    onDismissRequest = { dropDownExpanded = false }) {
-                    sugestoesDeExercicio.forEach {
-                        DropdownMenuItem(onClick = {
-                            exercicioViewModel.insertExercicio(
-                                TreinoExercicioComNome(
-                                    treinoId = treinoId,
-                                    exercicioNome = it.nome,
-                                    posicao = exerciciosDoTreino.size,
-                                )
-                            )
-                            exercicioDigitado = ""
-                        }, trailingIcon = {
-                            Icon(Icons.Default.Delete, "Delete", modifier = Modifier.clickable {
-                                showDialog.value = it
-                            })
-                        }, text = {
-                            Text(text = it.nome)
-                        })
-                    }
-                }
-            }
+            )
             Button(modifier = Modifier
                 .fillMaxHeight()
                 .background(
                     color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
                 ), onClick = {
-                if (exercicioDigitado.isNotEmpty()) {
-                    val novoExercicio = TreinoExercicioComNome(
-                        treinoId = treinoId,
-                        exercicioNome = exercicioDigitado,
-                        posicao = exerciciosDoTreino.size,
-                    )
-                    exercicioViewModel.insertExercicio(novoExercicio)
-                    exercicioDigitado = ""
+                if (exercicioDigitado.value.isNotEmpty()) {
+                    exerciciosTreinoViewModel.insertExercicio(exercicioDigitado.value)
+                    exercicioDigitado.value = ""
                 }
             }) {
                 Icon(Icons.Default.Add, "Adicionar")
@@ -189,11 +129,11 @@ fun ExercicioScreen(
                 val exercicio = exerciciosDoTreino[i]
                 Card {
                     ExercicioItem(exercicio,
-                        onDelete = { exercicioViewModel.deleteExercicioDoTreino(exercicio) },
-                        onMoveUp = { exercicioViewModel.moveExerciseUpByOne(exercicio) },
-                        onMoveDown = { exercicioViewModel.moveExerciseDownByOne(exercicio) },
+                        onDelete = { exerciciosTreinoViewModel.deleteExercicioDoTreino(exercicio) },
+                        onMoveUp = { exerciciosTreinoViewModel.moveExerciseUpByOne(exercicio) },
+                        onMoveDown = { exerciciosTreinoViewModel.moveExerciseDownByOne(exercicio) },
                         onUpdate = { it, mudou ->
-                            exercicioViewModel.updateTreinoExercicio(
+                            exerciciosTreinoViewModel.updateTreinoExercicio(
                                 it, mudou
                             )
                         })

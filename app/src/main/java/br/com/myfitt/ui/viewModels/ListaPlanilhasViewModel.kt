@@ -7,7 +7,7 @@ import br.com.myfitt.domain.models.Planilha
 import kotlinx.coroutines.launch
 
 
-class PlanilhaViewModel(private val planilhaRepository: PlanilhaRepository) : ViewModel() {
+class ListaPlanilhasViewModel(private val planilhaRepository: PlanilhaRepository) : ViewModel() {
 
     // Fluxo de Planilhas
     val planilhas = planilhaRepository.getAllPlanilhas()

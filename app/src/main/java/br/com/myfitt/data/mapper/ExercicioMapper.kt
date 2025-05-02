@@ -1,8 +1,7 @@
-package br.com.myfitt.domain.mapper
+package br.com.myfitt.data.mapper
 
-import br.com.myfitt.data.entity.ExercicioComTipoDto
+import br.com.myfitt.data.dto.ExercicioComTipoDto
 import br.com.myfitt.data.entity.ExercicioEntity
-import br.com.myfitt.data.entity.ExercicioTipoEntity
 import br.com.myfitt.domain.models.Exercicio
 import br.com.myfitt.domain.models.TipoExercicio
 

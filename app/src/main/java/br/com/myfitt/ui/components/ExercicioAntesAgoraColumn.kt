@@ -29,6 +29,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
+import br.com.myfitt.ui.theme.MyFittTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -39,7 +40,6 @@ private const val INTERVALO_DEBOUNCE = 1000L
 fun ExercicioAntesAgoraColumn(
     title: String, valorAnterior: Int, valorTreinoAtual: Int, onUpdate: suspend (String) -> Unit
 ) {
-    val context = LocalContext.current
     var textValue by remember { mutableStateOf(TextFieldValue(valorTreinoAtual.toString())) }
     var wasFocused by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()

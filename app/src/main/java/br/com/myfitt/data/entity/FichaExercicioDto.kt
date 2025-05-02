@@ -5,10 +5,12 @@ import androidx.room.Junction
 import androidx.room.Relation
 
 data class FichaExercicioDto(
-    @Embedded val ficha: FichaEntity, @Relation(
-        entity = ExercicioEntity::class,
-        parentColumn = "id",
-        entityColumn = "id",
-    ) val exercicios: List<ExercicioComTipo>,
+    val fichaId: Int,
+    val divisaoId: Int,
+    val exercicioId: Int,
     val position: Int,
+    val fichaNome: String,
+    val exercicioNome: String,
+    val exercicioTipoId: Int,
+    val exercicioTipoNome: String,
 )

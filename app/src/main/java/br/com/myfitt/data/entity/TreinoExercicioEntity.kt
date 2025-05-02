@@ -26,12 +26,12 @@ import androidx.room.Index
     ],
     indices = [Index("treinoId"), Index("exercicioId")]
 )
-data class TreinoExercicioCrossRef(
+data class TreinoExercicioEntity(
     val treinoId: Int,
     val exercicioId: Int,
-    val series: Int,
+    val series: Int = 0,
     val posicao: Int,
-    val pesoKg: Float,
-    val repeticoes: Int,
-    val observacao: String?
+    val pesoKg: Float = 0f,
+    val repeticoes: Int = 0,
+    val observacao: String? = null
 )

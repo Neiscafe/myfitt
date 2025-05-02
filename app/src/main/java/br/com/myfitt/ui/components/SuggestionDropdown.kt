@@ -7,6 +7,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults.TrailingIcon
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -22,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,8 +39,8 @@ fun <T> SuggestionDropdown(
     textState: MutableState<String>,
     getSuggestions: (String) -> Flow<List<T>>,
     onSuggestionClicked: (T) -> Unit,
-    trailingIcon: Painter? = null,
-    onIconClick: () -> Unit = {},
+    trailingIcon: ImageVector? = null,
+    onIconClick: (T) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var suggestions = getSuggestions("").collectAsState(emptyList())
@@ -71,7 +73,6 @@ fun <T> SuggestionDropdown(
                 .menuAnchor(MenuAnchorType.PrimaryEditable)
                 .fillMaxWidth(),
             trailingIcon = { TrailingIcon(expanded = dropDownExpanded) },
-            textStyle = TextStyle(Color.Black),
             singleLine = true
         )
 
@@ -80,11 +81,11 @@ fun <T> SuggestionDropdown(
                 DropdownMenuItem(onClick = {
                     performActionAndResetField(it)
                 }, trailingIcon = {
-                    trailingIcon?.let {
-                        androidx.compose.material3.Icon(
-                            trailingIcon,
+                    trailingIcon?.let { icon->
+                        Icon(
+                            icon,
                             "",
-                            Modifier.clickable { onIconClick() })
+                            Modifier.clickable { onIconClick(it) })
                     }
                 }, text = {
                     Text(text = it.toString())

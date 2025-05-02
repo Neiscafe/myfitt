@@ -1,4 +1,4 @@
-package br.com.myfitt.domain.mapper
+package br.com.myfitt.data.mapper
 
 import br.com.myfitt.data.entity.PlanilhaEntity
 import br.com.myfitt.domain.models.Planilha

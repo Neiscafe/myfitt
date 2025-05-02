@@ -1,8 +1,8 @@
 package br.com.myfitt.data.repository
 
 import br.com.myfitt.data.dao.TreinoDao
-import br.com.myfitt.domain.mapper.toDomain
-import br.com.myfitt.domain.mapper.toEntity
+import br.com.myfitt.data.mapper.toDomain
+import br.com.myfitt.data.mapper.toEntity
 import br.com.myfitt.domain.models.Treino
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

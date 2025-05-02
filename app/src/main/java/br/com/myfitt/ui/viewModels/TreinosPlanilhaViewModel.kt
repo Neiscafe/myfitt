@@ -13,14 +13,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class CriarTreinoViewModel(
-    private val fichaRepository: FichaRepository,
+class TreinosPlanilhaViewModel(
+    private val treinoRepository: TreinoRepository,
     private val divisaoRepository: DivisaoRepository,
-    private val treinoRepository: TreinoRepository
+    private val fichaRepository: FichaRepository,
 ) : ViewModel() {
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            getDivisoes()
+    // Função para obter treinos da planilha
+    fun getTreinosByPlanilha(planilhaId: Int) = treinoRepository.getTreinosByPlanilha(planilhaId)
+
+    // Função para remover treino
+    fun deleteTreino(treino: Treino) {
+        viewModelScope.launch {
+            treinoRepository.deleteTreino(treino)
         }
     }
 

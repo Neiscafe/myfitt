@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import br.com.myfitt.domain.models.Ficha
 import br.com.myfitt.ui.components.DefaultCardList
 import br.com.myfitt.ui.components.DefaultTopView
-import br.com.myfitt.ui.viewModels.FichasViewModel
+import br.com.myfitt.ui.viewModels.FichasDivisaoViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -17,7 +17,7 @@ import org.koin.core.parameter.parametersOf
 fun ListaFichasScreen(
     divisaoId: Int,
     navigate: (Int) -> Unit,
-    viewModel: FichasViewModel = koinViewModel(parameters = { parametersOf(divisaoId) }),
+    viewModel: FichasDivisaoViewModel = koinViewModel(parameters = { parametersOf(divisaoId) }),
     modifier: Modifier = Modifier
 ) {
     Column {

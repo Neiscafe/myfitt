@@ -16,12 +16,12 @@ import br.com.myfitt.data.entity.ExercicioTipoEntity
 import br.com.myfitt.data.entity.PlanilhaEntity
 import br.com.myfitt.data.entity.DivisaoEntity
 import br.com.myfitt.data.entity.FichaEntity
-import br.com.myfitt.data.entity.FichaExercicioCrossRef
+import br.com.myfitt.data.entity.FichaExercicioEntity
 import br.com.myfitt.data.entity.TreinoEntity
-import br.com.myfitt.data.entity.TreinoExercicioCrossRef
+import br.com.myfitt.data.entity.TreinoExercicioEntity
 
 @Database(
-    entities = [PlanilhaEntity::class, TreinoEntity::class, ExercicioEntity::class, TreinoExercicioCrossRef::class, ExercicioTipoEntity::class, DivisaoEntity::class, FichaExercicioCrossRef::class, FichaEntity::class],
+    entities = [PlanilhaEntity::class, TreinoEntity::class, ExercicioEntity::class, TreinoExercicioEntity::class, ExercicioTipoEntity::class, DivisaoEntity::class, FichaExercicioEntity::class, FichaEntity::class],
     version = 6,
     autoMigrations = [AutoMigration(1, 2), AutoMigration(2, 3), AutoMigration(
         3, 4

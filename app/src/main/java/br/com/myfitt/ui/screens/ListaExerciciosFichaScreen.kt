@@ -15,22 +15,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import br.com.myfitt.data.entity.ExercicioComTipo
 import br.com.myfitt.domain.models.Exercicio
 import br.com.myfitt.ui.components.DefaultCard
 import br.com.myfitt.ui.components.SuggestionDropdown
-import br.com.myfitt.ui.viewModels.DetalhesFichaViewModel
+import br.com.myfitt.ui.viewModels.ExericiosFichaViewModel
 import kotlinx.coroutines.flow.map
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetalhesFichaScreen(
-    fichaId: Int, viewModel: DetalhesFichaViewModel = koinViewModel(parameters = {
+fun ListaExerciciosFichaScreen(
+    fichaId: Int, viewModel: ExericiosFichaViewModel = koinViewModel(parameters = {
         parametersOf(fichaId)
     })
 ) {
@@ -73,9 +70,9 @@ fun DetalhesFichaScreen(
             contentPadding = PaddingValues(0.dp, 8.dp, 0.dp, 0.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
         ) {
-            items(ficha.size, key = { ficha[it].exercicio.id }) { i ->
+            items(ficha.size, key = { ficha[it].id }) { i ->
                 val exercicio = ficha[i]
-                DefaultCard<ExercicioComTipo>(exercicio, components = {
+                DefaultCard<Exercicio>(exercicio, components = {
                     IconButton(onClick = {
                         viewModel.moveExercisePositionDown(exercicio)
                     }) {
@@ -102,7 +99,7 @@ fun DetalhesFichaScreen(
 }
 
 fun createExerciseAction(
-    exercicioDigitado: MutableState<String>, viewModel: DetalhesFichaViewModel
+    exercicioDigitado: MutableState<String>, viewModel: ExericiosFichaViewModel
 ) {
     if (exercicioDigitado.value.isNotEmpty()) {
         val novoExercicio = Exercicio(

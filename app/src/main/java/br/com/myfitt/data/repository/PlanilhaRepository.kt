@@ -1,9 +1,8 @@
 package br.com.myfitt.data.repository
 
 import br.com.myfitt.data.dao.PlanilhaDao
-import br.com.myfitt.data.entity.PlanilhaEntity
-import br.com.myfitt.domain.mapper.toDomain
-import br.com.myfitt.domain.mapper.toEntity
+import br.com.myfitt.data.mapper.toDomain
+import br.com.myfitt.data.mapper.toEntity
 import br.com.myfitt.domain.models.Planilha
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

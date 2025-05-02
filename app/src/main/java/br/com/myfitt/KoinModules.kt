@@ -8,13 +8,11 @@ import br.com.myfitt.data.repository.FichaRepository
 import br.com.myfitt.data.repository.PlanilhaRepository
 import br.com.myfitt.data.repository.TreinoExercicioRepository
 import br.com.myfitt.data.repository.TreinoRepository
-import br.com.myfitt.domain.models.Divisao
-import br.com.myfitt.ui.viewModels.CriarTreinoViewModel
-import br.com.myfitt.ui.viewModels.DivisaoViewModel
-import br.com.myfitt.ui.viewModels.ExercicioViewModel
-import br.com.myfitt.ui.viewModels.FichasViewModel
-import br.com.myfitt.ui.viewModels.PlanilhaViewModel
-import br.com.myfitt.ui.viewModels.TreinoViewModel
+import br.com.myfitt.ui.viewModels.ListaDivisaoViewModel
+import br.com.myfitt.ui.viewModels.ExerciciosTreinoViewModel
+import br.com.myfitt.ui.viewModels.FichasDivisaoViewModel
+import br.com.myfitt.ui.viewModels.ListaPlanilhasViewModel
+import br.com.myfitt.ui.viewModels.TreinosPlanilhaViewModel
 import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -40,11 +38,10 @@ val repositoryModule = module {
     single { DivisaoRepository(get()) }
 }
 val viewModelModule = module {
-    viewModel { ExercicioViewModel(it.get(), get(), get()) }
-    viewModel { PlanilhaViewModel(get()) }
-    viewModel { TreinoViewModel(get()) }
-    viewModel { CriarTreinoViewModel(get(), get(), get()) }
-    viewModel { FichasViewModel(it.get(), get()) }
-    viewModel { DivisaoViewModel(get()) }
+    viewModel { ExerciciosTreinoViewModel(it.get(), get(), get()) }
+    viewModel { ListaPlanilhasViewModel(get()) }
+    viewModel { TreinosPlanilhaViewModel(get(), get(), get()) }
+    viewModel { FichasDivisaoViewModel(it.get(), get()) }
+    viewModel { ListaDivisaoViewModel(get()) }
 }
 val appModule = listOf(repositoryModule, daoModule, databaseModule, viewModelModule)

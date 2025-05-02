@@ -1,11 +1,12 @@
-package br.com.myfitt.domain.mapper
+package br.com.myfitt.data.mapper
 
 import br.com.myfitt.data.dao.TreinoExercicioDao
-import br.com.myfitt.data.entity.TreinoExercicioCrossRef
+import br.com.myfitt.data.dto.TreinoExercicioDto
+import br.com.myfitt.data.entity.TreinoExercicioEntity
 import br.com.myfitt.domain.models.TreinoExercicioComNome
 
 
-fun TreinoExercicioComNome.toEntity() = TreinoExercicioCrossRef(
+fun TreinoExercicioComNome.toEntity() = TreinoExercicioEntity(
     treinoId = this.treinoId,
     exercicioId = this.exercicioId,
     series = this.series,
@@ -15,7 +16,7 @@ fun TreinoExercicioComNome.toEntity() = TreinoExercicioCrossRef(
     observacao = this.observacao
 )
 
-fun TreinoExercicioDao.TreinoExercicioDto.toDomain() = TreinoExercicioComNome(
+fun TreinoExercicioDto.toDomain() = TreinoExercicioComNome(
     treinoId = this.treinoId,
     exercicioId = this.exercicioId,
     exercicioNome = this.exercicioNome,

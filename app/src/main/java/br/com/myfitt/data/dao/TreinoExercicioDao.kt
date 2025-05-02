@@ -7,26 +7,40 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import br.com.myfitt.data.entity.TreinoExercicioCrossRef
+import br.com.myfitt.data.dto.PerformanceDto
+import br.com.myfitt.data.dto.TreinoExercicioDto
+import br.com.myfitt.data.entity.TreinoExercicioEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TreinoExercicioDao {
-    @Transaction
-    suspend fun updateMany(toUpdate: Array<TreinoExercicioCrossRef>) {
-        toUpdate.forEach {
-            updateCrossRef(it)
-        }
-    }
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertCrossRef(treinoExercicio: TreinoExercicioCrossRef)
+    suspend fun insert(treinoExercicio: TreinoExercicioEntity)
 
     @Update
-    suspend fun updateCrossRef(treinoExercicio: TreinoExercicioCrossRef)
+    suspend fun update(treinoExercicio: TreinoExercicioEntity)
+
+    @Transaction
+    suspend fun deleteAndAdjustPosition(treinoExercicio: TreinoExercicioEntity) {
+        reducePositionsBiggerThan(treinoExercicio.treinoId, treinoExercicio.posicao)
+        delete(treinoExercicio)
+    }
+
+    @Query(
+        """
+        UPDATE 
+            treino_exercicio
+        SET 
+            posicao = posicao -1
+        WHERE
+            treinoId = :treinoId
+            AND posicao > :position
+    """
+    )
+    suspend fun reducePositionsBiggerThan(treinoId: Int, position: Int)
 
     @Delete
-    suspend fun deleteCrossRef(treinoExercicio: TreinoExercicioCrossRef)
+    suspend fun delete(treinoExercicio: TreinoExercicioEntity)
 
     /**
      * Traz dados do cross + nome do exercício.
@@ -55,7 +69,25 @@ interface TreinoExercicioDao {
     """
     )
     fun getExerciciosByTreino(treinoId: Int): Flow<List<TreinoExercicioDto>>
-    @Query("""
+    @Query(
+        """
+            UPDATE  
+                treino_exercicio
+            SET 
+                posicao = CASE 
+                    WHEN exercicioId = :increaseExercise THEN posicao+1
+                    ELSE posicao-1
+                END
+            WHERE 
+                treinoId = :treinoId
+                AND exercicioId = :increaseExercise 
+                OR exercicioId = :decreaseExercise
+        
+        """
+    )
+    suspend fun switchPositions(treinoId: Int, increaseExercise: Int, decreaseExercise: Int)
+    @Query(
+        """
         SELECT 
             COALESCE(te.pesoKg,0) as pesoKg,
             COALESCE(te.repeticoes,0) as repeticoes,
@@ -72,26 +104,7 @@ interface TreinoExercicioDao {
         ORDER BY 
             tr.data DESC
         LIMIT 1
-    """)
+    """
+    )
     suspend fun getUltimaPerformance(exercicioId: Int, dataComparacao: String): PerformanceDto?
-
-    data class TreinoExercicioDto(
-        val treinoId: Int,
-        val exercicioId: Int,
-        val exercicioNome: String,
-        val data: String,
-        val series: Int,
-        val posicao: Int,
-        val pesoKg: Float,
-        val repeticoes: Int,
-        val observacao: String?,
-        val seriesUltimoTreino: Int = 0,
-        val repeticoesUltimoTreino: Int = 0,
-        val pesoKgUltimoTreino: Float = 0f
-    )
-    data class PerformanceDto(
-        val series: Int = 0,
-        val pesoKg: Float = 0f,
-        val repeticoes: Int = 0,
-    )
 }

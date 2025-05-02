@@ -18,11 +18,11 @@ fun Ficha.toEntity(): FichaEntity {
         nome = this.nome
     )
 }
-fun FichaExercicioDto.toDomain(): Ficha{
-    return Ficha(
-        id = this.ficha.id,
-        divisaoId = this.ficha.divisaoId,
-        nome = this.ficha.nome,
-        exercicios = this.exercicios
-    )
-}
+//fun FichaExercicioDto.toDomain(): Ficha{
+//    return Ficha(
+//        id = this.ficha.id,
+//        divisaoId = this.ficha.divisaoId,
+//        nome = this.ficha.nome,
+//        exercicios = this.exercicios
+//    )
+//}

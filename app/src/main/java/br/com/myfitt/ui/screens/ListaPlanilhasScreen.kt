@@ -1,13 +1,10 @@
 package br.com.myfitt.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -16,22 +13,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import br.com.myfitt.domain.models.Planilha
-import br.com.myfitt.ui.theme.MyFittTheme
-import br.com.myfitt.ui.viewModels.PlanilhaViewModel
+import br.com.myfitt.ui.viewModels.ListaPlanilhasViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun PlanilhaScreen(
+fun ListaPlanilhasScreen(
     modifier: Modifier = Modifier,
-    planilhaViewModel: PlanilhaViewModel = koinViewModel(),
+    listaPlanilhasViewModel: ListaPlanilhasViewModel = koinViewModel(),
     navigate: (Int) -> Unit
 ) {
-    val planilhas by planilhaViewModel.planilhas.collectAsState(initial = emptyList())
+    val planilhas by listaPlanilhasViewModel.planilhas.collectAsState(initial = emptyList())
     var nomePlanilha by remember { mutableStateOf("") }
     Column(modifier = modifier.padding(10.dp, 30.dp, 10.dp, 0.dp)) {
         Text(text = "Suas planilhas", style = MaterialTheme.typography.titleLarge)
@@ -59,7 +54,7 @@ fun PlanilhaScreen(
                     color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
                 ), onClick = {
                 if (nomePlanilha.isNotEmpty()) {
-                    planilhaViewModel.insertPlanilha(Planilha(nome = nomePlanilha))
+                    listaPlanilhasViewModel.insertPlanilha(Planilha(nome = nomePlanilha))
                     nomePlanilha = "" // Limpa o campo
                 }
             }) {

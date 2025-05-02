@@ -1,10 +1,8 @@
 package br.com.myfitt.data.repository
 
 import br.com.myfitt.data.dao.ExercicioDao
-import br.com.myfitt.data.entity.ExercicioComTipoDto
-import br.com.myfitt.data.entity.ExercicioEntity
-import br.com.myfitt.domain.mapper.toDomain
-import br.com.myfitt.domain.mapper.toEntity
+import br.com.myfitt.data.mapper.toDomain
+import br.com.myfitt.data.mapper.toEntity
 import br.com.myfitt.domain.models.Exercicio
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -14,15 +12,18 @@ import kotlinx.coroutines.withContext
 private const val TAG = "ExerciciosRepo"
 
 class ExercicioRepository(private val dao: ExercicioDao) {
-    suspend fun getExercicioPorNome(nome: String): Exercicio? = withContext(Dispatchers.IO) {
-        return@withContext dao.getExercicioPorNome(nome)?.toDomain()
+    suspend fun getExercicio(id: Int): Exercicio? = withContext(Dispatchers.IO) {
+        dao.getExercicio(id)?.toDomain()
     }
 
-    suspend fun insertExercicio(exercicio: Exercicio): Exercicio = withContext(
+    suspend fun insertExercicio(exercicio: Exercicio): Int = withContext(
         Dispatchers.IO
     ) {
-        val entity = exercicio.toEntity()
-        return@withContext exercicio.copy(id = dao.insert(entity).toInt())
+        val insertedId = dao.insert(exercicio.toEntity())
+        if (insertedId == -1L) {
+            return@withContext dao.getExercicio(exercicio.nome)!!.id
+        }
+        insertedId.toInt()
     }
 
     fun getSugeridosExercicios(query: String): Flow<List<Exercicio>> =

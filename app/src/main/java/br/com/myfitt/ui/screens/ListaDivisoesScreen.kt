@@ -16,15 +16,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import br.com.myfitt.domain.models.Divisao
-import br.com.myfitt.ui.viewModels.DivisaoViewModel
+import br.com.myfitt.ui.viewModels.ListaDivisaoViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ListaDivisoesScreen(
+    navigate: (Int) -> Unit,
+    viewModel: ListaDivisaoViewModel = koinViewModel(),
     modifier: Modifier = Modifier,
-    viewModel: DivisaoViewModel = koinViewModel(),
-    navigate: (Int) -> Unit
 ) {
     val divisoes by viewModel.divisoes.collectAsState(initial = emptyList())
     var nomeDivisao by remember { mutableStateOf("") }

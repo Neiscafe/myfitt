@@ -3,7 +3,6 @@ package br.com.myfitt.data.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.ForeignKey.Companion.CASCADE
 import androidx.room.Index
 
 @Entity(
@@ -20,8 +19,8 @@ import androidx.room.Index
     )],
     indices = [Index("fichaId"), Index("exercicioId")]
 )
-data class FichaExercicioCrossRef(
+data class FichaExercicioEntity(
     val fichaId: Int,
     val exercicioId: Int,
-    val position: Int,
+    @ColumnInfo(defaultValue = "0") val position: Int = 0,
 )

@@ -1,59 +1,44 @@
 package br.com.myfitt.ui.theme
 
-import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
-
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
-)
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun MyFittTheme(
-    darkTheme: Boolean = false,
-//    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
     MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
+        colorScheme = darkColorScheme(
+            Color.White,
+            onPrimary = Color(0xff2f3131),
+            primaryContainer = Color(0xffe2e2e2),
+            onPrimaryContainer = Color(0xff636565),
+            secondary = Color(0xffc8c6c6),
+            onSecondary = Color(0xff303030),
+            secondaryContainer = Color(0xff494949),
+            onSecondaryContainer = Color(0xffb9b8b8),
+            tertiary = Color.White,
+            onTertiary = Color(0xff2f3131),
+            tertiaryContainer = Color(0xffe2e2e2),
+            onTertiaryContainer = Color(0xff636565),
+            surface = Color(0xff141313),
+            surfaceDim = Color(0xff141313),
+            surfaceBright = Color(0xff3a3939),
+            surfaceContainerLowest = Color(0xff0e0e0e),
+            surfaceContainerLow = Color(0xff1c1b1b),
+            surfaceContainer = Color(0xff201f1f),
+            surfaceContainerHigh = Color(0xff2a2a2a),
+            surfaceContainerHighest = Color(0xff353434),
+            onSurface = Color(0xffe5e2e1),
+            onSurfaceVariant = Color(0xffc4c7c8),
+            outline = Color(0xff8e9192),
+            outlineVariant = Color(0xff444748),
+            inverseSurface = Color(0xffe5e2e1),
+            inverseOnSurface = Color(0xff313030),
+            inversePrimary = Color(0xff5d5f5f),
+            scrim = Color(0xff000000),
+        ), content = content
     )
 }
