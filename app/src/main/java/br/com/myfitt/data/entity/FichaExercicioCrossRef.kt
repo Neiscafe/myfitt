@@ -1,5 +1,6 @@
 package br.com.myfitt.data.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.Companion.CASCADE
@@ -22,4 +23,5 @@ import androidx.room.Index
 data class FichaExercicioCrossRef(
     val fichaId: Int,
     val exercicioId: Int,
+    val position: Int,
 )

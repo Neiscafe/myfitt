@@ -14,4 +14,7 @@ interface FichaExercicioDao {
         SELECT  * from ficha WHERE id = :id 
     """)
     fun getFichaExercicioByIdFlow(id: Int): Flow<FichaExercicioDto>
+
+
+    suspend fun moveUp()
 }

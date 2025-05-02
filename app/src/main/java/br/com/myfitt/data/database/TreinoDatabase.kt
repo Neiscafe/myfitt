@@ -22,10 +22,10 @@ import br.com.myfitt.data.entity.TreinoExercicioCrossRef
 
 @Database(
     entities = [PlanilhaEntity::class, TreinoEntity::class, ExercicioEntity::class, TreinoExercicioCrossRef::class, ExercicioTipoEntity::class, DivisaoEntity::class, FichaExercicioCrossRef::class, FichaEntity::class],
-    version = 5,
+    version = 6,
     autoMigrations = [AutoMigration(1, 2), AutoMigration(2, 3), AutoMigration(
         3, 4
-    ), AutoMigration(4, 5, Specs_4_5::class) ],
+    ), AutoMigration(4, 5, Specs_4_5::class), AutoMigration(5,6) ],
     exportSchema = true
 )
 abstract class TreinoDatabase : RoomDatabase() {

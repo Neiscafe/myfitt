@@ -9,5 +9,6 @@ data class FichaExercicioDto(
         entity = ExercicioEntity::class,
         parentColumn = "id",
         entityColumn = "id",
-    ) val exercicios: List<ExercicioComTipo>
+    ) val exercicios: List<ExercicioComTipo>,
+    val position: Int,
 )

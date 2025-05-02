@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun DivisaoScreen(
+fun ListaDivisoesScreen(
     modifier: Modifier = Modifier,
     viewModel: DivisaoViewModel = koinViewModel(),
     navigate: (Int) -> Unit

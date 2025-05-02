@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,7 +28,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun DefaultTopView(title: String, onComplete: (String) -> Unit, modifier: Modifier = Modifier) {
+fun DefaultTopView(
+    title: String,
+    onComplete: (String) -> Unit,
+    topComponents: (RowScope.() -> Unit)? = null,
+    modifier: Modifier = Modifier
+) {
     val topBarText = remember { mutableStateOf("") }
     Column {
         Text(text = title, style = MaterialTheme.typography.titleLarge)
@@ -39,28 +45,31 @@ fun DefaultTopView(title: String, onComplete: (String) -> Unit, modifier: Modifi
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(
-                value = topBarText.value,
-                placeholder = {
-                    Text("Crie sua planilha...")
-                },
-                onValueChange = { topBarText.value = it },
-                modifier = Modifier.weight(1f),
-                textStyle = TextStyle(Color.Black),
-                singleLine = true
-            )
+            topComponents?.let {
+                topComponents()
+            } ?: run {
+                OutlinedTextField(value = topBarText.value,
+                    placeholder = {
+                        Text("Crie sua planilha...")
+                    },
+                    onValueChange = { topBarText.value = it },
+                    modifier = Modifier.weight(1f),
+                    textStyle = TextStyle(Color.Black),
+                    singleLine = true
+                )
 
-            Button(modifier = Modifier
-                .fillMaxHeight()
-                .background(
-                    color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
-                ), onClick = {
-                if (topBarText.value.isNotEmpty()) {
-                    onComplete(topBarText.value)
-                    topBarText.value = ""
+                Button(modifier = Modifier
+                    .fillMaxHeight()
+                    .background(
+                        color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
+                    ), onClick = {
+                    if (topBarText.value.isNotEmpty()) {
+                        onComplete(topBarText.value)
+                        topBarText.value = ""
+                    }
+                }) {
+                    Icon(Icons.Default.Add, "Criar")
                 }
-            }) {
-                Icon(Icons.Default.Add, "Criar")
             }
         }
     }

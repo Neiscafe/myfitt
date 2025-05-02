@@ -14,7 +14,7 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @Composable
-fun FichasScreen(
+fun ListaFichasScreen(
     divisaoId: Int,
     navigate: (Int) -> Unit,
     viewModel: FichasViewModel = koinViewModel(parameters = { parametersOf(divisaoId) }),

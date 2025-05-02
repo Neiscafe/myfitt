@@ -27,6 +27,7 @@ fun <T> DropdownTextField(
     getValue: (T?) -> String,
     onSelectedChanged: (T?) -> Unit,
     hint: String,
+    acceptsNull: Boolean = true,
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
@@ -47,7 +48,7 @@ fun <T> DropdownTextField(
                 readOnly = true,
                 enabled = enabled,
                 label = { Text(hint, Modifier.background(Color.Transparent)) },
-                value = getValue(_selected.value),
+                value = getValue(_selected.value?:items.first()!!),
                 modifier = Modifier
                     .fillMaxWidth()
                     .menuAnchor(MenuAnchorType.PrimaryNotEditable),
