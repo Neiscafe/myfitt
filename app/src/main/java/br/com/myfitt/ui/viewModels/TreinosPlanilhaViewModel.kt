@@ -10,7 +10,10 @@ import br.com.myfitt.domain.models.Ficha
 import br.com.myfitt.domain.models.Treino
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class TreinosPlanilhaViewModel(
@@ -28,25 +31,15 @@ class TreinosPlanilhaViewModel(
         }
     }
 
-    private val _fichas = MutableStateFlow<List<Ficha?>>(listOf(null))
-    val fichas = _fichas.asStateFlow()
-    fun getFichas(divisaoId: Int) = viewModelScope.launch(Dispatchers.IO) {
-        _fichas.value = mutableListOf<Ficha?>().apply {
-            add(null)
-            addAll(
-                fichaRepository.getTodasByDivisao(divisaoId)
-            )
-        }
-    }
+    fun fichas(divisaoId: Int) = fichaRepository.getTodasByDivisaoFlow(divisaoId)
+        .map { it.toMutableList<Ficha?>().also { it.add(0, null) }.toList() }.stateIn(
+            viewModelScope, SharingStarted.Eagerly, listOf(null)
+        )
 
-    private val _divisoes = MutableStateFlow<List<Divisao?>>(listOf(null))
-    val divisoes = _divisoes.asStateFlow()
-    fun getDivisoes() = viewModelScope.launch(Dispatchers.IO) {
-        _divisoes.value = mutableListOf<Divisao?>().apply {
-            add(null)
-            addAll(divisaoRepository.getTodas())
-        }
-    }
+    val divisoes = divisaoRepository.getTodasFlow()
+        .map { it.toMutableList<Divisao?>().also { it.add(0, null) }.toList() }.stateIn(
+            viewModelScope, SharingStarted.Eagerly, listOf(null)
+        )
 
     // Função para adicionar treino
     suspend fun insertTreino(treino: Treino): Int {

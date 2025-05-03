@@ -25,6 +25,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import br.com.myfitt.domain.models.Divisao
+import br.com.myfitt.domain.models.Ficha
 import br.com.myfitt.domain.models.Treino
 import br.com.myfitt.domain.utils.DateUtil
 import br.com.myfitt.ui.components.DropdownTextField
@@ -47,9 +49,9 @@ fun ListaTreinosPlanilhaScreen(
 ) {
     val treinos by treinosPlanilhaViewModel.getTreinosByPlanilha(planilhaId)
         .collectAsState(initial = emptyList())
-    var nomeDoTreino = remember { mutableStateOf("") }
+    var selectedFicha by remember { mutableStateOf<Ficha?>(null) }
+    var selectedDivisao by remember { mutableStateOf<Divisao?>(null) }
     var dataSelecionada by remember { mutableStateOf(DateUtil.now) }
-    val scope = rememberCoroutineScope()
     val isDateDialogShown = remember { mutableStateOf(false) }
     Column(
         modifier = Modifier.padding(10.dp, 30.dp, 10.dp, 0.dp)
@@ -59,40 +61,24 @@ fun ListaTreinosPlanilhaScreen(
         }
         Text("Treinos da Planilha", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(16.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            DefaultTextField(textValue = nomeDoTreino,
-                hint = "Crie seu treino...",
-                suffixText = DateUtil.format(dataSelecionada),
-                modifier = Modifier.width(IntrinsicSize.Max).weight(1f),
-                icon = Icons.Outlined.DateRange,
-                onIconClick = { isDateDialogShown.value = true })
-            Button(modifier = Modifier
-                .height(56.dp)
-                .width(64.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
-                ), onClick = {
-                scope.launch {
-                    val novoTreino = Treino(
-                        planilhaId = planilhaId,
-                        nome = nomeDoTreino.value,
-                        data = DateUtil.toDbNotation(dataSelecionada)
-                    )
-                    treinosPlanilhaViewModel.insertTreino(novoTreino)
-                }
-            }) {
-                Icon(Icons.Default.Add, "Criar")
-            }
-        }
+        InsertionTopBar(onAddClicked = {
+            val novoTreino = Treino(
+                planilhaId = planilhaId,
+                nome = it,
+                data = DateUtil.toDbNotation(dataSelecionada)
+            )
+            treinosPlanilhaViewModel.insertTreino(novoTreino)
+        },
+            textHint = "Crie seu treino...",
+            suffixText = DateUtil.format(dataSelecionada),
+            icon = Icons.Outlined.DateRange,
+            onIconClick = { isDateDialogShown.value = true })
         Column {
             Row {
-                DropdownTextField<Unit>(listOf(),
+                DropdownTextField<Divisao>(
+                    treinosPlanilhaViewModel.divisoes.collectAsState().value,
                     { it?.toString() ?: "Nenhuma" },
-                    {},
+                    { selectedDivisao = it },
                     "Divisão",
                     modifier = Modifier
                         .fillMaxWidth(0.5f)
@@ -100,9 +86,11 @@ fun ListaTreinosPlanilhaScreen(
                             IntrinsicSize.Min
                         )
                 )
-                DropdownTextField<Unit>(listOf(),
+                DropdownTextField<Ficha>(selectedDivisao?.let {
+                    treinosPlanilhaViewModel.fichas(it.id).collectAsState().value
+                } ?: listOf(null),
                     { it?.toString() ?: "Nenhuma" },
-                    {},
+                    { selectedFicha = it },
                     "Próxima ficha",
                     modifier = Modifier
                         .fillMaxWidth()
@@ -142,6 +130,44 @@ fun ListaTreinosPlanilhaScreen(
 }
 
 @Composable
+private fun InsertionTopBar(
+    onAddClicked: suspend (String) -> Unit,
+    textHint: String,
+    suffixText: String? = null,
+    icon: ImageVector? = null,
+    onIconClick: () -> Unit = {}
+) {
+    var nomeDoTreino = remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        DefaultTextField(textValue = nomeDoTreino,
+            hint = textHint,
+            suffixText = suffixText,
+            modifier = Modifier
+                .width(IntrinsicSize.Max)
+                .weight(1f),
+            icon = icon,
+            onIconClick = { onIconClick() })
+        Button(modifier = Modifier
+            .height(56.dp)
+            .width(64.dp)
+            .background(
+                color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
+            ), onClick = {
+            scope.launch {
+                onAddClicked(nomeDoTreino.value)
+            }
+        }) {
+            Icon(Icons.Default.Add, "Criar")
+        }
+    }
+}
+
+@Composable
 private fun DefaultTextField(
     textValue: MutableState<String>,
     hint: String,
@@ -149,8 +175,6 @@ private fun DefaultTextField(
     icon: ImageVector? = null,
     onIconClick: (String) -> Unit = {},
     modifier: Modifier = Modifier,
-//    dataSelecionada: LocalDate,
-//    isDateDialogShown: MutableState<Boolean>
 ) {
     OutlinedTextField(
         value = textValue.value,
