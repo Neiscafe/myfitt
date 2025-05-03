@@ -17,7 +17,7 @@ import androidx.room.Index
         parentColumns = ["id"],
         childColumns = ["exercicioId"],
     )],
-    indices = [Index("fichaId"), Index("exercicioId")]
+    indices = [Index("exercicioId"), Index("fichaId")]
 )
 data class FichaExercicioEntity(
     val fichaId: Int,

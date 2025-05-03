@@ -22,10 +22,10 @@ import br.com.myfitt.data.entity.TreinoExercicioEntity
 
 @Database(
     entities = [PlanilhaEntity::class, TreinoEntity::class, ExercicioEntity::class, TreinoExercicioEntity::class, ExercicioTipoEntity::class, DivisaoEntity::class, FichaExercicioEntity::class, FichaEntity::class],
-    version = 6,
+    version = 8,
     autoMigrations = [AutoMigration(1, 2), AutoMigration(2, 3), AutoMigration(
         3, 4
-    ), AutoMigration(4, 5, Specs_4_5::class), AutoMigration(5,6) ],
+    ), AutoMigration(4, 5, Specs_4_5::class), AutoMigration(5, 6), AutoMigration(6, 7)],
     exportSchema = true
 )
 abstract class TreinoDatabase : RoomDatabase() {

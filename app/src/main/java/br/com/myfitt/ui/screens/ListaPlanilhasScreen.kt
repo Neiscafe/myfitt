@@ -27,6 +27,7 @@ fun ListaPlanilhasScreen(
     navigate: (Int) -> Unit
 ) {
     val planilhas by listaPlanilhasViewModel.planilhas.collectAsState(initial = emptyList())
+//    val planilhas: List<Planilha> by remember { mutableStateOf(emptyList()) }
     var nomePlanilha by remember { mutableStateOf("") }
     Column(modifier = modifier.padding(10.dp, 30.dp, 10.dp, 0.dp)) {
         Text(text = "Suas planilhas", style = MaterialTheme.typography.titleLarge)

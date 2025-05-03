@@ -12,12 +12,12 @@ import androidx.room.PrimaryKey
         ExercicioTipoEntity::class,
         parentColumns = ["id"],
         childColumns = ["exercicioTipoId"],
-    )], indices = [Index("exercicioTipoId")]
+    )], indices = [Index("id"), Index("exercicioTipoId")]
 )
 data class ExercicioEntity(
     val nome: String,
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     @ColumnInfo(defaultValue = "1") val habilitado: Boolean = true,
-    val dataDesabilitado: String? = null,
+    @ColumnInfo(defaultValue = "NULL") val dataDesabilitado: String? = null,
     @ColumnInfo(defaultValue = "NULL") val exercicioTipoId: Int? = null,
 )
