@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun DefaultTopView(
     title: String,
+    hint: String,
     onComplete: (String) -> Unit,
     topComponents: (RowScope.() -> Unit)? = null,
     modifier: Modifier = Modifier
@@ -50,7 +51,7 @@ fun DefaultTopView(
             } ?: run {
                 OutlinedTextField(value = topBarText.value,
                     placeholder = {
-                        Text("Crie sua planilha...")
+                        Text(hint)
                     },
                     onValueChange = { topBarText.value = it },
                     modifier = Modifier.weight(1f),

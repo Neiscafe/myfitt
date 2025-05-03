@@ -99,7 +99,7 @@ fun ListaExerciciosFichaScreen(
 }
 
 fun createExerciseAction(
-    exercicioDigitado: MutableState<String>, viewModel: ExericiosFichaViewModel
+    exercicioDigitado: MutableState<String>, viewModel: ExerciciosFichaViewModel
 ) {
     if (exercicioDigitado.value.isNotEmpty()) {
         val novoExercicio = Exercicio(
