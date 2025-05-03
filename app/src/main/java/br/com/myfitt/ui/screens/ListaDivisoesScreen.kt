@@ -56,8 +56,8 @@ fun ListaDivisoesScreen(
                 ), onClick = {
                 coroutineScope.launch {
                     if (nomeDivisao.isNotEmpty()) {
-                        nomeDivisao = "" // Limpa o campo}
                         navigate(viewModel.insert(Divisao(nome = nomeDivisao)))
+                        nomeDivisao = "" // Limpa o campo}
                     }
                 }
             }) {
@@ -71,9 +71,9 @@ fun ListaDivisoesScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
         ) {
             items(divisoes.size) { i ->
-                val planilha = divisoes[i]
+                val divisao = divisoes[i]
                 Card(onClick = {
-                    navigate(planilha.id)
+                    navigate(divisao.id)
                 }) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -81,12 +81,12 @@ fun ListaDivisoesScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            planilha.nome,
+                            divisao.nome,
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.padding(10.dp)
                         )
                         IconButton(onClick = {
-//                            planilhaViewModel.deletePlanilha(planilha)
+                            viewModel.delete(divisao)
                         }) {
                             Icon(
                                 imageVector = Icons.Default.Delete, contentDescription = "Remover"

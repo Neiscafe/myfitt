@@ -1,6 +1,7 @@
 package br.com.myfitt.data.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import br.com.myfitt.data.entity.DivisaoEntity
@@ -23,7 +24,10 @@ interface DivisaoDao {
     fun getTodasFlow(): Flow<List<DivisaoEntity>>
 
     @Insert
-    fun insert(divisao: DivisaoEntity): Long
+    suspend fun insert(divisao: DivisaoEntity): Long
+
+    @Delete
+    suspend fun delete(divisao: DivisaoEntity)
 
 
 }

@@ -18,6 +18,8 @@ class DivisaoRepository(private val dao: DivisaoDao) {
         return dao.getTodasFlow().map { it.map { it.toDomain() } }
     }
 
+    suspend fun deletar(divisao: Divisao) = dao.delete(divisao.toEntity())
+
     suspend fun inserir(divisao: Divisao): Int = withContext(Dispatchers.IO) {
         return@withContext dao.insert(divisao.toEntity()).toInt()
     }
