@@ -10,6 +10,7 @@ import br.com.myfitt.data.repository.TreinoExercicioRepository
 import br.com.myfitt.data.repository.TreinoRepository
 import br.com.myfitt.ui.viewModels.ListaDivisaoViewModel
 import br.com.myfitt.ui.viewModels.ExerciciosTreinoViewModel
+import br.com.myfitt.ui.viewModels.ExerciciosFichaViewModel
 import br.com.myfitt.ui.viewModels.FichasDivisaoViewModel
 import br.com.myfitt.ui.viewModels.ListaPlanilhasViewModel
 import br.com.myfitt.ui.viewModels.TreinosPlanilhaViewModel
@@ -36,6 +37,7 @@ val repositoryModule = module {
     single { PlanilhaRepository(get()) }
     single { FichaRepository(get(), get()) }
     single { DivisaoRepository(get()) }
+    single { ExerciciosFichaViewModel(it.get(), get(), get()) }
 }
 val viewModelModule = module {
     viewModel { ExerciciosTreinoViewModel(it.get(), get(), get()) }

@@ -10,7 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 
-class ExericiosFichaViewModel(
+class ExerciciosFichaViewModel(
     private val fichaId: Int,
     private val fichaRepository: FichaRepository,
     private val exercicioRepository: ExercicioRepository

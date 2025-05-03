@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import br.com.myfitt.domain.models.Exercicio
 import br.com.myfitt.ui.components.DefaultCard
 import br.com.myfitt.ui.components.SuggestionDropdown
-import br.com.myfitt.ui.viewModels.ExericiosFichaViewModel
+import br.com.myfitt.ui.viewModels.ExerciciosFichaViewModel
 import kotlinx.coroutines.flow.map
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -27,7 +27,7 @@ import org.koin.core.parameter.parametersOf
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListaExerciciosFichaScreen(
-    fichaId: Int, viewModel: ExericiosFichaViewModel = koinViewModel(parameters = {
+    fichaId: Int, viewModel: ExerciciosFichaViewModel = koinViewModel(parameters = {
         parametersOf(fichaId)
     })
 ) {
