@@ -60,41 +60,32 @@ fun ListaTreinosPlanilhaScreen(
         Text("Treinos da Planilha", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(16.dp))
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             DefaultTextField(textValue = nomeDoTreino,
                 hint = "Crie seu treino...",
                 suffixText = DateUtil.format(dataSelecionada),
-                modifier = Modifier.width(IntrinsicSize.Max),
+                modifier = Modifier.width(IntrinsicSize.Max).weight(1f),
                 icon = Icons.Outlined.DateRange,
                 onIconClick = { isDateDialogShown.value = true })
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Min),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(modifier = Modifier
-                    .fillMaxHeight()
-                    .background(
-                        color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
-                    ), onClick = {
-                    scope.launch {
-                        val novoTreino = Treino(
-                            planilhaId = planilhaId,
-                            nome = nomeDoTreino.value,
-                            data = DateUtil.toDbNotation(dataSelecionada)
-                        )
-                        treinosPlanilhaViewModel.insertTreino(novoTreino)
-                    }
-                }) {
-                    Icon(Icons.Default.Add, "Criar")
+            Button(modifier = Modifier
+                .height(56.dp)
+                .width(64.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
+                ), onClick = {
+                scope.launch {
+                    val novoTreino = Treino(
+                        planilhaId = planilhaId,
+                        nome = nomeDoTreino.value,
+                        data = DateUtil.toDbNotation(dataSelecionada)
+                    )
+                    treinosPlanilhaViewModel.insertTreino(novoTreino)
                 }
+            }) {
+                Icon(Icons.Default.Add, "Criar")
             }
         }
         Column {
