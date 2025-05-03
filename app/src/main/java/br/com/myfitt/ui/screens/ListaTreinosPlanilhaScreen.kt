@@ -8,7 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -22,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import br.com.myfitt.domain.models.Treino
@@ -32,6 +33,7 @@ import br.com.myfitt.ui.viewModels.TreinosPlanilhaViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.temporal.WeekFields
 import java.util.Locale
 
@@ -45,32 +47,15 @@ fun ListaTreinosPlanilhaScreen(
 ) {
     val treinos by treinosPlanilhaViewModel.getTreinosByPlanilha(planilhaId)
         .collectAsState(initial = emptyList())
-    var nomeDoTreino by remember { mutableStateOf("") }
-    var dataDoTreinoState by remember { mutableStateOf(DateUtil.now) }
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = DateUtil.toMillisUtcFromLocal(
-            DateUtil.now
-        )
-    )
+    var nomeDoTreino = remember { mutableStateOf("") }
+    var dataSelecionada by remember { mutableStateOf(DateUtil.now) }
     val scope = rememberCoroutineScope()
-    val dataTreino = DateUtil.format(dataDoTreinoState)
-    var isDateDialogShown by remember { mutableStateOf(false) }
+    val isDateDialogShown = remember { mutableStateOf(false) }
     Column(
         modifier = Modifier.padding(10.dp, 30.dp, 10.dp, 0.dp)
     ) {
-        if (isDateDialogShown) {
-            DatePickerDialog(onDismissRequest = { isDateDialogShown = false }, confirmButton = {
-                Button(onClick = {
-                    isDateDialogShown = false
-                    dataDoTreinoState = DateUtil.fromMillisUtcToLocal(
-                        datePickerState.selectedDateMillis ?: DateUtil.toMillisUtcFromLocal(
-                            DateUtil.now
-                        )
-                    )
-                }) { Text("Ok") }
-            }) {
-                DatePicker(datePickerState, showModeToggle = false)
-            }
+        DatePickerDialog(isDateDialogShown) {
+            dataSelecionada = it
         }
         Text("Treinos da Planilha", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(16.dp))
@@ -81,16 +66,12 @@ fun ListaTreinosPlanilhaScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(
-                value = nomeDoTreino,
-                placeholder = {
-                    Text("Crie seu treino...")
-                },
-                modifier = Modifier.fillMaxWidth(0.5f),
-                onValueChange = { nomeDoTreino = it },
-                textStyle = TextStyle(Color.Black),
-                singleLine = true
-            )
+            DefaultTextField(textValue = nomeDoTreino,
+                hint = "Crie seu treino...",
+                suffixText = DateUtil.format(dataSelecionada),
+                modifier = Modifier.width(IntrinsicSize.Max),
+                icon = Icons.Outlined.DateRange,
+                onIconClick = { isDateDialogShown.value = true })
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -98,38 +79,18 @@ fun ListaTreinosPlanilhaScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedTextField(
-                    value = dataTreino,
-                    onValueChange = {},
-                    readOnly = true,
-                    modifier = Modifier
-                        .fillMaxWidth(0.6f)
-                        .clickable {
-                            isDateDialogShown = true
-                        },
-                    trailingIcon = {
-                        Icon(Icons.Default.DateRange,
-                            "Select date",
-                            modifier = Modifier.clickable { isDateDialogShown = true })
-                    },
-                    textStyle = TextStyle(Color.LightGray),
-                    singleLine = true,
-                )
                 Button(modifier = Modifier
                     .fillMaxHeight()
                     .background(
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = RoundedCornerShape(10)
+                        color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
                     ), onClick = {
                     scope.launch {
-                        if (dataTreino.isNotEmpty()) {
-                            val novoTreino = Treino(
-                                planilhaId = planilhaId,
-                                nome = nomeDoTreino,
-                                data = DateUtil.toDbNotation(dataDoTreinoState)
-                            )
-                            treinosPlanilhaViewModel.insertTreino(novoTreino)
-                        }
+                        val novoTreino = Treino(
+                            planilhaId = planilhaId,
+                            nome = nomeDoTreino.value,
+                            data = DateUtil.toDbNotation(dataSelecionada)
+                        )
+                        treinosPlanilhaViewModel.insertTreino(novoTreino)
                     }
                 }) {
                     Icon(Icons.Default.Add, "Criar")
@@ -137,9 +98,8 @@ fun ListaTreinosPlanilhaScreen(
             }
         }
         Column {
-            Row() {
-                DropdownTextField<Unit>(
-                    listOf(),
+            Row {
+                DropdownTextField<Unit>(listOf(),
                     { it?.toString() ?: "Nenhuma" },
                     {},
                     "Divisão",
@@ -149,8 +109,7 @@ fun ListaTreinosPlanilhaScreen(
                             IntrinsicSize.Min
                         )
                 )
-                DropdownTextField<Unit>(
-                    listOf(),
+                DropdownTextField<Unit>(listOf(),
                     { it?.toString() ?: "Nenhuma" },
                     {},
                     "Próxima ficha",
@@ -187,6 +146,65 @@ fun ListaTreinosPlanilhaScreen(
                     onClick = { navigate(it.id) },
                     onDelete = { treinosPlanilhaViewModel.deleteTreino(it) })
             }
+        }
+    }
+}
+
+@Composable
+private fun DefaultTextField(
+    textValue: MutableState<String>,
+    hint: String,
+    suffixText: String? = null,
+    icon: ImageVector? = null,
+    onIconClick: (String) -> Unit = {},
+    modifier: Modifier = Modifier,
+//    dataSelecionada: LocalDate,
+//    isDateDialogShown: MutableState<Boolean>
+) {
+    OutlinedTextField(
+        value = textValue.value,
+        onValueChange = {
+            textValue.value = it
+        },
+        suffix = suffixText?.let {
+            { Text(it) }
+        },
+        placeholder = {
+            Text(hint)
+        },
+        trailingIcon = icon?.let {
+            { Icon(it, "", Modifier.clickable { onIconClick(textValue.value) }) }
+        },
+        modifier = modifier,
+        textStyle = TextStyle(Color.LightGray),
+        singleLine = true,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DatePickerDialog(
+    isDateDialogShown: MutableState<Boolean>, onDateSelected: (LocalDate) -> Unit
+) {
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = DateUtil.toMillisUtcFromLocal(
+            DateUtil.now
+        )
+    )
+    if (isDateDialogShown.value) {
+        DatePickerDialog(onDismissRequest = { isDateDialogShown.value = false }, confirmButton = {
+            Button(onClick = {
+                isDateDialogShown.value = false
+                onDateSelected(
+                    DateUtil.fromMillisUtcToLocal(
+                        datePickerState.selectedDateMillis ?: DateUtil.toMillisUtcFromLocal(
+                            DateUtil.now
+                        )
+                    )
+                )
+            }) { Text("Ok") }
+        }) {
+            DatePicker(datePickerState, showModeToggle = false)
         }
     }
 }
