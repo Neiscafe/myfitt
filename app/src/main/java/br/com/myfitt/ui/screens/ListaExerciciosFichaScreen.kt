@@ -18,8 +18,8 @@ import br.com.myfitt.ui.components.DefaultCard
 import br.com.myfitt.ui.components.DropdownTextField
 import br.com.myfitt.ui.components.InsertionTopBar
 import br.com.myfitt.ui.components.SuggestionDropdown
+import br.com.myfitt.ui.utils.toUserFriendlyName
 import br.com.myfitt.ui.viewModels.ExerciciosFichaViewModel
-import kotlinx.coroutines.flow.map
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -42,15 +42,13 @@ fun ListaExerciciosFichaScreen(
         InsertionTopBar(title = "Exercício Ficha",
             onAddClicked = { viewModel.insertExercicio(exercicioDigitado.value) },
             InsertionField = {
-                SuggestionDropdown<Exercicio>(
-                    textState = exercicioDigitado,
+                SuggestionDropdown<Exercicio>(textState = exercicioDigitado,
                     getSuggestions = { viewModel.getExerciciosSugestao(it) },
                     onSuggestionClicked = {
                         viewModel.insertExercicioFicha(it.id)
                     },
                     modifier = Modifier.weight(1f),
-                    getText = {it.nome}
-                )
+                    getText = { it.nome })
             })
         LazyColumn(
             modifier = Modifier.fillMaxHeight(),
@@ -59,12 +57,13 @@ fun ListaExerciciosFichaScreen(
         ) {
             items(ficha.size, key = { ficha[it].id }) { i ->
                 val exercicio = ficha[i]
-                DefaultCard<Exercicio>(exercicio, components = {
+                DefaultCard<Exercicio>(exercicio, { it.toUserFriendlyName() }, components = {
                     IconButton(onClick = {
                         viewModel.moveExercisePositionDown(exercicio)
                     }) {
                         Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown, contentDescription = ""
+                            imageVector = Icons.Default.KeyboardArrowDown,
+                            contentDescription = ""
                         )
                     }
                     IconButton(onClick = {

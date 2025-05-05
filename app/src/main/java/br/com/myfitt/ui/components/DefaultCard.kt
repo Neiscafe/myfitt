@@ -1,6 +1,7 @@
 package br.com.myfitt.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -15,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun <T> DefaultCard(item: T, components:  @Composable RowScope.()->Unit = {}, modifier: Modifier = Modifier) {
+fun <T> DefaultCard(item: T, setName: (T)->String, components:  @Composable RowScope.()->Unit = {}, modifier: Modifier = Modifier) {
     Card {
         Row(
             modifier = Modifier
@@ -24,10 +25,14 @@ fun <T> DefaultCard(item: T, components:  @Composable RowScope.()->Unit = {}, mo
                 .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                item.toString(), style = MaterialTheme.typography.titleMedium
-            )
-            components(this)
+            Column {
+                Text(
+                    setName(item), style = MaterialTheme.typography.titleMedium
+                )
+                Row{
+                    components(this)
+                }
+            }
         }
     }
 }
