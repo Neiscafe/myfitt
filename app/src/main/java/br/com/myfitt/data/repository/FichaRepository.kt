@@ -77,10 +77,10 @@ class FichaRepository(
         )
     }
 
-    suspend fun addExercise(exercise: Exercicio) {
+    suspend fun addExercise(exercise: Exercicio, ficha: Ficha = selectedFichaCache) {
         fichaExercicioDao.insert(
             FichaExercicioEntity(
-                selectedFichaCache.id, exercise.id, exercise.posicao
+                ficha.id, exercise.id, exercise.posicao
             )
         )
     }
