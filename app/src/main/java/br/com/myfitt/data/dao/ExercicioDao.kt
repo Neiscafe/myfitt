@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Update
 import br.com.myfitt.data.dto.ExercicioComTipoDto
 import br.com.myfitt.data.entity.ExercicioEntity
+import br.com.myfitt.data.entity.ExercicioTipoEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -62,4 +63,8 @@ interface ExercicioDao {
         """
     )
     suspend fun getExercicio(nome: String): ExercicioComTipoDto?
+    @Query("""
+        SELECT * FROM exercicio_tipo ORDER BY nome ASC
+    """)
+    fun getExercicioTiposFlow(): Flow<List<ExercicioTipoEntity>>
 }

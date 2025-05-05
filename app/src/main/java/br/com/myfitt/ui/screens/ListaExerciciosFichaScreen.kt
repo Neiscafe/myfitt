@@ -18,6 +18,7 @@ import br.com.myfitt.ui.components.DefaultCard
 import br.com.myfitt.ui.components.DropdownTextField
 import br.com.myfitt.ui.components.InsertionTopBar
 import br.com.myfitt.ui.components.SuggestionDropdown
+import br.com.myfitt.ui.utils.toNullableSpinnerList
 import br.com.myfitt.ui.utils.toUserFriendlyName
 import br.com.myfitt.ui.viewModels.ExerciciosFichaViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -31,6 +32,7 @@ fun ListaExerciciosFichaScreen(
     })
 ) {
     val ficha by viewModel.exerciciosFicha.collectAsState(emptyList())
+    val tiposExercicio by viewModel.tiposExercicio.collectAsState()
     val exercicioDigitado = remember { mutableStateOf("") }
     val showDialog = remember { mutableStateOf<Exercicio?>(null) }
     if (showDialog.value != null) {
@@ -62,8 +64,7 @@ fun ListaExerciciosFichaScreen(
                         viewModel.moveExercisePositionDown(exercicio)
                     }) {
                         Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = ""
+                            imageVector = Icons.Default.KeyboardArrowDown, contentDescription = ""
                         )
                     }
                     IconButton(onClick = {
@@ -78,6 +79,10 @@ fun ListaExerciciosFichaScreen(
                             imageVector = Icons.Default.Delete, contentDescription = ""
                         )
                     }
+                    DropdownTextField(
+                        tiposExercicio.toNullableSpinnerList(),
+                        { it?.nome ?: "NENHUM" },
+                        { viewModel.setTipoExercicio(exercicio, it) }, "TIPO")
                 })
             }
         }

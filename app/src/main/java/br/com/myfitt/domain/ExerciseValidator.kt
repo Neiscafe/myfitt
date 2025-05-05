@@ -31,7 +31,7 @@ class ExerciseValidator(val exercise: Exercicio) {
 
     fun canBeUpdated(): Exercicio {
         return exercise.apply {
-            require(id > 0) { "Id = $id, deve ser maior que zero para vinculação." }
+            require(id > 0) { "Id = $id, deve ser maior que zero para atualização." }
         }
     }
 }

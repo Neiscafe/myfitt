@@ -36,6 +36,7 @@ class ExercicioRepository(private val dao: ExercicioDao) {
         }
 
     suspend fun updateExercicio(exercicio: Exercicio) = withContext(Dispatchers.IO) {
+        ExerciseValidator(exercicio).canBeUpdated()
         dao.update(
             exercicio.toEntity()
         )
@@ -46,4 +47,6 @@ class ExercicioRepository(private val dao: ExercicioDao) {
             exercicio.id
         )
     }
+
+    fun getTiposFlow() = dao.getExercicioTiposFlow().map { it.map { it.toDomain() } }
 }

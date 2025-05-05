@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import br.com.myfitt.data.repository.ExercicioRepository
 import br.com.myfitt.data.repository.FichaRepository
 import br.com.myfitt.domain.models.Exercicio
+import br.com.myfitt.domain.models.TipoExercicio
 import br.com.myfitt.ui.utils.io
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,6 +20,8 @@ class ExerciciosFichaViewModel(
     val exerciciosFicha = fichaRepository.getFichaExerciciosFlow(fichaId).stateIn(
         viewModelScope, SharingStarted.Eagerly, emptyList()
     )
+    val tiposExercicio = exercicioRepository.getTiposFlow()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     fun getExerciciosSugestao(query: String) = exercicioRepository.getSugeridosExercicios(query)
     fun insertExercicioFicha(exercicioId: Int) = io {
@@ -47,5 +50,11 @@ class ExerciciosFichaViewModel(
 
     fun removeExercise(exercicio: Exercicio) = io {
         fichaRepository.removeExercise(exercicio)
+    }
+
+    fun setTipoExercicio(exercicio: Exercicio, tipoExercicio: TipoExercicio?) {
+        io {
+            exercicioRepository.updateExercicio(exercicio.copy(tipo = tipoExercicio))
+        }
     }
 }
