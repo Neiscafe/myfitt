@@ -39,6 +39,7 @@ fun <T> SuggestionDropdown(
     textState: MutableState<String>,
     getSuggestions: (String) -> Flow<List<T>>,
     onSuggestionClicked: (T) -> Unit,
+    getText: (T)->String,
     trailingIcon: ImageVector? = null,
     onIconClick: (T) -> Unit = {},
     modifier: Modifier = Modifier
@@ -87,7 +88,7 @@ fun <T> SuggestionDropdown(
                             Modifier.clickable { onIconClick(it) })
                     }
                 }, text = {
-                    Text(text = it.toString())
+                    Text(text = getText(it))
                 })
             }
         }

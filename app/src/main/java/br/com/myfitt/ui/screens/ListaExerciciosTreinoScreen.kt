@@ -20,8 +20,11 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import br.com.myfitt.domain.models.Exercicio
+import br.com.myfitt.domain.models.Ficha
+import br.com.myfitt.ui.components.DropdownTextField
 import br.com.myfitt.ui.components.ExercicioItem
 import br.com.myfitt.ui.components.SuggestionDropdown
+import br.com.myfitt.ui.utils.toNullableSpinnerList
 import br.com.myfitt.ui.viewModels.ExerciciosTreinoViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -30,15 +33,25 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun ListaExerciciosTreinoScreen(
     treinoId: Int,
-    exerciciosTreinoViewModel: ExerciciosTreinoViewModel = koinViewModel(parameters = {
+    viewModel: ExerciciosTreinoViewModel = koinViewModel(parameters = {
         parametersOf(treinoId)
     })
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
-    val exerciciosDoTreino by exerciciosTreinoViewModel.exerciciosByTreino.collectAsState()
+    val exerciciosDoTreino by viewModel.exerciciosByTreino.collectAsState()
+    val fichas = viewModel.fichas.collectAsState()
+    var selectedFicha by remember { mutableStateOf<Ficha?>(null) }
     val exercicioDigitado = remember { mutableStateOf("") }
     var showDialog = remember { mutableStateOf<Exercicio?>(null) }
+
+    @Composable
+    fun ApplyFichaButton(mostrar: Boolean, confirma: () -> Unit) {
+        if(selectedFicha!=null) {
+            TextButton(onClick = { confirma() }) { Text("APLICAR") }
+        }
+    }
+
     if (showDialog.value != null) {
         AlertDialog( // 3
             onDismissRequest = { // 4
@@ -54,7 +67,7 @@ fun ListaExerciciosTreinoScreen(
             },
             confirmButton = { // 6
                 Button(onClick = {
-                    exerciciosTreinoViewModel.deleteExercicio(showDialog.value!!)
+                    viewModel.deleteExercicio(showDialog.value!!)
                     showDialog.value = null
                 }) {
                     Text(
@@ -95,16 +108,17 @@ fun ListaExerciciosTreinoScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             SuggestionDropdown(
-                exercicioDigitado,
-                { exerciciosTreinoViewModel.getSugestoes(it) },
+                textState = exercicioDigitado,
+                getSuggestions = { viewModel.getSugestoes(it) },
                 onSuggestionClicked = {
-                    exerciciosTreinoViewModel.insertExercicio(it)
+                    viewModel.insertExercicio(it)
                 },
                 trailingIcon = Icons.Outlined.Delete,
-                onIconClick = { exerciciosTreinoViewModel.deleteExercicio(it) },
+                onIconClick = { viewModel.deleteExercicio(it) },
                 modifier = Modifier.width(
                     IntrinsicSize.Min
-                )
+                ),
+                getText = { it.nome }
             )
             Button(modifier = Modifier
                 .fillMaxHeight()
@@ -112,14 +126,27 @@ fun ListaExerciciosTreinoScreen(
                     color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
                 ), onClick = {
                 if (exercicioDigitado.value.isNotEmpty()) {
-                    exerciciosTreinoViewModel.insertExercicio(exercicioDigitado.value)
+                    viewModel.insertExercicio(exercicioDigitado.value)
                     exercicioDigitado.value = ""
                 }
             }) {
                 Icon(Icons.Default.Add, "Adicionar")
             }
         }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            DropdownTextField(
+                fichas.value.toNullableSpinnerList(),
+                { it?.nome ?: "NENHUMA" },
+                {
+                    selectedFicha = it
+                },
+                "FICHA"
+            )
+            ApplyFichaButton(selectedFicha != null) {
+                viewModel.applyFicha(selectedFicha!!)
 
+            }
+        }
         LazyColumn(
             modifier = Modifier.fillMaxHeight(),
             contentPadding = PaddingValues(0.dp, 8.dp, 0.dp, 0.dp),
@@ -129,11 +156,11 @@ fun ListaExerciciosTreinoScreen(
                 val exercicio = exerciciosDoTreino[i]
                 Card {
                     ExercicioItem(exercicio,
-                        onDelete = { exerciciosTreinoViewModel.deleteExercicioDoTreino(exercicio) },
-                        onMoveUp = { exerciciosTreinoViewModel.moveExerciseUpByOne(exercicio) },
-                        onMoveDown = { exerciciosTreinoViewModel.moveExerciseDownByOne(exercicio) },
+                        onDelete = { viewModel.deleteExercicioDoTreino(exercicio) },
+                        onMoveUp = { viewModel.moveExerciseUpByOne(exercicio) },
+                        onMoveDown = { viewModel.moveExerciseDownByOne(exercicio) },
                         onUpdate = { it, mudou ->
-                            exerciciosTreinoViewModel.updateTreinoExercicio(
+                            viewModel.updateTreinoExercicio(
                                 it, mudou
                             )
                         })

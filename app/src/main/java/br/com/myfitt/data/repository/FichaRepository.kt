@@ -21,6 +21,11 @@ class FichaRepository(
     private val fichaExercicioDao: FichaExercicioDao,
 ) {
     private val fichasCache: MutableList<Ficha> = mutableListOf()
+    fun getTodasFichasFlow() = fichaDao.getTodasFichasFlow().map {
+        it.map {
+            it.toDomain()
+        }
+    }
 
     suspend fun getFichasByDivisaoId(divisaoId: Int) = withContext(Dispatchers.IO) {
         fichaDao.getFichasByDivisao(divisaoId).map {
@@ -42,6 +47,12 @@ class FichaRepository(
             flow.map { it.toDomain() }.also { exercicios ->
                 updateCache(getCachedFicha(fichaId).copy(exercicios = exercicios))
             }
+        }
+    }
+
+    suspend fun getFichaExercicios(fichaId: Int): List<Exercicio> {
+        return fichaExercicioDao.getFichaExerciciosById(fichaId).map {
+            it.toDomain()
         }
     }
 

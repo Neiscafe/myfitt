@@ -30,25 +30,22 @@ fun <T> DropdownTextField(
     hint: String,
     acceptsNull: Boolean = true,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier.width(IntrinsicSize.Min)
+    modifier: Modifier = Modifier
+        .width(IntrinsicSize.Min)
         .height(IntrinsicSize.Min)
 ) {
     val _expanded = remember { mutableStateOf(false) }
     val _selected = remember { mutableStateOf(items.firstOrNull()) }
-    LaunchedEffect(_selected) {
-        onSelectedChanged(_selected.value)
-    }
     Column(
         modifier = modifier
     ) {
-        ExposedDropdownMenuBox(
-            expanded = _expanded.value && enabled,
+        ExposedDropdownMenuBox(expanded = _expanded.value && enabled,
             onExpandedChange = { _expanded.value = !_expanded.value }) {
             OutlinedTextField(
                 readOnly = true,
                 enabled = enabled,
                 label = { Text(hint, Modifier.background(Color.Transparent)) },
-                value = getValue(_selected.value?:items.firstOrNull()),
+                value = getValue(_selected.value ?: items.firstOrNull()),
                 modifier = Modifier
                     .fillMaxWidth()
                     .menuAnchor(MenuAnchorType.PrimaryNotEditable),
@@ -60,20 +57,16 @@ fun <T> DropdownTextField(
             )
             ExposedDropdownMenu(expanded = _expanded.value && enabled,
                 onDismissRequest = { _expanded.value = false }) {
-                if(items.isEmpty()){
+                if (items.isEmpty()) {
                     DropdownMenuItem(onClick = {
-                        if (_selected.value != null) {
-                            _selected.value = null
-                        }
                         _expanded.value = false
+                        onSelectedChanged(null)
                     }, text = { Text(getValue(null)) })
                 }
                 items.forEach {
                     DropdownMenuItem(onClick = {
-                        if (_selected.value != it) {
-                            _selected.value = it
-                        }
                         _expanded.value = false
+                        onSelectedChanged(it)
                     }, text = { Text(getValue(it)) })
                 }
             }

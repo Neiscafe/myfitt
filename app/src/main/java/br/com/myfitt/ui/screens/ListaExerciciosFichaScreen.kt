@@ -15,9 +15,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import br.com.myfitt.domain.models.Exercicio
 import br.com.myfitt.ui.components.DefaultCard
+import br.com.myfitt.ui.components.DropdownTextField
 import br.com.myfitt.ui.components.InsertionTopBar
 import br.com.myfitt.ui.components.SuggestionDropdown
 import br.com.myfitt.ui.viewModels.ExerciciosFichaViewModel
+import kotlinx.coroutines.flow.map
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -31,7 +33,6 @@ fun ListaExerciciosFichaScreen(
     val ficha by viewModel.exerciciosFicha.collectAsState(emptyList())
     val exercicioDigitado = remember { mutableStateOf("") }
     val showDialog = remember { mutableStateOf<Exercicio?>(null) }
-
     if (showDialog.value != null) {
         Dialog(showDialog)
     }
@@ -47,7 +48,8 @@ fun ListaExerciciosFichaScreen(
                     onSuggestionClicked = {
                         viewModel.insertExercicioFicha(it.id)
                     },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    getText = {it.nome}
                 )
             })
         LazyColumn(

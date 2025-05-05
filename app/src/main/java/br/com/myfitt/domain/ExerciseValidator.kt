@@ -21,6 +21,14 @@ class ExerciseValidator(val exercise: Exercicio) {
         }
     }
 
+    fun canBeVinculatedToTreino(): Exercicio {
+        return exercise.apply {
+            require(id > 0) { "Id de $exercise deve ser maior que zero para vinculação." }
+            require(habilitado) { "habilitado de $exercise deve ser true para vinculação" }
+            require(dataDesabilitado == null) { "dataDesabilitado de $exercise deve ser null para vinculação" }
+        }
+    }
+
     fun canBeUpdated(): Exercicio {
         return exercise.apply {
             require(id > 0) { "Id = $id, deve ser maior que zero para vinculação." }

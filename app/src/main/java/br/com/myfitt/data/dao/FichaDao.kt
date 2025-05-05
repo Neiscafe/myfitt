@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FichaDao {
+    @Query("""SELECT * FROM ficha""")
+    fun getTodasFichasFlow(): Flow<List<FichaEntity>>
+
     @Query("""SELECT * FROM ficha WHERE divisaoId = :divisaoId""")
     suspend fun getFichasByDivisao(divisaoId: Int): List<FichaEntity>
     @Query("""SELECT * FROM ficha WHERE divisaoId = :divisaoId""")

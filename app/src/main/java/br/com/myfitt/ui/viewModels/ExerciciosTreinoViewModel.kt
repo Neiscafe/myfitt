@@ -1,18 +1,16 @@
 package br.com.myfitt.ui.viewModels
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.myfitt.data.repository.ExercicioRepository
+import br.com.myfitt.data.repository.FichaRepository
 import br.com.myfitt.data.repository.TreinoExercicioRepository
 import br.com.myfitt.domain.models.Exercicio
 import br.com.myfitt.domain.models.ExercicioMudou
+import br.com.myfitt.domain.models.Ficha
 import br.com.myfitt.domain.models.TreinoExercicioComNome
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -20,13 +18,14 @@ class ExerciciosTreinoViewModel(
     private val treinoId: Int,
     private val treinoExercicioRepository: TreinoExercicioRepository,
     private val exercicioRepository: ExercicioRepository,
+    private val fichaRepository: FichaRepository
 ) : ViewModel() {
     val exerciciosByTreino = treinoExercicioRepository.getExerciciosDeUmTreino(treinoId).stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
         initialValue = emptyList()
     )
-
+    val fichas = fichaRepository.getTodasFichasFlow().stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     fun insertExercicio(nomeExercicio: String) {
         viewModelScope.launch {
             treinoExercicioRepository.addExercicioAoTreino(
@@ -76,4 +75,9 @@ class ExerciciosTreinoViewModel(
         viewModelScope.launch {
             treinoExercicioRepository.aumentarPosicao(exercicio)
         }
+
+    fun applyFicha(selectedFicha: Ficha) = viewModelScope.launch(){
+        val exerciciosFicha = fichaRepository.getFichaExercicios(selectedFicha.id)
+        treinoExercicioRepository.addFromFicha(exerciciosFicha, treinoId)
+    }
 }

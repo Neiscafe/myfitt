@@ -5,6 +5,7 @@ import br.com.myfitt.data.dto.PerformanceDto
 import br.com.myfitt.data.entity.TreinoExercicioEntity
 import br.com.myfitt.data.mapper.toDomain
 import br.com.myfitt.data.mapper.toEntity
+import br.com.myfitt.domain.ExerciseValidator
 import br.com.myfitt.domain.models.Exercicio
 import br.com.myfitt.domain.models.ExercicioMudou
 import br.com.myfitt.domain.models.ExercicioMudou.*
@@ -94,5 +95,12 @@ class TreinoExercicioRepository(
         if (exercicio.posicao >= exercicios.size - 1) return@withContext
         val idDiminuir = exercicios.first { it.posicao == exercicio.posicao + 1 }.exercicioId
         dao.switchPositions(exercicio.treinoId, exercicio.exercicioId, idDiminuir)
+    }
+
+    suspend fun addFromFicha(exercicios: List<Exercicio>, treinoId: Int) {
+        exercicios.forEach {
+            ExerciseValidator(it).canBeVinculatedToTreino()
+            addExercicioAoTreino(treinoId, it)
+        }
     }
 }

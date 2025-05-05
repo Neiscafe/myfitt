@@ -42,4 +42,14 @@ interface FichaExercicioDao {
 
     @Insert
     suspend fun insert(fichaExercicio: FichaExercicioEntity)
+    @Transaction
+    @Query("""
+        SELECT e.nome, e.id, e.habilitado, e.dataDesabilitado, e.exercicioTipoId, et.id, et.nome,fe.position, fe.fichaId
+        FROM ficha_exercicio fe 
+        INNER JOIN exercicios e ON fe.exercicioId = e.id
+        LEFT JOIN exercicio_tipo et ON e.exercicioTipoId = et.id
+        WHERE fe.fichaId = :fichaId
+        ORDER BY fe.position
+    """)
+    suspend fun getFichaExerciciosById(fichaId: Int): List<ExercicioComTipoDto2>
 }
