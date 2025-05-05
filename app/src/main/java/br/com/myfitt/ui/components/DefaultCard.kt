@@ -17,15 +17,6 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun <T> DefaultCard(item: T, components:  @Composable RowScope.()->Unit = {}, modifier: Modifier = Modifier) {
     Card {
-//        ExercicioItem(exercicio,
-//            onDelete = { viewModel.deleteExercicioDoTreino(exercicio) },
-//            onMoveUp = { viewModel.moveExerciseUpByOne(exercicio) },
-//            onMoveDown = { viewModel.moveExerciseDownByOne(exercicio) },
-//            onUpdate = { it, mudou ->
-//                viewModel.updateTreinoExercicio(
-//                    it, mudou
-//                )
-//            })
         Row(
             modifier = Modifier
                 .fillMaxWidth()

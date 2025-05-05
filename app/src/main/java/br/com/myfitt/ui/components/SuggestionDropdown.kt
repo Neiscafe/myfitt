@@ -70,8 +70,7 @@ fun <T> SuggestionDropdown(
                 exercicioDigitado = it
             },
             modifier = Modifier
-                .menuAnchor(MenuAnchorType.PrimaryEditable)
-                .fillMaxWidth(),
+                .menuAnchor(MenuAnchorType.PrimaryEditable).fillMaxWidth(),
             trailingIcon = { TrailingIcon(expanded = dropDownExpanded) },
             singleLine = true
         )
@@ -81,7 +80,7 @@ fun <T> SuggestionDropdown(
                 DropdownMenuItem(onClick = {
                     performActionAndResetField(it)
                 }, trailingIcon = {
-                    trailingIcon?.let { icon->
+                    trailingIcon?.let { icon ->
                         Icon(
                             icon,
                             "",

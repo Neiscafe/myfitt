@@ -18,6 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import br.com.myfitt.domain.models.Exercicio
 import br.com.myfitt.ui.components.DefaultCard
+import br.com.myfitt.ui.components.DefaultCardList
+import br.com.myfitt.ui.components.InsertionTopBar
 import br.com.myfitt.ui.components.SuggestionDropdown
 import br.com.myfitt.ui.viewModels.ExerciciosFichaViewModel
 import kotlinx.coroutines.flow.map
@@ -34,37 +36,34 @@ fun ListaExerciciosFichaScreen(
     val ficha by viewModel.ficha.collectAsState(emptyList())
     val exercicioDigitado = remember { mutableStateOf("") }
     val showDialog = remember { mutableStateOf<Exercicio?>(null) }
+
+    fun createExerciseAction(
+        exercicioDigitado: String
+    ) {
+        if (exercicioDigitado.isNotEmpty()) {
+            val novoExercicio = Exercicio(
+                nome = exercicioDigitado,
+                tipo = null,
+            )
+            viewModel.insertExercicio(novoExercicio)
+        }
+    }
+
     if (showDialog.value != null) {
         Dialog(showDialog)
     }
     Column(
         modifier = Modifier.padding(10.dp, 30.dp, 10.dp, 0.dp)
     ) {
-        Row {
-            Text("Exercícios do Treino", style = MaterialTheme.typography.titleLarge)
-        }
-        Spacer(Modifier.height(16.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            SuggestionDropdown<Exercicio>(textState = exercicioDigitado,
-                getSuggestions = { viewModel.getExerciciosSugestao(it) },
-                onSuggestionClicked = { viewModel.insertExercicioFicha(it.id) })
-            Button(modifier = Modifier
-                .fillMaxHeight()
-                .background(
-                    color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
-                ), onClick = {
-                createExerciseAction(exercicioDigitado, viewModel)
-            }) {
-                Icon(Icons.Default.Add, "Adicionar")
-            }
-        }
-
+        InsertionTopBar(
+            title = "Exercício Ficha",
+            onAddClicked = { createExerciseAction(it) },
+            InsertionField = {
+                SuggestionDropdown<Exercicio>(textState = exercicioDigitado,
+                    getSuggestions = { viewModel.getExerciciosSugestao(it) },
+                    onSuggestionClicked = { viewModel.insertExercicioFicha(it.id) }, modifier = Modifier.weight(1f)
+                )
+            })
         LazyColumn(
             modifier = Modifier.fillMaxHeight(),
             contentPadding = PaddingValues(0.dp, 8.dp, 0.dp, 0.dp),
@@ -98,18 +97,6 @@ fun ListaExerciciosFichaScreen(
     }
 }
 
-fun createExerciseAction(
-    exercicioDigitado: MutableState<String>, viewModel: ExerciciosFichaViewModel
-) {
-    if (exercicioDigitado.value.isNotEmpty()) {
-        val novoExercicio = Exercicio(
-            nome = exercicioDigitado.value,
-            tipo = null,
-        )
-        viewModel.insertExercicio(novoExercicio)
-        exercicioDigitado.value = ""
-    }
-}
 
 @Composable
 private fun Dialog(showDialogState: MutableState<Exercicio?>) {

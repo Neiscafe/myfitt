@@ -28,7 +28,9 @@ import androidx.compose.ui.unit.dp
 import br.com.myfitt.domain.models.Divisao
 import br.com.myfitt.domain.models.Ficha
 import br.com.myfitt.domain.utils.DateUtil
+import br.com.myfitt.ui.components.DefaultTextField
 import br.com.myfitt.ui.components.DropdownTextField
+import br.com.myfitt.ui.components.InsertionTopBar
 import br.com.myfitt.ui.components.TreinoSemanaItem
 import br.com.myfitt.ui.utils.TreinoByWeekMapper
 import br.com.myfitt.ui.utils.toNullableSpinnerList
@@ -59,15 +61,20 @@ fun ListaTreinosPlanilhaScreen(
         DatePickerDialog(isDateDialogShown) {
             dataSelecionada = it
         }
-        Text("Treinos da Planilha", style = MaterialTheme.typography.titleLarge)
-        Spacer(Modifier.height(16.dp))
-        InsertionTopBar(onAddClicked = {
+        InsertionTopBar(title = "Treinos da Planilha", onAddClicked = {
             viewModel.insertTreino(it, dataSelecionada)
-        },
-            textHint = "Crie seu treino...",
-            suffixText = DateUtil.format(dataSelecionada),
-            icon = Icons.Outlined.DateRange,
-            onIconClick = { isDateDialogShown.value = true })
+        }, InsertionField = {
+            DefaultTextField(
+                suffixText = DateUtil.format(dataSelecionada),
+                icon = Icons.Outlined.DateRange,
+                onIconClick = { isDateDialogShown.value = true },
+                textValue = it,
+                hint = "Crie seu treino...",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            )
+        })
         Column {
             Row {
                 DropdownTextField<Divisao>(divisoes.value.toNullableSpinnerList(),
@@ -122,72 +129,44 @@ fun ListaTreinosPlanilhaScreen(
     }
 }
 
-@Composable
-private fun InsertionTopBar(
-    onAddClicked: suspend (String) -> Unit,
-    textHint: String,
-    suffixText: String? = null,
-    icon: ImageVector? = null,
-    onIconClick: () -> Unit = {}
-) {
-    var nomeDoTreino = remember { mutableStateOf("") }
-    val scope = rememberCoroutineScope()
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        DefaultTextField(textValue = nomeDoTreino,
-            hint = textHint,
-            suffixText = suffixText,
-            modifier = Modifier
-                .width(IntrinsicSize.Max)
-                .weight(1f),
-            icon = icon,
-            onIconClick = { onIconClick() })
-        Button(modifier = Modifier
-            .height(56.dp)
-            .width(64.dp)
-            .background(
-                color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
-            ), onClick = {
-            scope.launch {
-                onAddClicked(nomeDoTreino.value)
-            }
-        }) {
-            Icon(Icons.Default.Add, "Criar")
-        }
-    }
-}
+//@Composable
+//private fun InsertionTopBar(
+//    onAddClicked: suspend (String) -> Unit,
+//    textHint: String,
+//    suffixText: String? = null,
+//    icon: ImageVector? = null,
+//    onIconClick: () -> Unit = {}
+//) {
+//    var nomeDoTreino = remember { mutableStateOf("") }
+//    val scope = rememberCoroutineScope()
+//    Row(
+//        modifier = Modifier.fillMaxWidth(),
+//        horizontalArrangement = Arrangement.spacedBy(8.dp),
+//        verticalAlignment = Alignment.CenterVertically
+//    ) {
+//        DefaultTextField(textValue = nomeDoTreino,
+//            hint = textHint,
+//            suffixText = suffixText,
+//            modifier = Modifier
+//                .width(IntrinsicSize.Max)
+//                .weight(1f),
+//            icon = icon,
+//            onIconClick = { onIconClick() })
+//        Button(modifier = Modifier
+//            .height(56.dp)
+//            .width(64.dp)
+//            .background(
+//                color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
+//            ), onClick = {
+//            scope.launch {
+//                onAddClicked(nomeDoTreino.value)
+//            }
+//        }) {
+//            Icon(Icons.Default.Add, "Criar")
+//        }
+//    }
+//}
 
-@Composable
-private fun DefaultTextField(
-    textValue: MutableState<String>,
-    hint: String,
-    suffixText: String? = null,
-    icon: ImageVector? = null,
-    onIconClick: (String) -> Unit = {},
-    modifier: Modifier = Modifier,
-) {
-    OutlinedTextField(
-        value = textValue.value,
-        onValueChange = {
-            textValue.value = it
-        },
-        suffix = suffixText?.let {
-            { Text(it) }
-        },
-        placeholder = {
-            Text(hint)
-        },
-        trailingIcon = icon?.let {
-            { Icon(it, "", Modifier.clickable { onIconClick(textValue.value) }) }
-        },
-        modifier = modifier,
-        textStyle = TextStyle(Color.LightGray),
-        singleLine = true,
-    )
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
