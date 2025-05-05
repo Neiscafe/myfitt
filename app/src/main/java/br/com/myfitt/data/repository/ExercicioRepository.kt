@@ -3,6 +3,7 @@ package br.com.myfitt.data.repository
 import br.com.myfitt.data.dao.ExercicioDao
 import br.com.myfitt.data.mapper.toDomain
 import br.com.myfitt.data.mapper.toEntity
+import br.com.myfitt.domain.ExerciseValidator
 import br.com.myfitt.domain.models.Exercicio
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -16,18 +17,23 @@ class ExercicioRepository(private val dao: ExercicioDao) {
         dao.getExercicio(id)?.toDomain()
     }
 
-    suspend fun insertExercicio(exercicio: Exercicio): Int = withContext(
+    suspend fun insertExercicio(exercicio: Exercicio): Exercicio = withContext(
         Dispatchers.IO
     ) {
+        ExerciseValidator(exercicio).canBeCreated()
         val insertedId = dao.insert(exercicio.toEntity())
         if (insertedId == -1L) {
-            return@withContext dao.getExercicio(exercicio.nome)!!.id
+            return@withContext dao.getExercicio(exercicio.nome)!!.toDomain()
         }
-        insertedId.toInt()
+        exercicio.copy(id = insertedId.toInt())
     }
 
     fun getSugeridosExercicios(query: String): Flow<List<Exercicio>> =
-        dao.getSugeridosExercicios(query).map { it.map { it.toDomain() } }
+        dao.getSugeridosExercicios(query).map {
+            it.map {
+                it.toDomain()
+            }
+        }
 
     suspend fun updateExercicio(exercicio: Exercicio) = withContext(Dispatchers.IO) {
         dao.update(

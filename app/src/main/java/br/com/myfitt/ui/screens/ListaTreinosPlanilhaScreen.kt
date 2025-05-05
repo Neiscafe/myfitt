@@ -51,6 +51,7 @@ fun ListaTreinosPlanilhaScreen(
     val treinos by viewModel.getTreinosByPlanilha().collectAsState(initial = emptyList())
     val divisoes = viewModel.divisoes.collectAsState()
     val fichas = viewModel.fichas.collectAsState()
+    val exercicioEscrito = remember { mutableStateOf("") }
     var selectedFicha by remember { mutableStateOf<Ficha?>(null) }
     var selectedDivisao by remember { mutableStateOf<Divisao?>(null) }
     var dataSelecionada by remember { mutableStateOf(DateUtil.now) }
@@ -62,13 +63,13 @@ fun ListaTreinosPlanilhaScreen(
             dataSelecionada = it
         }
         InsertionTopBar(title = "Treinos da Planilha", onAddClicked = {
-            viewModel.insertTreino(it, dataSelecionada)
+            viewModel.insertTreino(exercicioEscrito.value, dataSelecionada)
         }, InsertionField = {
             DefaultTextField(
                 suffixText = DateUtil.format(dataSelecionada),
                 icon = Icons.Outlined.DateRange,
                 onIconClick = { isDateDialogShown.value = true },
-                textValue = it,
+                textValue = exercicioEscrito,
                 hint = "Crie seu treino...",
                 modifier = Modifier
                     .fillMaxWidth()

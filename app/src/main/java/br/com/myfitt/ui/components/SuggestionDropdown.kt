@@ -45,16 +45,16 @@ fun <T> SuggestionDropdown(
 ) {
     var suggestions = getSuggestions("").collectAsState(emptyList())
     var dropDownExpanded by remember { mutableStateOf(suggestions.value.isNotEmpty()) }
-    var exercicioDigitado by remember { textState }
+    val exercicioDigitado = textState
     val scope = rememberCoroutineScope()
     fun performActionAndResetField(clickedItem: T) {
         onSuggestionClicked(clickedItem)
-        exercicioDigitado = ""
+        exercicioDigitado.value = ""
     }
     DisposableEffect(exercicioDigitado) {
         val getSuggestionsJob = scope.launch {
             delay(INTERVALO_DEBOUNCE)
-            getSuggestions(exercicioDigitado)
+            getSuggestions(exercicioDigitado.value)
         }
         onDispose { getSuggestionsJob.cancel() }
     }
@@ -62,12 +62,12 @@ fun <T> SuggestionDropdown(
         expanded = dropDownExpanded,
         onExpandedChange = { dropDownExpanded = !dropDownExpanded }) {
         OutlinedTextField(
-            value = exercicioDigitado,
+            value = exercicioDigitado.value,
             keyboardOptions = KeyboardOptions(
                 autoCorrectEnabled = false, imeAction = ImeAction.Search
             ),
             onValueChange = {
-                exercicioDigitado = it
+                exercicioDigitado.value = it
             },
             modifier = Modifier
                 .menuAnchor(MenuAnchorType.PrimaryEditable).fillMaxWidth(),

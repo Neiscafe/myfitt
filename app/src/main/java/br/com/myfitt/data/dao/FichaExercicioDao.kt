@@ -3,31 +3,27 @@ package br.com.myfitt.data.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import br.com.myfitt.data.entity.FichaExercicioDto
+import androidx.room.Transaction
+import br.com.myfitt.data.dto.ExercicioComTipoDto2
 import br.com.myfitt.data.entity.FichaExercicioEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FichaExercicioDao {
+    @Transaction
     @Query("""
-        SELECT  
-            fe.*, f.nome as fichaNome, f.divisaoId, e.nome as exercicioNome, et.id as exercicioTipoId, et.nome as exercicioTipoNome
-        FROM 
-            ficha_exercicio fe 
-        JOIN 
-            ficha f ON f.id = fe.fichaId 
-        JOIN 
-            exercicios e ON e.id = fe.exercicioId 
-        JOIN 
-            exercicio_tipo et ON et.id = e.exercicioTipoId 
-        WHERE 
-            fe.fichaId = :id 
-            AND e.habilitado = TRUE 
+        SELECT e.nome, e.id, e.habilitado, e.dataDesabilitado, e.exercicioTipoId, et.id, et.nome,fe.position, fe.fichaId
+        FROM ficha_exercicio fe 
+        INNER JOIN exercicios e ON fe.exercicioId = e.id
+        LEFT JOIN exercicio_tipo et ON e.exercicioTipoId = et.id
+        WHERE fe.fichaId = :id
+        ORDER BY fe.position
     """)
-    fun getFichaExercicioByIdFlow(id: Int): Flow<List<FichaExercicioDto>>
+    fun getFichaExerciciosByIdFlow(id: Int): Flow<List<ExercicioComTipoDto2>>
 
     @Query(
         """
+
             UPDATE  
                 ficha_exercicio
             SET 

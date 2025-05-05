@@ -24,9 +24,9 @@ class TreinoExercicioRepository(
     suspend fun addExercicioAoTreino(treinoId: Int, exercicio: Exercicio) = withContext(
         Dispatchers.IO
     ) {
-        val _exercicio = exercicio
+        var _exercicio = exercicio
         if (_exercicio.id == 0) {
-            _exercicio.copy(id = exercicioRepository.insertExercicio(exercicio))
+            _exercicio = exercicioRepository.insertExercicio(exercicio)
         }
         dao.insert(
             TreinoExercicioEntity(

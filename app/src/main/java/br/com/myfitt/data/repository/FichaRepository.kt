@@ -5,9 +5,11 @@ import br.com.myfitt.data.dao.FichaExercicioDao
 import br.com.myfitt.data.entity.FichaExercicioEntity
 import br.com.myfitt.data.mapper.toDomain
 import br.com.myfitt.data.mapper.toEntity
+import br.com.myfitt.domain.ExerciseValidator
 import br.com.myfitt.domain.models.Exercicio
 import br.com.myfitt.domain.models.Ficha
-import br.com.myfitt.domain.models.TipoExercicio
+import br.com.myfitt.domain.validate.FichaValidator
+import br.com.myfitt.domain.validate.PosicaoValidator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -15,43 +17,31 @@ import kotlinx.coroutines.withContext
 import kotlin.collections.first
 
 class FichaRepository(
-    private val fichaDao: FichaDao, private val fichaExercicioDao: FichaExercicioDao
+    private val fichaDao: FichaDao,
+    private val fichaExercicioDao: FichaExercicioDao,
 ) {
-    private lateinit var selectedFichaCache: Ficha
+    private val fichasCache: MutableList<Ficha> = mutableListOf()
+
     suspend fun getFichasByDivisaoId(divisaoId: Int) = withContext(Dispatchers.IO) {
-        fichaDao.getFichasByDivisao(divisaoId).map { it.toDomain() }
+        fichaDao.getFichasByDivisao(divisaoId).map {
+            it.toDomain()
+        }.addAllToCache()
     }
 
     fun getFichasByDivisaoIdFlow(divisaoId: Int) =
-        fichaDao.getFichasByDivisaoFlow(divisaoId).map { it.map { it.toDomain() } }
+        fichaDao.getFichasByDivisaoFlow(divisaoId).map { it.map { it.toDomain() }.addAllToCache() }
 
 
     suspend fun insert(ficha: Ficha): Int = withContext(Dispatchers.IO) {
+        FichaValidator.canBeInserted(ficha)
         fichaDao.insert(ficha.toEntity()).toInt()
     }
 
     fun getFichaExerciciosFlow(fichaId: Int): Flow<List<Exercicio>> {
-        return fichaExercicioDao.getFichaExercicioByIdFlow(fichaId).map {
-            val first = it.firstOrNull()
-            if (first == null) {
-                return@map emptyList()
+        return fichaExercicioDao.getFichaExerciciosByIdFlow(fichaId).map { flow ->
+            flow.map { it.toDomain() }.also { exercicios ->
+                updateCache(getCachedFicha(fichaId).copy(exercicios = exercicios))
             }
-            val ficha = Ficha(first.fichaId, divisaoId = first.divisaoId, first.fichaNome)
-            val exercicios = mutableListOf<Exercicio>()
-            it.forEach {
-                exercicios.add(
-                    Exercicio(
-                        it.exercicioNome,
-                        it.exercicioId,
-                        tipo = TipoExercicio(it.exercicioTipoId, it.exercicioTipoNome),
-                        habilitado = true,
-                        dataDesabilitado = null,
-                        posicao = it.position
-                    )
-                )
-            }
-            ficha.copy(exercicios = exercicios).also { selectedFichaCache = ficha }
-            exercicios
         }
     }
 
@@ -60,28 +50,45 @@ class FichaRepository(
     }
 
     suspend fun increasePosition(exercise: Exercicio) {
-        if (exercise.posicao == selectedFichaCache.exercicios.size - 1) return
+        if (!PosicaoValidator.podeAumentar(exercise, fichasCache)) return
+        val useFicha = this.getCachedFicha(exercise.fichaId)
         fichaExercicioDao.switchPositions(
-            selectedFichaCache.id,
+            useFicha.id,
             exercise.id,
-            selectedFichaCache.exercicios.first { it.posicao == exercise.posicao + 1 }.id,
+            useFicha.exercicios.first { it.posicao == exercise.posicao + 1 }.id,
         )
     }
 
     suspend fun decreasePosition(exercise: Exercicio) {
-        if (exercise.posicao == 0) return
+        if (!PosicaoValidator.podeDiminuir(exercise)) return
+        val useFicha = getCachedFicha(exercise.fichaId)
         fichaExercicioDao.switchPositions(
-            selectedFichaCache.id,
-            selectedFichaCache.exercicios.first { it.posicao == exercise.posicao - 1 }.id,
+            useFicha.id,
+            useFicha.exercicios.first { it.posicao == exercise.posicao - 1 }.id,
             exercise.id,
         )
     }
 
-    suspend fun addExercise(exercise: Exercicio, ficha: Ficha = selectedFichaCache) {
+    suspend fun addExerciseToFicha(exercise: Exercicio, fichaId: Int) {
+        ExerciseValidator(exercise).canBeVinculatedToFicha()
         fichaExercicioDao.insert(
             FichaExercicioEntity(
-                ficha.id, exercise.id, exercise.posicao
+                fichaId, exercise.id, fichasCache.size
             )
         )
     }
+
+    private fun List<Ficha>.addAllToCache(): List<Ficha> {
+        fichasCache.clear()
+        fichasCache.addAll(this)
+        return this
+    }
+
+    private fun updateCache(new: Ficha): List<Ficha> {
+        val index = fichasCache.indexOfFirst { it.id == new.id }
+        fichasCache[index] = new
+        return fichasCache
+    }
+
+    private fun getCachedFicha(fichaId: Int) = fichasCache.first { it.id == fichaId }
 }

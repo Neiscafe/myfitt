@@ -14,7 +14,7 @@ interface ExercicioDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(exercicio: ExercicioEntity): Long
 
-    @Query("""SELECT DISTINCT ex.id, ex.nome, ex.habilitado, ex.dataDesabilitado, et.id as exercicioTipoId, et.nome as  exercicioTipoNome FROM exercicios ex LEFT JOIN exercicio_tipo et ON et.id = ex.exercicioTipoId WHERE ex.nome LIKE '%' || :query || '%' AND ex.habilitado = true ORDER BY ex.nome ASC LIMIT 6""")
+    @Query("""SELECT DISTINCT ex.id, ex.nome, ex.habilitado, ex.dataDesabilitado, et.id as exercicioTipoId, et.nome as  exercicioTipoNome FROM exercicios ex LEFT JOIN exercicio_tipo et ON et.id = ex.exercicioTipoId WHERE ex.nome LIKE '%' || :query || '%' AND ex.habilitado = 1 ORDER BY ex.nome ASC LIMIT 6""")
     fun getSugeridosExercicios(query: String): Flow<List<ExercicioComTipoDto>>
 
     @Update
@@ -31,7 +31,7 @@ interface ExercicioDao {
     )
     suspend fun delete(exercicioId: Int)
 
-    @Query("""SELECT ex.id, ex.nome, ex.habilitado, ex.dataDesabilitado, et.id as exercicioTipoId, et.nome as exercicioTipoNome FROM exercicios  ex LEFT JOIN exercicio_tipo et ON et.id = ex.exercicioTipoId WHERE lower(trim(ex.nome)) = lower(trim(:nome)) AND ex.habilitado = true LIMIT 1""")
+    @Query("""SELECT ex.id, ex.nome, ex.habilitado, ex.dataDesabilitado, et.id as exercicioTipoId, et.nome as exercicioTipoNome FROM exercicios  ex LEFT JOIN exercicio_tipo et ON et.id = ex.exercicioTipoId WHERE lower(trim(ex.nome)) = lower(trim(:nome)) AND ex.habilitado = 1 LIMIT 1""")
     suspend fun getExercicioPorNome(nome: String): ExercicioComTipoDto?
 
     @Query(

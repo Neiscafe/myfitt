@@ -30,10 +30,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun InsertionTopBar(
     title: String,
-    onAddClicked: suspend (String) -> Unit,
-    InsertionField: @Composable RowScope.(textValue: MutableState<String>) -> Unit,
+    onAddClicked: suspend () -> Unit,
+    InsertionField: @Composable RowScope.() -> Unit,
 ) {
-    var nomeDoTreino = remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     Column {
         Text(title, style = MaterialTheme.typography.titleLarge)
@@ -43,9 +42,7 @@ fun InsertionTopBar(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            InsertionField(
-                nomeDoTreino,
-            )
+            InsertionField()
             Button(modifier = Modifier
                 .height(56.dp)
                 .width(64.dp)
@@ -53,7 +50,7 @@ fun InsertionTopBar(
                     color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
                 ), onClick = {
                 scope.launch {
-                    onAddClicked(nomeDoTreino.value)
+                    onAddClicked()
                 }
             }) {
                 Icon(Icons.Default.Add, "Criar")

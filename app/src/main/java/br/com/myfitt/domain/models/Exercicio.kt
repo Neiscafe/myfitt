@@ -6,9 +6,6 @@ data class Exercicio(
     val posicao: Int = 0,
     val tipo: TipoExercicio? = null,
     val habilitado: Boolean = true,
-    val dataDesabilitado: String? = null
-) {
-    override fun toString(): String {
-        return nome.lowercase().replaceFirstChar { it.uppercase() }
-    }
-}
+    val dataDesabilitado: String? = null,
+    val fichaId: Int = 0,
+)
