@@ -1,7 +1,7 @@
 package br.com.myfitt.domain.models
 
 data class Exercicio(
-    val nome: String,
+    val nome: String = "",
     val id: Int = 0,
     val posicao: Int = 0,
     val tipo: TipoExercicio? = null,
