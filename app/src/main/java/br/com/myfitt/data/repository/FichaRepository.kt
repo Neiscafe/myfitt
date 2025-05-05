@@ -2,6 +2,7 @@ package br.com.myfitt.data.repository
 
 import br.com.myfitt.data.dao.FichaDao
 import br.com.myfitt.data.dao.FichaExercicioDao
+import br.com.myfitt.data.entity.FichaExercicioEntity
 import br.com.myfitt.data.mapper.toDomain
 import br.com.myfitt.data.mapper.toEntity
 import br.com.myfitt.domain.models.Exercicio
@@ -77,6 +78,10 @@ class FichaRepository(
     }
 
     suspend fun addExercise(exercise: Exercicio) {
-
+        fichaExercicioDao.insert(
+            FichaExercicioEntity(
+                selectedFichaCache.id, exercise.id, exercise.posicao
+            )
+        )
     }
 }

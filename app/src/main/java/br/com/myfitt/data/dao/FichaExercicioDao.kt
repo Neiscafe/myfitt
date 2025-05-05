@@ -1,8 +1,10 @@
 package br.com.myfitt.data.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
 import androidx.room.Query
 import br.com.myfitt.data.entity.FichaExercicioDto
+import br.com.myfitt.data.entity.FichaExercicioEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -41,4 +43,7 @@ interface FichaExercicioDao {
         """
     )
     suspend fun switchPositions(fichaId: Int, increaseExercise: Int, decreaseExercise: Int)
+
+    @Insert
+    suspend fun insert(fichaExercicio: FichaExercicioEntity)
 }
