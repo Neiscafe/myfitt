@@ -29,9 +29,12 @@ class FichaRepository(
         fichaDao.insert(ficha.toEntity()).toInt()
     }
 
-    fun getFichaByIdFlow(fichaId: Int): Flow<Ficha> {
+    fun getFichaExerciciosFlow(fichaId: Int): Flow<List<Exercicio>> {
         return fichaExercicioDao.getFichaExercicioByIdFlow(fichaId).map {
-            val first = it.first()
+            val first = it.firstOrNull()
+            if (first == null) {
+                return@map emptyList()
+            }
             val ficha = Ficha(first.fichaId, divisaoId = first.divisaoId, first.fichaNome)
             val exercicios = mutableListOf<Exercicio>()
             it.forEach {
