@@ -7,7 +7,9 @@ import br.com.myfitt.data.repository.FichaRepository
 import br.com.myfitt.domain.models.Exercicio
 import br.com.myfitt.ui.utils.io
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class ExerciciosFichaViewModel(
@@ -15,11 +17,14 @@ class ExerciciosFichaViewModel(
     private val fichaRepository: FichaRepository,
     private val exercicioRepository: ExercicioRepository
 ) : ViewModel() {
-    val ficha = fichaRepository.getFichaByIdFlow(fichaId)
+    val ficha = fichaRepository.getFichaExerciciosFlow(fichaId).stateIn(
+        viewModelScope, SharingStarted.Eagerly, emptyList()
+    )
+
     fun getExerciciosSugestao(query: String) = exercicioRepository.getSugeridosExercicios(query)
     fun insertExercicioFicha(id: Int) {}
     fun insertExercicio(exercicio: Exercicio) = io {
-        fichaRepository.addExercise(ficha.last(), exercicio)
+        fichaRepository.addExercise(exercicio)
     }
 
     fun moveExercisePositionDown(exercicio: Exercicio) = viewModelScope.launch(Dispatchers.IO) {

@@ -31,7 +31,7 @@ fun ListaExerciciosFichaScreen(
         parametersOf(fichaId)
     })
 ) {
-    val ficha by viewModel.ficha.map { it.exercicios }.collectAsState(emptyList())
+    val ficha by viewModel.ficha.collectAsState(emptyList())
     val exercicioDigitado = remember { mutableStateOf("") }
     val showDialog = remember { mutableStateOf<Exercicio?>(null) }
     if (showDialog.value != null) {

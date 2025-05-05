@@ -23,14 +23,8 @@ fun ListaFichasScreen(
     Column {
         val fichas = viewModel.fichas.collectAsState(emptyList())
         val coroutineScope = rememberCoroutineScope()
-        DefaultTopView("Suas fichas", hint="Criar ficha", onComplete = {
-            coroutineScope.launch {
-                navigate(
-                    viewModel.insertFicha(
-                        Ficha(divisaoId = divisaoId, nome = it)
-                    )
-                )
-            }
+        DefaultTopView("Suas fichas", hint = "Criar ficha", onComplete = {
+            coroutineScope.launch { navigate(viewModel.insertFicha(nomeFicha = it)) }
         })
         DefaultCardList<Ficha>(items = fichas.value, onClick = {
             navigate(it.id)

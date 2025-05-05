@@ -27,17 +27,16 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import br.com.myfitt.domain.models.Divisao
 import br.com.myfitt.domain.models.Ficha
-import br.com.myfitt.domain.models.Treino
 import br.com.myfitt.domain.utils.DateUtil
 import br.com.myfitt.ui.components.DropdownTextField
 import br.com.myfitt.ui.components.TreinoSemanaItem
+import br.com.myfitt.ui.utils.TreinoByWeekMapper
+import br.com.myfitt.ui.utils.toNullableSpinnerList
 import br.com.myfitt.ui.viewModels.TreinosPlanilhaViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
-import java.time.DayOfWeek
+import org.koin.core.parameter.parametersOf
 import java.time.LocalDate
-import java.time.temporal.WeekFields
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,10 +44,11 @@ fun ListaTreinosPlanilhaScreen(
     planilhaId: Int,
     navigate: (Int) -> Unit,
     goToDivisoes: () -> Unit,
-    treinosPlanilhaViewModel: TreinosPlanilhaViewModel = koinViewModel(),
+    viewModel: TreinosPlanilhaViewModel = koinViewModel(parameters = { parametersOf(planilhaId) }),
 ) {
-    val treinos by treinosPlanilhaViewModel.getTreinosByPlanilha(planilhaId)
-        .collectAsState(initial = emptyList())
+    val treinos by viewModel.getTreinosByPlanilha().collectAsState(initial = emptyList())
+    val divisoes = viewModel.divisoes.collectAsState()
+    val fichas = viewModel.fichas.collectAsState()
     var selectedFicha by remember { mutableStateOf<Ficha?>(null) }
     var selectedDivisao by remember { mutableStateOf<Divisao?>(null) }
     var dataSelecionada by remember { mutableStateOf(DateUtil.now) }
@@ -62,12 +62,7 @@ fun ListaTreinosPlanilhaScreen(
         Text("Treinos da Planilha", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(16.dp))
         InsertionTopBar(onAddClicked = {
-            val novoTreino = Treino(
-                planilhaId = planilhaId,
-                nome = it,
-                data = DateUtil.toDbNotation(dataSelecionada)
-            )
-            treinosPlanilhaViewModel.insertTreino(novoTreino)
+            viewModel.insertTreino(it, dataSelecionada)
         },
             textHint = "Crie seu treino...",
             suffixText = DateUtil.format(dataSelecionada),
@@ -75,10 +70,12 @@ fun ListaTreinosPlanilhaScreen(
             onIconClick = { isDateDialogShown.value = true })
         Column {
             Row {
-                DropdownTextField<Divisao>(
-                    treinosPlanilhaViewModel.divisoes.collectAsState().value,
+                DropdownTextField<Divisao>(divisoes.value.toNullableSpinnerList(),
                     { it?.toString() ?: "Nenhuma" },
-                    { selectedDivisao = it },
+                    {
+                        selectedDivisao = it
+                        viewModel.setDivisaoSelected(it?.id)
+                    },
                     "Divisão",
                     modifier = Modifier
                         .fillMaxWidth(0.5f)
@@ -86,11 +83,12 @@ fun ListaTreinosPlanilhaScreen(
                             IntrinsicSize.Min
                         )
                 )
-                DropdownTextField<Ficha>(selectedDivisao?.let {
-                    treinosPlanilhaViewModel.fichas(it.id).collectAsState().value
-                } ?: listOf(null),
+                DropdownTextField<Ficha>(fichas.value.toNullableSpinnerList(),
                     { it?.toString() ?: "Nenhuma" },
-                    { selectedFicha = it },
+                    {
+                        selectedFicha = it
+                        viewModel.setFichaSelected(selectedFicha?.id)
+                    },
                     "Próxima ficha",
                     modifier = Modifier
                         .fillMaxWidth()
@@ -110,12 +108,7 @@ fun ListaTreinosPlanilhaScreen(
             contentPadding = PaddingValues(0.dp, 8.dp, 0.dp, 0.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
         ) {
-            val weekFields = WeekFields.of(Locale.getDefault())
-            val treinosSeparadosPorSemana = treinos.groupBy {
-                DateUtil.fromDbNotation(it.data).with(
-                    weekFields.dayOfWeek(), DayOfWeek.MONDAY.value.toLong()
-                )
-            }.toList()
+            val treinosSeparadosPorSemana = TreinoByWeekMapper(treinos).getList()
             items(treinosSeparadosPorSemana.size) { i ->
                 val data = DateUtil.format(treinosSeparadosPorSemana[i].first)
                 val treinosSemana = treinosSeparadosPorSemana[i].second
@@ -123,7 +116,7 @@ fun ListaTreinosPlanilhaScreen(
                     data,
                     treinosSemana,
                     onClick = { navigate(it.id) },
-                    onDelete = { treinosPlanilhaViewModel.deleteTreino(it) })
+                    onDelete = { viewModel.deleteTreino(it) })
             }
         }
     }

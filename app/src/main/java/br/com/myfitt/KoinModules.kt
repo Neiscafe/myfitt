@@ -42,7 +42,7 @@ val repositoryModule = module {
 val viewModelModule = module {
     viewModel { ExerciciosTreinoViewModel(it.get(), get(), get()) }
     viewModel { ListaPlanilhasViewModel(get()) }
-    viewModel { TreinosPlanilhaViewModel(get(), get(), get()) }
+    viewModel { TreinosPlanilhaViewModel(it.get(), get(), get(), get()) }
     viewModel { FichasDivisaoViewModel(it.get(), get()) }
     viewModel { ListaDivisaoViewModel(get()) }
 }

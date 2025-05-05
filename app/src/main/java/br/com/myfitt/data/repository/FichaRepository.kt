@@ -11,17 +11,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlin.collections.first
 
 class FichaRepository(
     private val fichaDao: FichaDao, private val fichaExercicioDao: FichaExercicioDao
 ) {
     private lateinit var selectedFichaCache: Ficha
-    fun getTodasByDivisaoFlow(divisaoId: Int) =
-        fichaDao.getTodasByDivisaoFlow(divisaoId).map { it.map { it.toDomain() } }
-
-    suspend fun getTodasByDivisao(divisaoId: Int) = withContext(Dispatchers.IO) {
-        fichaDao.getTodasByDivisao(divisaoId).map { it.toDomain() }
+    suspend fun getFichasByDivisaoId(divisaoId: Int) = withContext(Dispatchers.IO) {
+        fichaDao.getFichasByDivisao(divisaoId).map { it.toDomain() }
     }
+
+    fun getFichasByDivisaoIdFlow(divisaoId: Int) =
+        fichaDao.getFichasByDivisaoFlow(divisaoId).map { it.map { it.toDomain() } }
+
 
     suspend fun insert(ficha: Ficha): Int = withContext(Dispatchers.IO) {
         fichaDao.insert(ficha.toEntity()).toInt()
@@ -45,6 +47,7 @@ class FichaRepository(
                 )
             }
             ficha.copy(exercicios = exercicios).also { selectedFichaCache = ficha }
+            exercicios
         }
     }
 
@@ -70,5 +73,7 @@ class FichaRepository(
         )
     }
 
-    suspend fun addExercise(ficha: Ficha, exercise: Exercicio) {}
+    suspend fun addExercise(exercise: Exercicio) {
+
+    }
 }
