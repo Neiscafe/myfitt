@@ -28,11 +28,10 @@ class ExercicioRepository(private val dao: ExercicioDao) {
         exercicio.copy(id = insertedId.toInt())
     }
 
-    fun getSugeridosExercicios(query: String): Flow<List<Exercicio>> =
+    suspend fun getSugeridosExercicios(query: String): List<Exercicio> =
         dao.getSugeridosExercicios(query).map {
-            it.map {
-                it.toDomain()
-            }
+            it.toDomain()
+
         }
 
     suspend fun updateExercicio(exercicio: Exercicio) = withContext(Dispatchers.IO) {

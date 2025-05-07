@@ -13,6 +13,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,14 +38,14 @@ private const val INTERVALO_DEBOUNCE = 1000L
 @Composable
 fun <T> SuggestionDropdown(
     textState: MutableState<String>,
-    getSuggestions: (String) -> Flow<List<T>>,
+    getSuggestions: suspend (String) -> List<T>,
     onSuggestionClicked: (T) -> Unit,
-    getText: (T)->String,
+    getText: (T) -> String,
     trailingIcon: ImageVector? = null,
     onIconClick: (T) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    var suggestions = getSuggestions("").collectAsState(emptyList())
+    var suggestions = remember { mutableStateOf(listOf<T>()) }
     var dropDownExpanded by remember { mutableStateOf(suggestions.value.isNotEmpty()) }
     val exercicioDigitado = textState
     val scope = rememberCoroutineScope()
@@ -52,10 +53,10 @@ fun <T> SuggestionDropdown(
         onSuggestionClicked(clickedItem)
         exercicioDigitado.value = ""
     }
-    DisposableEffect(exercicioDigitado) {
+    DisposableEffect(exercicioDigitado.value) {
         val getSuggestionsJob = scope.launch {
             delay(INTERVALO_DEBOUNCE)
-            getSuggestions(exercicioDigitado.value)
+            suggestions.value = getSuggestions(exercicioDigitado.value)
         }
         onDispose { getSuggestionsJob.cancel() }
     }
@@ -71,7 +72,8 @@ fun <T> SuggestionDropdown(
                 exercicioDigitado.value = it
             },
             modifier = Modifier
-                .menuAnchor(MenuAnchorType.PrimaryEditable).fillMaxWidth(),
+                .menuAnchor(MenuAnchorType.PrimaryEditable)
+                .fillMaxWidth(),
             trailingIcon = { TrailingIcon(expanded = dropDownExpanded) },
             singleLine = true
         )

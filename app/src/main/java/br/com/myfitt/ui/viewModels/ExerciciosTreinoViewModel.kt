@@ -46,7 +46,7 @@ class ExerciciosTreinoViewModel(
         }
     }
 
-    fun getSugestoes(query: String) = exercicioRepository.getSugeridosExercicios(query)
+    suspend fun getSugestoes(query: String) = exercicioRepository.getSugeridosExercicios(query)
 
 
     fun updateTreinoExercicio(exercicio: TreinoExercicioComNome, mudou: ExercicioMudou) =

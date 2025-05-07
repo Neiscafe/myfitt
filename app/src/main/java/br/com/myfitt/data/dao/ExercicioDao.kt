@@ -16,7 +16,7 @@ interface ExercicioDao {
     suspend fun insert(exercicio: ExercicioEntity): Long
 
     @Query("""SELECT DISTINCT ex.id, ex.nome, ex.habilitado, ex.dataDesabilitado, et.id as exercicioTipoId, et.nome as  exercicioTipoNome FROM exercicios ex LEFT JOIN exercicio_tipo et ON et.id = ex.exercicioTipoId WHERE ex.nome LIKE '%' || :query || '%' AND ex.habilitado = 1 ORDER BY ex.nome ASC LIMIT 6""")
-    fun getSugeridosExercicios(query: String): Flow<List<ExercicioComTipoDto>>
+    suspend fun getSugeridosExercicios(query: String): List<ExercicioComTipoDto>
 
     @Update
     suspend fun update(exercicio: ExercicioEntity)
