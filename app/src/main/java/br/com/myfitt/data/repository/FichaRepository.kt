@@ -57,7 +57,7 @@ class FichaRepository(
     }
 
     suspend fun removeExercise(exercise: Exercicio) {
-
+        fichaDao.delete(exercise.id, exercise.fichaId, exercise.posicao)
     }
 
     suspend fun increasePosition(exercise: Exercicio) {
