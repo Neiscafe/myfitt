@@ -28,7 +28,7 @@ fun <T> DefaultCardList(
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxHeight(),
-        contentPadding = PaddingValues(0.dp, 8.dp, 0.dp, 0.dp),
+        contentPadding = PaddingValues(0.dp, 8.dp, 0.dp, 24.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
     ) {
         items(items.size) { i ->
