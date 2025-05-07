@@ -3,6 +3,7 @@ package br.com.myfitt.data.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import br.com.myfitt.data.entity.FichaEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -18,4 +19,16 @@ interface FichaDao {
 
     @Insert
     suspend fun insert(entity: FichaEntity): Long
+
+    @Transaction
+    suspend fun delete(exercicioId: kotlin.Int, fichaId: kotlin.Int, position: Int){
+        executeDelete(exercicioId, fichaId)
+        updatePositions(position, fichaId)
+    }
+
+    @Query("""DELETE FROM ficha_exercicio WHERE fichaId = :fichaId AND exercicioId = :exercicioId""")
+    suspend fun executeDelete(exercicioId: kotlin.Int, fichaId: kotlin.Int)
+
+    @Query("""UPDATE ficha_exercicio SET position = position-1 WHERE fichaId = :fichaId AND position >:position""")
+    suspend fun updatePositions(position: Int, fichaId: kotlin.Int)
 }
