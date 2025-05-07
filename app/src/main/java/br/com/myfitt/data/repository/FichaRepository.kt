@@ -61,7 +61,7 @@ class FichaRepository(
     }
 
     suspend fun increasePosition(exercise: Exercicio) {
-        if (!PosicaoValidator.podeAumentar(exercise, fichasCache)) return
+        if (!PosicaoValidator.podeAumentar(exercise, getCachedFicha(exercise.fichaId).exercicios)) return
         val useFicha = this.getCachedFicha(exercise.fichaId)
         fichaExercicioDao.switchPositions(
             useFicha.id,
@@ -84,7 +84,7 @@ class FichaRepository(
         ExerciseValidator(exercise).canBeVinculatedToFicha()
         fichaExercicioDao.insert(
             FichaExercicioEntity(
-                fichaId, exercise.id, fichasCache.size
+                fichaId, exercise.id, getCachedFicha(fichaId).exercicios.size -1
             )
         )
     }
