@@ -26,7 +26,7 @@ interface ExercicioDao {
         UPDATE 
             exercicios 
         SET 
-            habilitado = false AND dataDesabilitado = DATE('now') 
+            habilitado = 0 AND dataDesabilitado = DATE('now') 
         WHERE id = :exercicioId
     """
     )
