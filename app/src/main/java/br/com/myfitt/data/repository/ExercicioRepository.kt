@@ -21,11 +21,11 @@ class ExercicioRepository(private val dao: ExercicioDao) {
         Dispatchers.IO
     ) {
         ExerciseValidator(exercicio).canBeCreated()
-        val insertedId = dao.insert(exercicio.toEntity())
-        if (insertedId == -1L) {
-            return@withContext dao.getExercicio(exercicio.nome)!!.toDomain()
+        val existingExercise = dao.getExercicio(exercicio.nome)
+        if (existingExercise != null) {
+            return@withContext existingExercise.toDomain()
         }
-        exercicio.copy(id = insertedId.toInt())
+        exercicio.copy(id = dao.insert(exercicio.toEntity()).toInt())
     }
 
     suspend fun getSugeridosExercicios(query: String): List<Exercicio> =
