@@ -13,23 +13,16 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 private const val INTERVALO_DEBOUNCE = 1000L
@@ -87,7 +80,12 @@ fun <T> SuggestionDropdown(
                         Icon(
                             icon,
                             "",
-                            Modifier.clickable { onIconClick(it) })
+                            Modifier.clickable {
+                                onIconClick(it)
+                                scope.launch {
+                                    suggestions.value = getSuggestions(exercicioDigitado.value)
+                                }
+                            })
                     }
                 }, text = {
                     Text(text = getText(it))
