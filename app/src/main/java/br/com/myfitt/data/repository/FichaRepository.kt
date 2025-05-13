@@ -44,7 +44,9 @@ class FichaRepository(
 
     fun getFichaExerciciosFlow(fichaId: Int): Flow<List<Exercicio>> {
         return fichaExercicioDao.getFichaExerciciosByIdFlow(fichaId).map { flow ->
-            flow.map { it.toDomain() }.also { exercicios ->
+            flow.map {
+                it.toDomain()
+            }.also { exercicios ->
                 updateCache(getCachedFicha(fichaId).copy(exercicios = exercicios))
             }
         }

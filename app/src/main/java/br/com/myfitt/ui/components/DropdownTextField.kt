@@ -28,6 +28,7 @@ fun <T> DropdownTextField(
     getValue: (T?) -> String,
     onSelectedChanged: (T?) -> Unit,
     hint: String,
+    selected: T? = items.firstOrNull(),
     acceptsNull: Boolean = true,
     enabled: Boolean = true,
     modifier: Modifier = Modifier
@@ -35,7 +36,7 @@ fun <T> DropdownTextField(
         .height(IntrinsicSize.Min)
 ) {
     val _expanded = remember { mutableStateOf(false) }
-    val _selected = remember { mutableStateOf(items.firstOrNull()) }
+    val _selected = remember { mutableStateOf(selected) }
     Column(
         modifier = modifier
     ) {
@@ -60,12 +61,14 @@ fun <T> DropdownTextField(
                 if (items.isEmpty()) {
                     DropdownMenuItem(onClick = {
                         _expanded.value = false
+                        _selected.value = null
                         onSelectedChanged(null)
                     }, text = { Text(getValue(null)) })
                 }
                 items.forEach {
                     DropdownMenuItem(onClick = {
                         _expanded.value = false
+                        _selected.value = it
                         onSelectedChanged(it)
                     }, text = { Text(getValue(it)) })
                 }

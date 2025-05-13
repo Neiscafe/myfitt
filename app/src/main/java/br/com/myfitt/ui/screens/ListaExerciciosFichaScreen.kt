@@ -42,22 +42,20 @@ fun ListaExerciciosFichaScreen(
     Column(
         modifier = Modifier.padding(10.dp, 30.dp, 10.dp, 0.dp)
     ) {
-        InsertionTopBar(title = "Exercício Ficha",
-            onAddClicked = {
-                viewModel.insertExercicio(exercicioDigitado.value)
-                exercicioDigitado.value = ""
-            },
-            InsertionField = {
-                SuggestionDropdown<Exercicio>(textState = exercicioDigitado,
-                    getSuggestions = { viewModel.getExerciciosSugestao(it) },
-                    onSuggestionClicked = {
-                        viewModel.insertExercicioFicha(it.id)
-                    },
-                    trailingIcon = Icons.Outlined.Delete,
-                    onIconClick = { viewModel.deleteExercicio(it) },
-                    modifier = Modifier.weight(1f),
-                    getText = { it.nome })
-            })
+        InsertionTopBar(title = "Exercício Ficha", onAddClicked = {
+            viewModel.insertExercicio(exercicioDigitado.value)
+            exercicioDigitado.value = ""
+        }, InsertionField = {
+            SuggestionDropdown<Exercicio>(textState = exercicioDigitado,
+                getSuggestions = { viewModel.getExerciciosSugestao(it) },
+                onSuggestionClicked = {
+                    viewModel.insertExercicioFicha(it.id)
+                },
+                trailingIcon = Icons.Outlined.Delete,
+                onIconClick = { viewModel.deleteExercicio(it) },
+                modifier = Modifier.weight(1f),
+                getText = { it.nome })
+        })
         LazyColumn(
             modifier = Modifier.fillMaxHeight(),
             contentPadding = PaddingValues(0.dp, 8.dp, 0.dp, 0.dp),
@@ -85,10 +83,11 @@ fun ListaExerciciosFichaScreen(
                             imageVector = Icons.Default.Delete, contentDescription = ""
                         )
                     }
-                    DropdownTextField(
-                        tiposExercicio.toNullableSpinnerList(),
+                    DropdownTextField(tiposExercicio.toNullableSpinnerList(),
                         { it?.nome ?: "NENHUM" },
-                        { viewModel.setTipoExercicio(exercicio, it) }, "TIPO"
+                        { viewModel.setTipoExercicio(exercicio, it) },
+                        "TIPO",
+                        selected = exercicio.tipo
                     )
                 })
             }

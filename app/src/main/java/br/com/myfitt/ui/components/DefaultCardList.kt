@@ -17,12 +17,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun <T> DefaultCardList(
     items: List<T>,
     onClick: (T) -> Unit,
+    icon: ImageVector = Icons.Default.Delete,
+    onIconClick: (T) -> Unit = {},
     getName: (T) -> String,
     modifier: Modifier = Modifier
 ) {
@@ -47,10 +51,10 @@ fun <T> DefaultCardList(
                         modifier = Modifier.padding(10.dp)
                     )
                     IconButton(onClick = {
-//                            planilhaViewModel.deletePlanilha(planilha)
+                        onIconClick(item)
                     }) {
                         Icon(
-                            imageVector = Icons.Default.Delete, contentDescription = "Remover"
+                            imageVector = icon, null
                         )
                     }
                 }

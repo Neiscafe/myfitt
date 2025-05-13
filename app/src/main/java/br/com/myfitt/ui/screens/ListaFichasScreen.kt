@@ -1,10 +1,12 @@
 package br.com.myfitt.ui.screens
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import br.com.myfitt.domain.models.Ficha
 import br.com.myfitt.ui.components.DefaultCardList
 import br.com.myfitt.ui.components.DefaultTopView
@@ -20,7 +22,7 @@ fun ListaFichasScreen(
     viewModel: FichasDivisaoViewModel = koinViewModel(parameters = { parametersOf(divisaoId) }),
     modifier: Modifier = Modifier
 ) {
-    Column {
+    Column(modifier = Modifier.padding(10.dp, 30.dp, 10.dp, 0.dp)) {
         val fichas = viewModel.fichas.collectAsState(emptyList())
         val coroutineScope = rememberCoroutineScope()
         DefaultTopView("Suas fichas", hint = "Criar ficha", onComplete = {

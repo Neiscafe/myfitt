@@ -16,22 +16,21 @@ fun Exercicio.toEntity(): ExercicioEntity {
         exercicioTipoId = this.tipo?.id
     )
 }
-fun ExercicioTipoEntity.toDomain(): TipoExercicio{
+
+fun ExercicioTipoEntity.toDomain(): TipoExercicio {
     return TipoExercicio(
         id = this.id,
         nome = this.nome
     )
 }
+
 fun ExercicioComTipoDto2.toDomain(): Exercicio {
     return Exercicio(
         id = this.exercicio.id,
         nome = this.exercicio.nome,
         habilitado = this.exercicio.habilitado,
         dataDesabilitado = this.exercicio.dataDesabilitado,
-        tipo =null,
-//        this.tipo?.let {
-//            TipoExercicio(it.id, it.nome)
-//        },
+        tipo = tipo?.toDomain(),
         posicao = this.position,
         fichaId = this.fichaId
     )

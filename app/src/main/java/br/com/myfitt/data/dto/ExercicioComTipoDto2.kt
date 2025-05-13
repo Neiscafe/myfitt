@@ -11,7 +11,7 @@ data class ExercicioComTipoDto2(
     @Embedded val exercicio: ExercicioEntity,
     @Relation(
         entity = ExercicioEntity::class, parentColumn = "exercicioTipoId", entityColumn = "id",
-    ) val tipo: ExercicioTipoEntity? = null,
+    ) val tipo: ExercicioTipoEntity?,
     val position: Int,
     val fichaId: Int,
 )
