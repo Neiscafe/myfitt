@@ -23,7 +23,10 @@ class ExerciciosFichaViewModel(
     val tiposExercicio = exercicioRepository.getTiposFlow()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    suspend fun getExerciciosSugestao(query: String) = exercicioRepository.getSugeridosExercicios(query)
+
+    suspend fun getExerciciosSugestao(query: String) =
+        exercicioRepository.getSugeridosExercicios(query)
+
     fun insertExercicioFicha(exercicioId: Int) = io {
         fichaRepository.addExerciseToFicha(
             Exercicio(
@@ -40,15 +43,15 @@ class ExerciciosFichaViewModel(
         }
     }
 
-    fun moveExercisePositionDown(exercicio: Exercicio) {
+    fun moveExerciseDown(exercicio: Exercicio) {
         viewModelScope.launch(Dispatchers.IO) {
-            fichaRepository.decreasePosition(exercicio)
+            fichaRepository.increasePosition(exercicio)
         }
     }
 
-    fun moveExercisePositionUp(exercicio: Exercicio) {
+    fun moveExerciseUp(exercicio: Exercicio) {
         io {
-            fichaRepository.increasePosition(exercicio)
+            fichaRepository.decreasePosition(exercicio)
         }
     }
 
@@ -61,6 +64,12 @@ class ExerciciosFichaViewModel(
     fun setTipoExercicio(exercicio: Exercicio, tipoExercicio: TipoExercicio?) {
         io {
             exercicioRepository.updateExercicio(exercicio.copy(tipo = tipoExercicio))
+        }
+    }
+
+    fun deleteExercicio(exercicio: Exercicio) {
+        io {
+            exercicioRepository.deleteExercicio(exercicio)
         }
     }
 }
