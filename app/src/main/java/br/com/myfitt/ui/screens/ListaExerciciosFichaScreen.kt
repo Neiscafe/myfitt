@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -42,13 +43,18 @@ fun ListaExerciciosFichaScreen(
         modifier = Modifier.padding(10.dp, 30.dp, 10.dp, 0.dp)
     ) {
         InsertionTopBar(title = "Exercício Ficha",
-            onAddClicked = { viewModel.insertExercicio(exercicioDigitado.value) },
+            onAddClicked = {
+                viewModel.insertExercicio(exercicioDigitado.value)
+                exercicioDigitado.value = ""
+            },
             InsertionField = {
                 SuggestionDropdown<Exercicio>(textState = exercicioDigitado,
                     getSuggestions = { viewModel.getExerciciosSugestao(it) },
                     onSuggestionClicked = {
                         viewModel.insertExercicioFicha(it.id)
                     },
+                    trailingIcon = Icons.Outlined.Delete,
+                    onIconClick = { viewModel.deleteExercicio(it) },
                     modifier = Modifier.weight(1f),
                     getText = { it.nome })
             })
@@ -61,14 +67,14 @@ fun ListaExerciciosFichaScreen(
                 val exercicio = ficha[i]
                 DefaultCard<Exercicio>(exercicio, { it.toUserFriendlyName() }, components = {
                     IconButton(onClick = {
-                        viewModel.moveExercisePositionDown(exercicio)
+                        viewModel.moveExerciseDown(exercicio)
                     }) {
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowDown, contentDescription = ""
                         )
                     }
                     IconButton(onClick = {
-                        viewModel.moveExercisePositionUp(exercicio)
+                        viewModel.moveExerciseUp(exercicio)
                     }) {
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowUp, contentDescription = ""
@@ -82,7 +88,8 @@ fun ListaExerciciosFichaScreen(
                     DropdownTextField(
                         tiposExercicio.toNullableSpinnerList(),
                         { it?.nome ?: "NENHUM" },
-                        { viewModel.setTipoExercicio(exercicio, it) }, "TIPO")
+                        { viewModel.setTipoExercicio(exercicio, it) }, "TIPO"
+                    )
                 })
             }
         }
