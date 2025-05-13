@@ -84,7 +84,7 @@ class FichaRepository(
         ExerciseValidator(exercise).canBeVinculatedToFicha()
         fichaExercicioDao.insert(
             FichaExercicioEntity(
-                fichaId, exercise.id, getCachedFicha(fichaId).exercicios.size -1
+                fichaId, exercise.id, getCachedFicha(fichaId).exercicios.size
             )
         )
     }
