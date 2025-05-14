@@ -51,7 +51,7 @@ fun ListaExerciciosFichaScreen(
                 onSuggestionClicked = {
                     viewModel.insertExercicioFicha(it.id)
                 },
-                trailingIcon = Icons.Outlined.Delete,
+                trailingIcon = Icons.Default.Delete,
                 onIconClick = { viewModel.deleteExercicio(it) },
                 modifier = Modifier.weight(1f),
                 getText = { it.nome })

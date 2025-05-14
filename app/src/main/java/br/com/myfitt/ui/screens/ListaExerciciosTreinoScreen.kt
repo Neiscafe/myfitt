@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,8 +33,7 @@ import org.koin.core.parameter.parametersOf
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListaExerciciosTreinoScreen(
-    treinoId: Int,
-    viewModel: ExerciciosTreinoViewModel = koinViewModel(parameters = {
+    treinoId: Int, viewModel: ExerciciosTreinoViewModel = koinViewModel(parameters = {
         parametersOf(treinoId)
     })
 ) {
@@ -47,7 +47,7 @@ fun ListaExerciciosTreinoScreen(
 
     @Composable
     fun ApplyFichaButton(mostrar: Boolean, confirma: () -> Unit) {
-        if(selectedFicha!=null) {
+        if (selectedFicha != null) {
             TextButton(onClick = { confirma() }) { Text("APLICAR") }
         }
     }
@@ -79,13 +79,10 @@ fun ListaExerciciosTreinoScreen(
     Column(
         modifier = Modifier.padding(10.dp, 30.dp, 10.dp, 0.dp)
     ) {
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Exercícios do Treino", style = MaterialTheme.typography.titleLarge)
-            Button(modifier = Modifier
-                .height(IntrinsicSize.Min)
-                .background(
-                    color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
-                ), onClick = {
+            Spacer(modifier = Modifier.weight(1f))
+            TextButton(modifier = Modifier.height(IntrinsicSize.Min), onClick = {
                 val text =
                     exerciciosDoTreino.map { "${it.exercicioNome}:\n\tÚltimo treino: ${it.seriesUltimoTreino} x ${it.repeticoesUltimoTreino} - ${it.pesoKgUltimoTreino}\n\tAtual: ${it.series} x ${it.repeticoes} - ${it.pesoKg}" }
                         .joinToString(separator = "\n")
@@ -96,7 +93,7 @@ fun ListaExerciciosTreinoScreen(
                     Log.d("Erro", "$t")
                 }
             }) {
-                Text("Gym Rats")
+                Text("Ir para Gym Rats", color = MaterialTheme.colorScheme.onBackground)
             }
         }
         Spacer(Modifier.height(16.dp))
@@ -107,19 +104,15 @@ fun ListaExerciciosTreinoScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SuggestionDropdown(
-                textState = exercicioDigitado,
+            SuggestionDropdown(textState = exercicioDigitado,
                 getSuggestions = { viewModel.getSugestoes(it) },
                 onSuggestionClicked = {
                     viewModel.insertExercicio(it)
                 },
-                trailingIcon = Icons.Outlined.Delete,
+                trailingIcon = Icons.Default.Delete,
                 onIconClick = { viewModel.deleteExercicio(it) },
-                modifier = Modifier.width(
-                    IntrinsicSize.Min
-                ),
-                getText = { it.nome }
-            )
+                modifier = Modifier.weight(1f),
+                getText = { it.nome })
             Button(modifier = Modifier
                 .fillMaxHeight()
                 .background(
@@ -134,14 +127,10 @@ fun ListaExerciciosTreinoScreen(
             }
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
-            DropdownTextField(
-                fichas.value.toNullableSpinnerList(),
-                { it?.nome ?: "NENHUMA" },
-                {
-                    selectedFicha = it
-                },
-                "FICHA"
-            )
+            DropdownTextField(fichas.value.toNullableSpinnerList(), { it?.nome ?: "NENHUMA" }, {
+                selectedFicha = it
+            }, "FICHA"
+            , modifier = Modifier.weight(1f))
             ApplyFichaButton(selectedFicha != null) {
                 viewModel.applyFicha(selectedFicha!!)
 

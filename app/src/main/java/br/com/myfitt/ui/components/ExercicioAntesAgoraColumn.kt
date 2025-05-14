@@ -21,8 +21,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
@@ -72,7 +74,7 @@ fun ExercicioAntesAgoraColumn(
             ),
 
             singleLine = true,
-            textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.End),
+            textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.End, color = Color.White),
             modifier = Modifier
                 .onFocusChanged {
                     if (!wasFocused && it.isFocused) {

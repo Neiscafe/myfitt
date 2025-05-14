@@ -51,7 +51,7 @@ fun <T> DropdownTextField(
                     .fillMaxWidth()
                     .menuAnchor(MenuAnchorType.PrimaryNotEditable),
                 onValueChange = { },
-                textStyle = TextStyle(Color.Black),
+                textStyle = TextStyle(Color.White),
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = _expanded.value && enabled) },
                 colors = ExposedDropdownMenuDefaults.textFieldColors(),
                 singleLine = true
