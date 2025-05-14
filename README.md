@@ -36,7 +36,7 @@ git clone https://github.com/seu-usuario/seu-repositorio.git
 
 ### Gerenciamento de Exercícios
 
-<img src="screenshots/exercicios-treino.png" width="200" alt="Treino em andamento"> <img src="screenshots/exercicios-treino-exposto.png" width="200" alt="Detalhes do treino"> <img src="screenshots/exercicios-treino-exposto.png" width="200" alt="Aplicar  <img src="screenshots/exercicios-treino-aplicar.png" width="200" alt="Aplicar exercício">
+<img src="screenshots/exercicios-treino.png" width="200" alt="Treino em andamento"> <img src="screenshots/exercicios-treino-exposto.png" width="200" alt="Detalhes do treino"> <img src="screenshots/ficha-exercicio-exposto.png" width="200" alt="Aplicar">  <img src="screenshots/exercicios-treino-aplicar.png" width="200" alt="Aplicar exercício">
 
 ### Divisoes
 
