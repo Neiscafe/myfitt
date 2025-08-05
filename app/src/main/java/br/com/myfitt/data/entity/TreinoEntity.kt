@@ -8,17 +8,9 @@ import java.util.UUID
 
 @Entity(
     tableName = "treinos",
-    foreignKeys = [ForeignKey(
-        entity = PlanilhaEntity::class,
-        parentColumns = ["id"],
-        childColumns = ["planilhaId"],
-        onDelete = ForeignKey.CASCADE
-    )],
-    indices = [Index(value = ["planilhaId"])]
 )
 data class TreinoEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val planilhaId: Int,
     val data: String,  // Formato: "yyyy-MM-dd"
     val nome: String
 )

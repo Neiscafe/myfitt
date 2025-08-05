@@ -1,59 +1,47 @@
 package br.com.myfitt.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import br.com.myfitt.domain.models.Divisao
-import br.com.myfitt.domain.models.Ficha
 import br.com.myfitt.domain.utils.DateUtil
 import br.com.myfitt.ui.components.DefaultTextField
-import br.com.myfitt.ui.components.DropdownTextField
 import br.com.myfitt.ui.components.InsertionTopBar
 import br.com.myfitt.ui.components.TreinoSemanaItem
 import br.com.myfitt.ui.utils.TreinoByWeekMapper
-import br.com.myfitt.ui.utils.toNullableSpinnerList
 import br.com.myfitt.ui.viewModels.TreinosPlanilhaViewModel
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
-import org.koin.core.parameter.parametersOf
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListaTreinosPlanilhaScreen(
-    planilhaId: Int,
     navigate: (Int) -> Unit,
-    goToDivisoes: () -> Unit,
-    viewModel: TreinosPlanilhaViewModel = koinViewModel(parameters = { parametersOf(planilhaId) }),
+    viewModel: TreinosPlanilhaViewModel = koinViewModel(),
 ) {
     val treinos by viewModel.getTreinosByPlanilha().collectAsState(initial = emptyList())
-    val divisoes = viewModel.divisoes.collectAsState()
-    val fichas = viewModel.fichas.collectAsState()
     val exercicioEscrito = remember { mutableStateOf("") }
-    var selectedFicha by remember { mutableStateOf<Ficha?>(null) }
-    var selectedDivisao by remember { mutableStateOf<Divisao?>(null) }
     var dataSelecionada by remember { mutableStateOf(DateUtil.now) }
     val isDateDialogShown = remember { mutableStateOf(false) }
     Column(
@@ -76,41 +64,6 @@ fun ListaTreinosPlanilhaScreen(
                     .weight(1f)
             )
         })
-        Column {
-            Row {
-                DropdownTextField<Divisao>(divisoes.value.toNullableSpinnerList(),
-                    { it?.toString() ?: "Nenhuma" },
-                    {
-                        selectedDivisao = it
-                        viewModel.setDivisaoSelected(it?.id)
-                    },
-                    "Divisão",
-                    modifier = Modifier
-                        .fillMaxWidth(0.5f)
-                        .height(
-                            IntrinsicSize.Min
-                        )
-                )
-                DropdownTextField<Ficha>(fichas.value.toNullableSpinnerList(),
-                    { it?.toString() ?: "Nenhuma" },
-                    {
-                        selectedFicha = it
-                        viewModel.setFichaSelected(selectedFicha?.id)
-                    },
-                    "Próxima ficha",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(
-                            IntrinsicSize.Min
-                        )
-                )
-            }
-            Button(modifier = Modifier.fillMaxWidth(), onClick = {
-                goToDivisoes()
-            }) {
-                Text("Buscar divisões e fichas")
-            }
-        }
         LazyColumn(
             modifier = Modifier.fillMaxHeight(),
             contentPadding = PaddingValues(0.dp, 8.dp, 0.dp, 0.dp),
@@ -120,7 +73,8 @@ fun ListaTreinosPlanilhaScreen(
             items(treinosSeparadosPorSemana.size) { i ->
                 val data = DateUtil.format(treinosSeparadosPorSemana[i].first)
                 val treinosSemana = treinosSeparadosPorSemana[i].second
-                TreinoSemanaItem(treinosSeparadosPorSemana.size - i,
+                TreinoSemanaItem(
+                    treinosSeparadosPorSemana.size - i,
                     data,
                     treinosSemana,
                     onClick = { navigate(it.id) },

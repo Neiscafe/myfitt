@@ -6,7 +6,6 @@ import br.com.myfitt.domain.models.Treino
 fun Treino.toEntity(): TreinoEntity {
     return TreinoEntity(
         id = this.id,
-        planilhaId = this.planilhaId,
         nome = this.nome,
         data = this.data,
     )
@@ -15,7 +14,6 @@ fun Treino.toEntity(): TreinoEntity {
 fun TreinoEntity.toDomain(): Treino {
     return Treino(
         id = this.id,
-        planilhaId = this.planilhaId,
         nome = this.nome,
         data = this.data,
     )

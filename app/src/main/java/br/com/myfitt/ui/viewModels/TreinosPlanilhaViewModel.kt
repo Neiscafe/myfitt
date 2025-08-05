@@ -2,8 +2,6 @@ package br.com.myfitt.ui.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import br.com.myfitt.data.repository.DivisaoRepository
 import br.com.myfitt.data.repository.FichaRepository
 import br.com.myfitt.data.repository.TreinoRepository
 import br.com.myfitt.domain.models.Divisao
@@ -20,13 +18,10 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 class TreinosPlanilhaViewModel(
-    private val planilhaId: Int,
     private val treinoRepository: TreinoRepository,
-    private val divisaoRepository: DivisaoRepository,
-    private val fichaRepository: FichaRepository,
 ) : ViewModel() {
     // Função para obter treinos da planilha
-    fun getTreinosByPlanilha() = treinoRepository.getTreinosByPlanilha(planilhaId)
+    fun getTreinosByPlanilha() = treinoRepository.getTreinos()
 
     // Função para remover treino
     fun deleteTreino(treino: Treino) {
@@ -37,19 +32,11 @@ class TreinosPlanilhaViewModel(
 
     private val _fichas = MutableStateFlow<List<Ficha>>(emptyList())
     val fichas = _fichas.asStateFlow()
-    fun setDivisaoSelected(divisaoId: Int?) = viewModelScope.launch(Dispatchers.IO) {
-        _fichas.value =
-            if (divisaoId == null) emptyList() else fichaRepository.getFichasByDivisaoId(divisaoId)
-    }
-
-    val divisoes = divisaoRepository.getTodasFlow().map { it.toList<Divisao>() }.stateIn(
-        viewModelScope, SharingStarted.Eagerly, emptyList()
-    )
 
     // Função para adicionar treino
     suspend fun insertTreino(nomeTreino: String, dataTreino: LocalDate): Int {
         val novoTreino = Treino(
-            planilhaId = planilhaId, nome = nomeTreino, data = DateUtil.toDbNotation(dataTreino)
+             nome = nomeTreino, data = DateUtil.toDbNotation(dataTreino)
         )
         return treinoRepository.insertTreino(novoTreino)
     }

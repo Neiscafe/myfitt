@@ -14,8 +14,8 @@ class TreinoRepository(private val dao: TreinoDao) {
         Dispatchers.IO
     ) { dao.insert(treino.toEntity()).toInt() }
 
-    fun getTreinosByPlanilha(planilhaId: Int): Flow<List<Treino>> =
-        dao.getTreinosByPlanilha(planilhaId).map { it.map { it.toDomain() } }
+    fun getTreinos(): Flow<List<Treino>> =
+        dao.getTreinos().map { it.map { it.toDomain() } }
 
     suspend fun deleteTreino(treino: Treino) = withContext(
         Dispatchers.IO

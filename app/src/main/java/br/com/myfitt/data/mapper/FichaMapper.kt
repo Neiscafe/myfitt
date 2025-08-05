@@ -9,7 +9,7 @@ import br.com.myfitt.domain.models.TipoExercicio
 
 fun FichaEntity.toDomain(): Ficha {
     return Ficha(
-        id = this.id, divisaoId = this.divisaoId, nome = this.nome
+        id = this.id, nome = this.nome
     )
 }
 
@@ -31,7 +31,7 @@ fun FichaEntity.toDomain(): Ficha {
 
 fun Ficha.toEntity(): FichaEntity {
     return FichaEntity(
-        id = this.id, divisaoId = this.divisaoId, nome = this.nome
+        id = this.id, nome = this.nome
     )
 }
 //fun FichaExercicioDto.toDomain(): Ficha{

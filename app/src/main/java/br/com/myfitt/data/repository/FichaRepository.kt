@@ -27,14 +27,14 @@ class FichaRepository(
         }
     }
 
-    suspend fun getFichasByDivisaoId(divisaoId: Int) = withContext(Dispatchers.IO) {
-        fichaDao.getFichasByDivisao(divisaoId).map {
+    suspend fun getFichasByDivisaoId() = withContext(Dispatchers.IO) {
+        fichaDao.getFichasByDivisao().map {
             it.toDomain()
         }.addAllToCache()
     }
 
-    fun getFichasByDivisaoIdFlow(divisaoId: Int) =
-        fichaDao.getFichasByDivisaoFlow(divisaoId).map { it.map { it.toDomain() }.addAllToCache() }
+    fun getFichasByDivisaoIdFlow() =
+        fichaDao.getFichasByDivisaoFlow().map { it.map { it.toDomain() }.addAllToCache() }
 
 
     suspend fun insert(ficha: Ficha): Int = withContext(Dispatchers.IO) {

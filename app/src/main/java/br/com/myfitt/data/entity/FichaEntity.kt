@@ -7,10 +7,8 @@ import androidx.room.PrimaryKey
 import androidx.room.util.TableInfo
 
 @Entity(
-    tableName = "ficha", foreignKeys = [ForeignKey(
-        entity = DivisaoEntity::class, parentColumns = ["id"], childColumns = ["divisaoId"]
-    )], indices = [Index("id"), Index("divisaoId")]
+    tableName = "ficha",
 )
 data class FichaEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0, val divisaoId: Int, val nome: String
+    @PrimaryKey(autoGenerate = true) val id: Int = 0, val nome: String
 )

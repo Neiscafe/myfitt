@@ -13,8 +13,8 @@ interface TreinoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(treino: TreinoEntity): Long
 
-    @Query("SELECT * FROM treinos WHERE planilhaId = :planilhaId ORDER BY data DESC")
-    fun getTreinosByPlanilha(planilhaId: Int): Flow<List<TreinoEntity>>
+    @Query("SELECT * FROM treinos ORDER BY data DESC")
+    fun getTreinos(): Flow<List<TreinoEntity>>
 
     @Delete
     suspend fun delete(treino: TreinoEntity)
