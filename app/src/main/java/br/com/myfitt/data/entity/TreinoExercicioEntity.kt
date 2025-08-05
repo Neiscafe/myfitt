@@ -4,10 +4,10 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.Companion.CASCADE
 import androidx.room.Index
+import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "treino_exercicio",
-    primaryKeys = ["treinoId", "exercicioId"],
     foreignKeys = [
         ForeignKey(
             entity = TreinoEntity::class,
@@ -27,6 +27,8 @@ import androidx.room.Index
     indices = [Index("treinoId"), Index("exercicioId")]
 )
 data class TreinoExercicioEntity(
+    @PrimaryKey(true)
+    val id: Int = 0,
     val treinoId: Int,
     val exercicioId: Int,
     val series: Int = 0,
