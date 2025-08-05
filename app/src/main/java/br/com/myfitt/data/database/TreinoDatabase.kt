@@ -15,15 +15,10 @@ import br.com.myfitt.data.entity.FichaEntity
 import br.com.myfitt.data.entity.FichaExercicioEntity
 import br.com.myfitt.data.entity.TreinoEntity
 import br.com.myfitt.data.entity.TreinoExercicioEntity
+import br.com.myfitt.data.entity.TreinoExercicioSerieEntity
 
 @Database(
-    entities = [
-        TreinoEntity::class,
-        ExercicioEntity::class,
-        TreinoExercicioEntity::class,
-        ExercicioTipoEntity::class,
-        FichaExercicioEntity::class,
-        FichaEntity::class],
+    entities = [TreinoEntity::class, ExercicioEntity::class, TreinoExercicioEntity::class, ExercicioTipoEntity::class, FichaExercicioEntity::class, FichaEntity::class, TreinoExercicioSerieEntity::class],
     version = 1,
     exportSchema = true
 )
