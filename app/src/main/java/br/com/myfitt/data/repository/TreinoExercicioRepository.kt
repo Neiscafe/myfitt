@@ -5,6 +5,7 @@ import br.com.myfitt.data.dto.PerformanceDto
 import br.com.myfitt.data.entity.TreinoExercicioEntity
 import br.com.myfitt.data.mapper.toDomain
 import br.com.myfitt.data.mapper.toEntity
+import br.com.myfitt.data.mapper.toSeriesEntity
 import br.com.myfitt.domain.ExerciseValidator
 import br.com.myfitt.domain.models.Exercicio
 import br.com.myfitt.domain.models.ExercicioMudou
@@ -47,13 +48,37 @@ class TreinoExercicioRepository(
         if (cached == null) return@withContext
         if (cached != treinoExercicio) {
             val entity = when (exercicioMudou) {
-                SERIES -> treinoExercicio.copy(
-                    pesoKg = cached.pesoKg, repeticoes = cached.repeticoes
+                SERIES -> {
+                    dao.update(
+                        treinoExercicio.copy(
+                            pesoKg = cached.pesoKg,
+                            repeticoes = cached.repeticoes,
+                            segundosDescanso = cached.segundosDescanso
+                        ).toEntity()
+                    )
+                    return@withContext
+                }
+
+                PESO -> {
+                    treinoExercicio.copy(
+                        series = cached.series,
+                        repeticoes = cached.repeticoes,
+                        segundosDescanso = cached.segundosDescanso
+                    )
+                }
+
+                REPS -> treinoExercicio.copy(
+                    pesoKg = cached.pesoKg,
+                    series = cached.series,
+                    segundosDescanso = cached.segundosDescanso
                 )
 
-                PESO -> treinoExercicio.copy(series = cached.series, repeticoes = cached.repeticoes)
-                REPS -> treinoExercicio.copy(pesoKg = cached.pesoKg, series = cached.series)
-            }.toEntity()
+                DESCANSO -> treinoExercicio.copy(
+                    pesoKg = cached.pesoKg,
+                    series = cached.series,
+                    repeticoes = cached.repeticoes
+                )
+            }.toSeriesEntity()
             dao.update(entity)
         }
     }

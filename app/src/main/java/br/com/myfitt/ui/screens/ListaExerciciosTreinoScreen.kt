@@ -215,6 +215,7 @@ fun ListaExerciciosTreinoScreenPreview() {
         initial = listOf(
             TreinoExercicioComNome(
                 0,
+                0,
                 "ansdijasndijnasd",
                 exercicioId = 0,
                 series = 0,

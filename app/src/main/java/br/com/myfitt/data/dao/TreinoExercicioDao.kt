@@ -10,6 +10,7 @@ import androidx.room.Update
 import br.com.myfitt.data.dto.PerformanceDto
 import br.com.myfitt.data.dto.TreinoExercicioDto
 import br.com.myfitt.data.entity.TreinoExercicioEntity
+import br.com.myfitt.data.entity.TreinoExercicioSerieEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -19,6 +20,10 @@ interface TreinoExercicioDao {
 
     @Update
     suspend fun update(treinoExercicio: TreinoExercicioEntity)
+
+    @Update
+    suspend fun update(treinoExercicio: TreinoExercicioSerieEntity)
+
 
     @Transaction
     suspend fun deleteAndAdjustPosition(treinoExercicio: TreinoExercicioEntity) {
@@ -49,14 +54,17 @@ interface TreinoExercicioDao {
     @Query(
         """
         SELECT 
+            te.id as id,
             te.treinoId AS treinoId,
             te.exercicioId AS exercicioId,
             ex.nome AS exercicioNome,
             tr.data AS data,
-            te.series AS series,
+            0 AS series,
             te.posicao AS posicao,
-            te.pesoKg AS pesoKg,
-            te.repeticoes AS repeticoes,
+            tes.id as serieId,
+            tes.segundosDescanso as segundosDescanso,
+            tes.pesoKg AS pesoKg,
+            tes.reps AS repeticoes,
             te.observacao AS observacao,
             0 AS pesoKgUltimoTreino,
             0 AS repeticoesUltimoTreino,
@@ -64,6 +72,7 @@ interface TreinoExercicioDao {
         FROM treino_exercicio te
         INNER JOIN exercicios ex ON ex.id = te.exercicioId
         INNER JOIN treinos tr ON tr.id = te.treinoId
+        LEFT JOIN treino_exercicio_serie tes ON tes.treinoExercicioId = te.id
         WHERE te.treinoId = :treinoId AND COALESCE(ex.dataDesabilitado, DATE('now'))>=tr.data
         ORDER BY te.posicao ASC
     """
