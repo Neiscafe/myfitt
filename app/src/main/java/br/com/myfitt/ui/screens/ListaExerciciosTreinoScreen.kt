@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -170,9 +171,10 @@ private fun _ListaExerciciosTreinoScreen(
             contentPadding = PaddingValues(0.dp, 8.dp, 0.dp, 24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
         ) {
+
             val exerciciosDoTreinoAgrupado = exerciciosDoTreino.groupBy { it.id }.map { it.value }
-            items(exerciciosDoTreinoAgrupado.size) { i ->
-                val exercicio = exerciciosDoTreinoAgrupado[i]
+            items(items = exerciciosDoTreinoAgrupado, key = { it[0].id }) {
+                val exercicio = it
                 Card {
                     ExercicioItem(
                         exercicio,
