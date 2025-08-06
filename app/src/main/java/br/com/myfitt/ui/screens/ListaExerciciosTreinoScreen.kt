@@ -170,19 +170,16 @@ private fun _ListaExerciciosTreinoScreen(
             contentPadding = PaddingValues(0.dp, 8.dp, 0.dp, 24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
         ) {
-            items(exerciciosDoTreino.size, key = { exerciciosDoTreino[it].exercicioId }) { i ->
-                val exercicio = exerciciosDoTreino[i]
+            val exerciciosDoTreinoAgrupado = exerciciosDoTreino.groupBy { it.id }.map { it.value }
+            items(exerciciosDoTreinoAgrupado.size) { i ->
+                val exercicio = exerciciosDoTreinoAgrupado[i]
                 Card {
                     ExercicioItem(
                         exercicio,
-                        onDelete = { deleteExercicioDoTreino(exercicio) },
-                        onMoveUp = { moveExerciseUpByOne(exercicio) },
-                        onMoveDown = { moveExerciseDownByOne(exercicio) },
-                        onUpdate = { it, mudou ->
-                            updateTreinoExercicio(
-                                it, mudou
-                            )
-                        })
+                        onDelete = { deleteExercicioDoTreino(exercicio[0]) },
+                        onMoveUp = { moveExerciseUpByOne(exercicio[0]) },
+                        onMoveDown = { moveExerciseDownByOne(exercicio[0]) },
+                    )
                 }
             }
         }
