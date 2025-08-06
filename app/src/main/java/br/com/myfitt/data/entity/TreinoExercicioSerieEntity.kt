@@ -2,12 +2,13 @@ package br.com.myfitt.data.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.ForeignKey.Companion.CASCADE
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
     "treino_exercicio_serie", [Index("treinoExercicioId")], foreignKeys = [ForeignKey(
-        TreinoExercicioEntity::class, ["id"], ["treinoExercicioId"]
+        TreinoExercicioEntity::class, ["id"], ["treinoExercicioId"], onDelete = CASCADE
     )]
 )
 data class TreinoExercicioSerieEntity(
