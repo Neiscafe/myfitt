@@ -179,6 +179,7 @@ private fun _ListaExerciciosTreinoScreen(
                         onDelete = { deleteExercicioDoTreino(exercicio[0]) },
                         onMoveUp = { moveExerciseUpByOne(exercicio[0]) },
                         onMoveDown = { moveExerciseDownByOne(exercicio[0]) },
+                        onUpdatedSeries = updateTreinoExercicio
                     )
                 }
             }

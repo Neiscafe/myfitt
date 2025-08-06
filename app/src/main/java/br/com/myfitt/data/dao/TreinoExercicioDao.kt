@@ -17,12 +17,10 @@ import kotlinx.coroutines.flow.Flow
 interface TreinoExercicioDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(treinoExercicio: TreinoExercicioEntity)
-
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(treinoExercicio: TreinoExercicioSerieEntity)
     @Update
     suspend fun update(treinoExercicio: TreinoExercicioEntity)
-
-    @Update
-    suspend fun update(treinoExercicio: TreinoExercicioSerieEntity)
 
 
     @Transaction
@@ -84,13 +82,13 @@ interface TreinoExercicioDao {
                 treino_exercicio
             SET 
                 posicao = CASE 
-                    WHEN exercicioId = :increaseExercise THEN posicao+1
+                    WHEN id = :increaseExercise THEN posicao+1
                     ELSE posicao-1
                 END
             WHERE 
                 treinoId = :treinoId
-                AND exercicioId = :increaseExercise 
-                OR exercicioId = :decreaseExercise
+                AND id = :increaseExercise 
+                OR id = :decreaseExercise
         
         """
     )

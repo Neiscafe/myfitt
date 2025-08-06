@@ -9,7 +9,11 @@ import br.com.myfitt.data.mapper.toSeriesEntity
 import br.com.myfitt.domain.ExerciseValidator
 import br.com.myfitt.domain.models.Exercicio
 import br.com.myfitt.domain.models.ExercicioMudou
-import br.com.myfitt.domain.models.ExercicioMudou.*
+import br.com.myfitt.domain.models.ExercicioMudou.ADICIONAR
+import br.com.myfitt.domain.models.ExercicioMudou.DESCANSO
+import br.com.myfitt.domain.models.ExercicioMudou.PESO
+import br.com.myfitt.domain.models.ExercicioMudou.REPS
+import br.com.myfitt.domain.models.ExercicioMudou.SERIES
 import br.com.myfitt.domain.models.TreinoExercicioComNome
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -78,8 +82,10 @@ class TreinoExercicioRepository(
                     series = cached.series,
                     repeticoes = cached.repeticoes
                 )
+
+                ADICIONAR -> treinoExercicio
             }.toSeriesEntity()
-            dao.update(entity)
+            dao.insert(entity)
         }
     }
 

@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import br.com.myfitt.domain.models.ExercicioMudou
 import br.com.myfitt.domain.models.TreinoExercicioComNome
 
 @Composable
@@ -33,7 +34,7 @@ fun ExercicioItem(
     onDelete: () -> Unit = {},
     onMoveUp: () -> Unit = {},
     onMoveDown: () -> Unit = {},
-    onUpdatedSeries: (TreinoExercicioComNome) -> Unit = {}
+    onUpdatedSeries: (TreinoExercicioComNome, ExercicioMudou) -> Unit = { _, _ -> }
 ) {
     val exercicio = exercicios.first()
     Row(
@@ -95,7 +96,12 @@ fun ExercicioItem(
                             modifier = Modifier
                                 .height(40.dp)
                                 .wrapContentHeight(),
-                            onUpdate = { updated -> onUpdatedSeries(it.copy(segundosDescanso = updated.toInt())) })
+                            onUpdate = { updated ->
+                                onUpdatedSeries(
+                                    it.copy(segundosDescanso = updated.toInt()),
+                                    ExercicioMudou.DESCANSO
+                                )
+                            })
                         Spacer(Modifier.height(12.dp))
                     }
                 }
@@ -107,7 +113,11 @@ fun ExercicioItem(
                             modifier = Modifier
                                 .height(40.dp)
                                 .wrapContentHeight(),
-                            onUpdate = { updated -> onUpdatedSeries(it.copy(repeticoes = updated.toInt())) })
+                            onUpdate = { updated ->
+                                onUpdatedSeries(
+                                    it.copy(repeticoes = updated.toInt()), ExercicioMudou.REPS
+                                )
+                            })
                         Spacer(Modifier.height(12.dp))
                     }
                 }
@@ -121,7 +131,11 @@ fun ExercicioItem(
                             modifier = Modifier
                                 .height(40.dp)
                                 .wrapContentHeight(),
-                            onUpdate = { updated -> onUpdatedSeries(it.copy(pesoKg = updated.toFloat())) })
+                            onUpdate = { updated ->
+                                onUpdatedSeries(
+                                    it.copy(pesoKg = updated.toFloat()), ExercicioMudou.PESO
+                                )
+                            })
                         Spacer(Modifier.height(12.dp))
                     }
                 }
@@ -130,7 +144,7 @@ fun ExercicioItem(
                 onUpdatedSeries(
                     exercicio.copy(
                         serieId = 0, pesoKg = 0f, segundosDescanso = 0, repeticoes = 0
-                    )
+                    ), ExercicioMudou.ADICIONAR
                 )
             }) { Icon(Icons.Default.Add, null) }
         }
