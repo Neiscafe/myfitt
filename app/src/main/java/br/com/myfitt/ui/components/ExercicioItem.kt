@@ -91,6 +91,7 @@ fun ExercicioItem(
                 Column(horizontalAlignment = Alignment.End) {
                     Text("Interv. (s)")
                     exercicios.forEach {
+                        if (it.serieId == 0) return@forEach
                         SideEffectTextField(
                             it.segundosDescanso.toString(),
                             modifier = Modifier
@@ -108,6 +109,7 @@ fun ExercicioItem(
                 Column(horizontalAlignment = Alignment.End, modifier = Modifier.weight(1f)) {
                     Text("Reps")
                     exercicios.forEach {
+                        if (it.serieId == 0) return@forEach
                         SideEffectTextField(
                             it.repeticoes.toString(),
                             modifier = Modifier
@@ -126,6 +128,7 @@ fun ExercicioItem(
                 ) {
                     Text("Kg")
                     exercicios.forEach {
+                        if (it.serieId == 0) return@forEach
                         SideEffectTextField(
                             it.pesoKg.toInt().toString(),
                             modifier = Modifier
