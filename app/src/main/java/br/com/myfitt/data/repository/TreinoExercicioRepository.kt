@@ -1,7 +1,6 @@
 package br.com.myfitt.data.repository
 
 import br.com.myfitt.data.dao.TreinoExercicioDao
-import br.com.myfitt.data.dto.PerformanceDto
 import br.com.myfitt.data.entity.TreinoExercicioEntity
 import br.com.myfitt.data.mapper.toDomain
 import br.com.myfitt.data.mapper.toEntity
@@ -50,7 +49,7 @@ class TreinoExercicioRepository(
     ) {
         val cached = exercicios.find { treinoExercicio.exercicioId == it.exercicioId }
         if (cached == null) return@withContext
-        if (cached != treinoExercicio) {
+        if (cached != treinoExercicio || exercicioMudou== ExercicioMudou.ADICIONAR) {
             val entity = when (exercicioMudou) {
                 SERIES -> {
                     dao.update(
@@ -98,13 +97,14 @@ class TreinoExercicioRepository(
     fun getExerciciosDeUmTreino(treinoId: Int): Flow<List<TreinoExercicioComNome>> {
         return dao.getExerciciosByTreino(treinoId).map { listDto ->
             listDto.map {
-                val performance =
-                    dao.getUltimaPerformance(it.exercicioId, it.data) ?: PerformanceDto()
-                it.copy(
-                    seriesUltimoTreino = performance.series,
-                    repeticoesUltimoTreino = performance.repeticoes,
-                    pesoKgUltimoTreino = performance.pesoKg
-                ).toDomain()
+//                val performance =
+//                    dao.getUltimaPerformance(it.exercicioId, it.data) ?: PerformanceDto()
+//                it.copy(
+//                    seriesUltimoTreino = performance.series,
+//                    repeticoesUltimoTreino = performance.repeticoes,
+//                    pesoKgUltimoTreino = performance.pesoKg
+//                )
+                it.toDomain()
             }.also {
                 exercicios.clear()
                 exercicios.addAll(it)
