@@ -47,9 +47,9 @@ class TreinoExercicioRepository(
     ) = withContext(
         Dispatchers.IO
     ) {
-        val cached = exercicios.find { treinoExercicio.exercicioId == it.exercicioId }
+        val cached = exercicios.find { treinoExercicio.id == it.id }
         if (cached == null) return@withContext
-        if (cached != treinoExercicio || exercicioMudou== ExercicioMudou.ADICIONAR) {
+        if (cached != treinoExercicio || exercicioMudou == ExercicioMudou.ADICIONAR) {
             val entity = when (exercicioMudou) {
                 SERIES -> {
                     dao.update(
@@ -116,16 +116,16 @@ class TreinoExercicioRepository(
         Dispatchers.IO
     ) {
         if (exercicio.posicao <= 0) return@withContext
-        val idAumentar = exercicios.first { it.posicao == exercicio.posicao - 1 }.exercicioId
-        dao.switchPositions(exercicio.treinoId, idAumentar, exercicio.exercicioId)
+        val idAumentar = exercicios[exercicio.posicao - 1].id
+        dao.switchPositions(exercicio.treinoId, idAumentar, exercicio.id)
     }
 
     suspend fun aumentarPosicao(exercicio: TreinoExercicioComNome) = withContext(
         Dispatchers.IO
     ) {
         if (exercicio.posicao >= exercicios.size - 1) return@withContext
-        val idDiminuir = exercicios.first { it.posicao == exercicio.posicao + 1 }.exercicioId
-        dao.switchPositions(exercicio.treinoId, exercicio.exercicioId, idDiminuir)
+        val idDiminuir = exercicios[exercicio.posicao + 1].id
+        dao.switchPositions(exercicio.treinoId, exercicio.id, idDiminuir)
     }
 
     suspend fun addFromFicha(exercicios: List<Exercicio>, treinoId: Int) {
