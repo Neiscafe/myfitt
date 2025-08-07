@@ -23,6 +23,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +40,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.myfitt.domain.models.ExercicioMudou
 import br.com.myfitt.domain.models.TreinoExercicioComNome
+import br.com.myfitt.ui.theme.MyFittTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -248,13 +250,34 @@ fun ExercicioItem(
 @Preview
 @Composable
 private fun ExercicioItemPreview() {
-    ExercicioItem(
-        listOf(
-            TreinoExercicioComNome(0, 0, "akosmdkoasmdako", serieId = 1),
-            TreinoExercicioComNome(0, 0, "akosmdkoasmdakosd", serieId = 2),
-            TreinoExercicioComNome(0, 0, "akosmdkoasmdakosd", serieId = 3),
-            TreinoExercicioComNome(0, 0, "akosmdkoasmdakosd", serieId = 5),
-            TreinoExercicioComNome(0, 0, "akosmdkoasmdakosd", serieId = 6),
-        )
-    )
+    MyFittTheme {
+        Surface {
+            ExercicioItem(
+                listOf(
+                    TreinoExercicioComNome(
+                        0, 0, "akosmdkoasmdako", segundosDescanso = 180, serieId = 1
+                    ),
+                    TreinoExercicioComNome(
+                        0, 0, "akosmdkoasmdakosd", segundosDescanso = 180, serieId = 2
+                    ),
+                    TreinoExercicioComNome(
+                        0, 0, "akosmdkoasmdakosd", segundosDescanso = 180, serieId = 3
+                    ),
+                    TreinoExercicioComNome(
+                        0, 0, "akosmdkoasmdakosd", segundosDescanso = 180, serieId = 5
+                    ),
+                    TreinoExercicioComNome(
+                        0,
+                        0,
+                        "akosmdkoasmdakosd",
+                        segundosDescanso = 180,
+                        pesoKg = 180f,
+                        repeticoes = 8,
+                        serieId = 6
+                    ),
+                )
+            )
+
+        }
+    }
 }

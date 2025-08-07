@@ -24,6 +24,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -46,6 +47,7 @@ import br.com.myfitt.domain.models.Ficha
 import br.com.myfitt.domain.models.TreinoExercicioComNome
 import br.com.myfitt.ui.components.ExercicioItem
 import br.com.myfitt.ui.components.SuggestionDropdown
+import br.com.myfitt.ui.theme.MyFittTheme
 import br.com.myfitt.ui.viewModels.ExerciciosTreinoViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -211,22 +213,44 @@ fun ListaExerciciosTreinoScreen(
 @Preview(showBackground = true)
 @Composable
 fun ListaExerciciosTreinoScreenPreview() {
-    _ListaExerciciosTreinoScreen(
-        initial = listOf(
-            TreinoExercicioComNome(
-                0,
-                0,
-                "ansdijasndijnasd",
-                exercicioId = 0,
-                series = 0,
-                posicao = 1,
-                pesoKg = 10f,
-                repeticoes = 0,
-                observacao = "",
-                pesoKgUltimoTreino = 0f,
-                repeticoesUltimoTreino = 0,
-                seriesUltimoTreino = 0
+    MyFittTheme {
+        Surface {
+            _ListaExerciciosTreinoScreen(
+                initial = listOf(
+                    TreinoExercicioComNome(
+                        0,
+                        0,
+                        "ansdijasndijnasd",
+                        exercicioId = 0,
+                        series = 0,
+                        posicao = 1,
+                        pesoKg = 10f,
+                        repeticoes = 0,
+                        serieId = 1,
+                        observacao = "",
+                        pesoKgUltimoTreino = 0f,
+                        repeticoesUltimoTreino = 0,
+                        seriesUltimoTreino = 0
+                    ), TreinoExercicioComNome(
+                        0,
+                        0,
+                        "ansdijasndijnasd",
+                        exercicioId = 0,
+                        series = 0,
+                        posicao = 1,
+                        pesoKg = 10f,
+                        repeticoes = 0,
+                        serieId = 2,
+                        observacao = "",
+                        pesoKgUltimoTreino = 0f,
+                        repeticoesUltimoTreino = 0,
+                        seriesUltimoTreino = 0
+                    )
+
+
+                )
             )
-        )
-    )
+
+        }
+    }
 }
