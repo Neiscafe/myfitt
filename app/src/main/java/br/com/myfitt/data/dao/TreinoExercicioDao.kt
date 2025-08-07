@@ -136,7 +136,9 @@ interface TreinoExercicioDao {
         INNER JOIN treino_exercicio te ON tes.treinoExercicioId = te.id
         INNER JOIN treinos t ON te.treinoId = t.id
         WHERE te.exercicioId = :exercicioId
-        ORDER BY t.data DESC
+        ORDER BY 
+            t.data DESC,
+            tes.id DESC
         LIMIT 20
     """
     )
