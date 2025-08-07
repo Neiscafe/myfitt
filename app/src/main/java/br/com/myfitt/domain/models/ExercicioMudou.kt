@@ -1,5 +1,5 @@
 package br.com.myfitt.domain.models
 
 enum class ExercicioMudou {
-    SERIES, PESO, REPS, DESCANSO, ADICIONAR
+    SERIES, PESO, REPS, DESCANSO, ADICIONAR, REMOVER
 }

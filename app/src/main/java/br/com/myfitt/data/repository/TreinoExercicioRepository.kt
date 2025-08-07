@@ -49,7 +49,7 @@ class TreinoExercicioRepository(
     ) {
         val cached = exercicios.find { treinoExercicio.id == it.id }
         if (cached == null) return@withContext
-        if (cached != treinoExercicio || exercicioMudou == ExercicioMudou.ADICIONAR) {
+        if (cached != treinoExercicio || exercicioMudou == ExercicioMudou.ADICIONAR || exercicioMudou == ExercicioMudou.REMOVER) {
             val entity = when (exercicioMudou) {
                 SERIES -> {
                     dao.update(
@@ -77,12 +77,14 @@ class TreinoExercicioRepository(
                 )
 
                 DESCANSO -> treinoExercicio.copy(
-                    pesoKg = cached.pesoKg,
-                    series = cached.series,
-                    repeticoes = cached.repeticoes
+                    pesoKg = cached.pesoKg, series = cached.series, repeticoes = cached.repeticoes
                 )
 
                 ADICIONAR -> treinoExercicio
+                REMOVER -> {
+                    dao.delete(treinoExercicio.toSeriesEntity())
+                    return@withContext
+                }
             }.toSeriesEntity()
             dao.insert(entity)
         }
