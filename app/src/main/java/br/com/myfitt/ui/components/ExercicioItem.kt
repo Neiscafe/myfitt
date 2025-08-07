@@ -1,10 +1,12 @@
 package br.com.myfitt.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -12,7 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -23,6 +26,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -47,6 +50,7 @@ import androidx.compose.ui.window.Dialog
 import br.com.myfitt.domain.models.ExercicioMudou
 import br.com.myfitt.domain.models.HistoricoExercicioTreinos
 import br.com.myfitt.domain.models.TreinoExercicioComNome
+import br.com.myfitt.domain.utils.DateUtil
 import br.com.myfitt.ui.theme.MyFittTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -75,8 +79,13 @@ fun ExercicioItem(
             }
         }
         Dialog({ showHistoryDialog.value = null }) {
-            Surface(
-                shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surface
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(500.dp),
+//                    .padding(16.dp)
+
+                shape = RoundedCornerShape(16.dp),
             ) {
                 when (val result = dialogData.value) {
                     is Loadable.Loaded -> {
@@ -88,32 +97,68 @@ fun ExercicioItem(
                                     .width(48.dp)
                                     .height(48.dp)
                             )
-                            return@Surface
+                            return@Card
                         }
-                        LazyColumn() {
-                            items(items = result.data!!, key = { it.serieId }) {
-                                Card(modifier = Modifier.fillMaxWidth()) {
-                                    Row() {
-                                        Column(
-                                            Modifier.width(100.dp),
-                                            horizontalAlignment = Alignment.End
+                        LazyColumn(
+                            modifier = Modifier.padding(all = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            itemsIndexed(
+                                items = result.data!!,
+                                key = { i, it -> it.serieId }) { i, it ->
+                                if (i == 0) {
+                                    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            "Histórico",
+                                            style = MaterialTheme.typography.titleLarge
+                                        )
+                                        Text(showHistoryDialog.value?.exercicioNome ?: "")
+                                    }
+                                }
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = CardDefaults.cardColors()
+                                        .copy(containerColor = Color.Gray)
+                                ) {
+                                    Column(modifier = Modifier.fillMaxWidth().padding(4.dp), ) {
+                                        Text(DateUtil.format(DateUtil.fromDbNotation(it.dataTreino)))
+                                        Row(
+                                            horizontalArrangement = Arrangement.End,
+                                            modifier = Modifier.fillMaxWidth()
                                         ) {
-                                            Text("Descanso(s)")
-                                            Text(it.segundosDescanso.toString())
-                                        }
-                                        Column(
-                                            Modifier.width(100.dp),
-                                            horizontalAlignment = Alignment.End
-                                        ) {
-                                            Text("Reps")
-                                            Text(it.repeticoes.toString())
-                                        }
-                                        Column(
-                                            Modifier.width(100.dp),
-                                            horizontalAlignment = Alignment.End
-                                        ) {
-                                            Text("Peso(kg)")
-                                            Text(it.pesoKg.toString())
+                                            Column(
+                                                Modifier.width(100.dp),
+                                                horizontalAlignment = Alignment.End
+                                            ) {
+                                                Text(
+                                                    "Descanso(s)",
+                                                    //                                                color = Color.Black,
+                                                    fontSize = TextUnit(14f, TextUnitType.Sp)
+                                                )
+                                                Text(it.segundosDescanso.toString())
+                                            }
+                                            Column(
+                                                Modifier.width(100.dp),
+                                                horizontalAlignment = Alignment.End
+                                            ) {
+                                                Text(
+                                                    "Reps",
+                                                    fontSize = TextUnit(14f, TextUnitType.Sp),
+                                                    //                                                color = Color.Black
+                                                )
+                                                Text(it.repeticoes.toString())
+                                            }
+                                            Column(
+                                                Modifier.width(100.dp),
+                                                horizontalAlignment = Alignment.End
+                                            ) {
+                                                Text(
+                                                    "Peso(kg)",
+                                                    fontSize = TextUnit(14f, TextUnitType.Sp),
+                                                    //                                                color = Color.Black
+                                                )
+                                                Text(it.pesoKg.toString())
+                                            }
                                         }
                                     }
                                 }
@@ -122,7 +167,11 @@ fun ExercicioItem(
                     }
 
                     Loadable.Loading -> {
-                        CircularProgressIndicator()
+                        Box(
+                            contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
                 }
             }
@@ -182,12 +231,30 @@ fun ExercicioItem(
         }
         Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End) {
             Row() {
-                Text("Descanso(s)", textAlign = TextAlign.End, modifier = Modifier.width(100.dp), fontSize = TextUnit(14f,
-                    TextUnitType.Sp))
-                Text("Reps", textAlign = TextAlign.End, modifier = Modifier.width(100.dp), fontSize = TextUnit(14f,
-                    TextUnitType.Sp))
-                Text("Peso(kg)", textAlign = TextAlign.End, modifier = Modifier.width(100.dp), fontSize = TextUnit(14f,
-                    TextUnitType.Sp))
+                Text(
+                    "Descanso(s)",
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.width(100.dp),
+                    fontSize = TextUnit(
+                        14f, TextUnitType.Sp
+                    )
+                )
+                Text(
+                    "Reps",
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.width(100.dp),
+                    fontSize = TextUnit(
+                        14f, TextUnitType.Sp
+                    )
+                )
+                Text(
+                    "Peso(kg)",
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.width(100.dp),
+                    fontSize = TextUnit(
+                        14f, TextUnitType.Sp
+                    )
+                )
             }
             exercicios.forEach {
                 if (it.serieId == 0) return@forEach
@@ -229,76 +296,6 @@ fun ExercicioItem(
                         })
                 }
             }
-
-//            Row(
-//                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
-//            ) {
-//                Column(
-//                    modifier = Modifier.height(IntrinsicSize.Max),
-//                    verticalArrangement = Arrangement.Bottom
-//                ) {
-//                    Text("")
-//                    exercicios.forEach {
-//                        if (it.serieId == 0) return@forEach
-//                        IconButton({}) { Icon(Icons.Default.Close, null) }
-//                        Spacer(Modifier.height(4.dp))
-//                    }
-//                }
-//                Column(horizontalAlignment = Alignment.End) {
-//                    Text("Interv. (s)")
-//                    exercicios.forEach {
-//                        if (it.serieId == 0) return@forEach
-//                        SideEffectTextField(
-//                            it.segundosDescanso.toString(),
-//                            modifier = Modifier
-//                                .height(40.dp)
-//                                .wrapContentHeight(),
-//                            onUpdate = { updated ->
-//                                onUpdatedSeries(
-//                                    it.copy(segundosDescanso = updated.toInt()),
-//                                    ExercicioMudou.DESCANSO
-//                                )
-//                            })
-//                        Spacer(Modifier.height(12.dp))
-//                    }
-//                }
-//                Column(horizontalAlignment = Alignment.End, modifier = Modifier.weight(1f)) {
-//                    Text("Reps")
-//                    exercicios.forEach {
-//                        if (it.serieId == 0) return@forEach
-//                        SideEffectTextField(
-//                            it.repeticoes.toString(),
-//                            modifier = Modifier
-//                                .height(40.dp)
-//                                .wrapContentHeight(),
-//                            onUpdate = { updated ->
-//                                onUpdatedSeries(
-//                                    it.copy(repeticoes = updated.toInt()), ExercicioMudou.REPS
-//                                )
-//                            })
-//                        Spacer(Modifier.height(12.dp))
-//                    }
-//                }
-//                Column(
-//                    horizontalAlignment = Alignment.End, modifier = Modifier.weight(1f)
-//                ) {
-//                    Text("Kg")
-//                    exercicios.forEach {
-//                        if (it.serieId == 0) return@forEach
-//                        SideEffectTextField(
-//                            it.pesoKg.toInt().toString(),
-//                            modifier = Modifier
-//                                .height(40.dp)
-//                                .wrapContentHeight(),
-//                            onUpdate = { updated ->
-//                                onUpdatedSeries(
-//                                    it.copy(pesoKg = updated.toFloat()), ExercicioMudou.PESO
-//                                )
-//                            })
-//                        Spacer(Modifier.height(12.dp))
-//                    }
-//                }
-//            }
             IconButton({
                 onUpdatedSeries(
                     exercicio.copy(
