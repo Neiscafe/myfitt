@@ -134,4 +134,23 @@ class TreinoExercicioRepository(
             addExercicioAoTreino(treinoId, it)
         }
     }
+
+    fun getHistorico(exercicioId: Int): Flow<List<HistoricoExercicioTreinos>?> {
+        return dao.getHistorico(exercicioId).catch {
+            LogTool.log("getHistorico", it.message!!, "exercicioId" to exercicioId)
+            emit(null)
+        }.map {
+            it?.map {
+                LogTool.log("getHistorico", it, "exercicioId" to exercicioId)
+                HistoricoExercicioTreinos(
+                    exercicioTreinoId = it.exercicioTreinoId,
+                    dataTreino = it.dataTreino,
+                    serieId = it.serieId,
+                    segundosDescanso = it.segundosDescanso,
+                    pesoKg = it.pesoKg,
+                    repeticoes = it.repeticoes
+                )
+            }
+        }
+    }
 }

@@ -54,28 +54,72 @@ fun ExercicioItem(
 ) {
     val showHistoryDialog = remember { mutableStateOf<TreinoExercicioComNome?>(null) }
     val exercicio = exercicios.first()
-    LaunchedEffect(showHistoryDialog.value!=null) {
-
-    }
+    val scope = rememberCoroutineScope()
     if (showHistoryDialog.value != null) {
-        val scope = rememberCoroutineScope()
-
+        val dialogData =
+            remember { mutableStateOf<Loadable<List<HistoricoExercicioTreinos>?>>(Loadable.Loading) }
         LaunchedEffect(Unit) {
             scope.launch {
                 onShowHistory(showHistoryDialog.value!!).collect {
-                    when(it){
-                        is Loadable.Loaded<*> -> TODO()
-                        Loadable.Loading -> {}
+                    dialogData.value = it
+                }
+            }
+        }
+        Dialog({ showHistoryDialog.value = null }) {
+            Surface(
+                shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surface
+            ) {
+                when (val result = dialogData.value) {
+                    is Loadable.Loaded -> {
+                        if (result == null) {
+                            Icon(
+                                Icons.Default.Close,
+                                null,
+                                modifier = Modifier
+                                    .width(48.dp)
+                                    .height(48.dp)
+                            )
+                            return@Surface
+                        }
+                        LazyColumn() {
+                            items(items = result.data!!, key = { it.serieId }) {
+                                Card(modifier = Modifier.fillMaxWidth()) {
+                                    Row() {
+                                        Column(
+                                            Modifier.width(100.dp),
+                                            horizontalAlignment = Alignment.End
+                                        ) {
+                                            Text("Descanso(s)")
+                                            Text(it.segundosDescanso.toString())
+                                        }
+                                        Column(
+                                            Modifier.width(100.dp),
+                                            horizontalAlignment = Alignment.End
+                                        ) {
+                                            Text("Reps")
+                                            Text(it.repeticoes.toString())
+                                        }
+                                        Column(
+                                            Modifier.width(100.dp),
+                                            horizontalAlignment = Alignment.End
+                                        ) {
+                                            Text("Peso(kg)")
+                                            Text(it.pesoKg.toString())
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Loadable.Loading -> {
+                        CircularProgressIndicator()
                     }
                 }
             }
         }
-
-        Dialog({ showHistoryDialog.value = null }) {
-
-        }
     }
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min)

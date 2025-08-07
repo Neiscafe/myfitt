@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import br.com.myfitt.data.dto.HistoricoExercicioTreinosDto
 import br.com.myfitt.data.dto.PerformanceDto
 import br.com.myfitt.data.dto.TreinoExercicioDto
 import br.com.myfitt.data.entity.TreinoExercicioEntity
@@ -17,8 +18,10 @@ import kotlinx.coroutines.flow.Flow
 interface TreinoExercicioDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(treinoExercicio: TreinoExercicioEntity)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(treinoExercicio: TreinoExercicioSerieEntity)
+
     @Update
     suspend fun update(treinoExercicio: TreinoExercicioEntity)
 
@@ -41,6 +44,9 @@ interface TreinoExercicioDao {
     """
     )
     suspend fun reducePositionsBiggerThan(treinoId: Int, position: Int)
+
+    @Delete
+    suspend fun delete(serie: TreinoExercicioSerieEntity)
 
     @Delete
     suspend fun delete(treinoExercicio: TreinoExercicioEntity)
@@ -76,6 +82,7 @@ interface TreinoExercicioDao {
     """
     )
     fun getExerciciosByTreino(treinoId: Int): Flow<List<TreinoExercicioDto>>
+
     @Query(
         """
             UPDATE  
@@ -93,6 +100,7 @@ interface TreinoExercicioDao {
         """
     )
     suspend fun switchPositions(treinoId: Int, increaseExercise: Int, decreaseExercise: Int)
+
     @Query(
         """
         SELECT 
@@ -114,4 +122,23 @@ interface TreinoExercicioDao {
     """
     )
     suspend fun getUltimaPerformance(exercicioId: Int, dataComparacao: String): PerformanceDto?
+
+    @Query(
+        """
+        SELECT
+            te.id as exercicioTreinoId,
+            t.data as dataTreino,
+            tes.id as serieId,
+            tes.segundosDescanso as segundosDescanso,
+            tes.pesoKg AS pesoKg,
+            tes.reps AS repeticoes
+        FROM treino_exercicio_serie tes
+        INNER JOIN treino_exercicio te ON tes.treinoExercicioId = te.id
+        INNER JOIN treinos t ON te.treinoId = t.id
+        WHERE te.exercicioId = :exercicioId
+        ORDER BY t.data DESC
+        LIMIT 20
+    """
+    )
+    fun getHistorico(exercicioId: Int): Flow<List<HistoricoExercicioTreinosDto>?>
 }
