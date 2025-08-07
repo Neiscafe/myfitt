@@ -10,23 +10,38 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.myfitt.domain.models.ExercicioMudou
 import br.com.myfitt.domain.models.TreinoExercicioComNome
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 
 @Composable
 fun ExercicioItem(
@@ -34,9 +49,32 @@ fun ExercicioItem(
     onDelete: () -> Unit = {},
     onMoveUp: () -> Unit = {},
     onMoveDown: () -> Unit = {},
+    onShowHistory: (TreinoExercicioComNome) -> Flow<Loadable<List<TreinoExercicioComNome>>> = { flowOf() },
     onUpdatedSeries: (TreinoExercicioComNome, ExercicioMudou) -> Unit = { _, _ -> }
 ) {
+    val showHistoryDialog = remember { mutableStateOf<TreinoExercicioComNome?>(null) }
     val exercicio = exercicios.first()
+    LaunchedEffect(showHistoryDialog.value!=null) {
+
+    }
+    if (showHistoryDialog.value != null) {
+        val scope = rememberCoroutineScope()
+
+        LaunchedEffect(Unit) {
+            scope.launch {
+                onShowHistory(showHistoryDialog.value!!).collect {
+                    when(it){
+                        is Loadable.Loaded<*> -> TODO()
+                        Loadable.Loading -> {}
+                    }
+                }
+            }
+        }
+
+        Dialog({ showHistoryDialog.value = null }) {
+
+        }
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -53,9 +91,9 @@ fun ExercicioItem(
                 exercicio.exercicioNome, style = MaterialTheme.typography.titleMedium
             )
             Row(
-                modifier = Modifier.fillMaxHeight(),
+                modifier = Modifier.weight(1f),
                 horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
                 val iconModifier = Modifier.size(20.dp)
                 IconButton(onClick = {
@@ -80,6 +118,15 @@ fun ExercicioItem(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Remover"
                     )
+                }
+            }
+            Button({
+                showHistoryDialog.value = exercicio
+            }, colors = ButtonDefaults.buttonColors().copy(containerColor = Color.White)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.DateRange, null, tint = Color.Black)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Histórico", color = Color.Black)
                 }
             }
         }
@@ -149,7 +196,7 @@ fun ExercicioItem(
                         serieId = 0, pesoKg = 0f, segundosDescanso = 0, repeticoes = 0
                     ), ExercicioMudou.ADICIONAR
                 )
-            }) { Icon(Icons.Default.Add, null) }
+            }) { Icon(Icons.Default.Add, null, tint = Color.White) }
         }
     }
 }
@@ -159,8 +206,11 @@ fun ExercicioItem(
 private fun ExercicioItemPreview() {
     ExercicioItem(
         listOf(
-            TreinoExercicioComNome(0, 0, "akosmdkoasmdakosd"),
-            TreinoExercicioComNome(0, 0, "akosmdkoasmdakosd")
+            TreinoExercicioComNome(0, 0, "akosmdkoasmdako", serieId = 1),
+            TreinoExercicioComNome(0, 0, "akosmdkoasmdakosd", serieId = 2),
+            TreinoExercicioComNome(0, 0, "akosmdkoasmdakosd", serieId = 3),
+            TreinoExercicioComNome(0, 0, "akosmdkoasmdakosd", serieId = 5),
+            TreinoExercicioComNome(0, 0, "akosmdkoasmdakosd", serieId = 6),
         )
     )
 }
