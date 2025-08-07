@@ -5,21 +5,25 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -27,18 +31,21 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.myfitt.domain.models.ExercicioMudou
+import br.com.myfitt.domain.models.HistoricoExercicioTreinos
 import br.com.myfitt.domain.models.TreinoExercicioComNome
 import br.com.myfitt.ui.theme.MyFittTheme
 import kotlinx.coroutines.flow.Flow
@@ -51,7 +58,7 @@ fun ExercicioItem(
     onDelete: () -> Unit = {},
     onMoveUp: () -> Unit = {},
     onMoveDown: () -> Unit = {},
-    onShowHistory: (TreinoExercicioComNome) -> Flow<Loadable<List<TreinoExercicioComNome>>> = { flowOf() },
+    onShowHistory: (TreinoExercicioComNome) -> Flow<Loadable<List<HistoricoExercicioTreinos>?>> = { flowOf() },
     onUpdatedSeries: (TreinoExercicioComNome, ExercicioMudou) -> Unit = { _, _ -> }
 ) {
     val showHistoryDialog = remember { mutableStateOf<TreinoExercicioComNome?>(null) }
@@ -126,21 +133,27 @@ fun ExercicioItem(
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
             .padding(8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Column(
-            Modifier
-                .fillMaxHeight()
-                .fillMaxWidth(0.4f)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 exercicio.exercicioNome, style = MaterialTheme.typography.titleMedium
             )
-            Row(
-                modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.Top
-            ) {
+        }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Button({
+                showHistoryDialog.value = exercicio
+            }, colors = ButtonDefaults.buttonColors().copy(containerColor = Color.White)) {
+                Row(horizontalArrangement = Arrangement.Center) {
+                    Icon(Icons.Default.DateRange, null, tint = Color.Black)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Histórico", color = Color.Black)
+                }
+            }
+            Row {
                 val iconModifier = Modifier.size(20.dp)
                 IconButton(onClick = {
                     onMoveDown()
@@ -166,76 +179,126 @@ fun ExercicioItem(
                     )
                 }
             }
-            Button({
-                showHistoryDialog.value = exercicio
-            }, colors = ButtonDefaults.buttonColors().copy(containerColor = Color.White)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.DateRange, null, tint = Color.Black)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Histórico", color = Color.Black)
-                }
-            }
         }
-        Column(horizontalAlignment = Alignment.End) {
-            Row(
-                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-
-                Column(horizontalAlignment = Alignment.End) {
-                    Text("Interv. (s)")
-                    exercicios.forEach {
-                        if (it.serieId == 0) return@forEach
-                        SideEffectTextField(
-                            it.segundosDescanso.toString(),
-                            modifier = Modifier
-                                .height(40.dp)
-                                .wrapContentHeight(),
-                            onUpdate = { updated ->
-                                onUpdatedSeries(
-                                    it.copy(segundosDescanso = updated.toInt()),
-                                    ExercicioMudou.DESCANSO
-                                )
-                            })
-                        Spacer(Modifier.height(12.dp))
-                    }
-                }
-                Column(horizontalAlignment = Alignment.End, modifier = Modifier.weight(1f)) {
-                    Text("Reps")
-                    exercicios.forEach {
-                        if (it.serieId == 0) return@forEach
-                        SideEffectTextField(
-                            it.repeticoes.toString(),
-                            modifier = Modifier
-                                .height(40.dp)
-                                .wrapContentHeight(),
-                            onUpdate = { updated ->
-                                onUpdatedSeries(
-                                    it.copy(repeticoes = updated.toInt()), ExercicioMudou.REPS
-                                )
-                            })
-                        Spacer(Modifier.height(12.dp))
-                    }
-                }
-                Column(
-                    horizontalAlignment = Alignment.End, modifier = Modifier.weight(1f)
-                ) {
-                    Text("Kg")
-                    exercicios.forEach {
-                        if (it.serieId == 0) return@forEach
-                        SideEffectTextField(
-                            it.pesoKg.toInt().toString(),
-                            modifier = Modifier
-                                .height(40.dp)
-                                .wrapContentHeight(),
-                            onUpdate = { updated ->
-                                onUpdatedSeries(
-                                    it.copy(pesoKg = updated.toFloat()), ExercicioMudou.PESO
-                                )
-                            })
-                        Spacer(Modifier.height(12.dp))
-                    }
+        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End) {
+            Row() {
+                Text("Descanso(s)", textAlign = TextAlign.End, modifier = Modifier.width(100.dp), fontSize = TextUnit(14f,
+                    TextUnitType.Sp))
+                Text("Reps", textAlign = TextAlign.End, modifier = Modifier.width(100.dp), fontSize = TextUnit(14f,
+                    TextUnitType.Sp))
+                Text("Peso(kg)", textAlign = TextAlign.End, modifier = Modifier.width(100.dp), fontSize = TextUnit(14f,
+                    TextUnitType.Sp))
+            }
+            exercicios.forEach {
+                if (it.serieId == 0) return@forEach
+                Row {
+                    IconButton({
+                        onUpdatedSeries(
+                            it, ExercicioMudou.REMOVER
+                        )
+                    }) { Icon(Icons.Default.Close, null) }
+                    SideEffectTextField(
+                        it.segundosDescanso.toString(),
+                        modifier = Modifier
+                            .height(40.dp)
+                            .wrapContentHeight(),
+                        onUpdate = { updated ->
+                            onUpdatedSeries(
+                                it.copy(segundosDescanso = updated.toInt()), ExercicioMudou.DESCANSO
+                            )
+                        })
+                    SideEffectTextField(
+                        it.repeticoes.toString(),
+                        modifier = Modifier
+                            .height(40.dp)
+                            .wrapContentHeight(),
+                        onUpdate = { updated ->
+                            onUpdatedSeries(
+                                it.copy(repeticoes = updated.toInt()), ExercicioMudou.REPS
+                            )
+                        })
+                    SideEffectTextField(
+                        it.pesoKg.toInt().toString(),
+                        modifier = Modifier
+                            .height(40.dp)
+                            .wrapContentHeight(),
+                        onUpdate = { updated ->
+                            onUpdatedSeries(
+                                it.copy(pesoKg = updated.toFloat()), ExercicioMudou.PESO
+                            )
+                        })
                 }
             }
+
+//            Row(
+//                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
+//            ) {
+//                Column(
+//                    modifier = Modifier.height(IntrinsicSize.Max),
+//                    verticalArrangement = Arrangement.Bottom
+//                ) {
+//                    Text("")
+//                    exercicios.forEach {
+//                        if (it.serieId == 0) return@forEach
+//                        IconButton({}) { Icon(Icons.Default.Close, null) }
+//                        Spacer(Modifier.height(4.dp))
+//                    }
+//                }
+//                Column(horizontalAlignment = Alignment.End) {
+//                    Text("Interv. (s)")
+//                    exercicios.forEach {
+//                        if (it.serieId == 0) return@forEach
+//                        SideEffectTextField(
+//                            it.segundosDescanso.toString(),
+//                            modifier = Modifier
+//                                .height(40.dp)
+//                                .wrapContentHeight(),
+//                            onUpdate = { updated ->
+//                                onUpdatedSeries(
+//                                    it.copy(segundosDescanso = updated.toInt()),
+//                                    ExercicioMudou.DESCANSO
+//                                )
+//                            })
+//                        Spacer(Modifier.height(12.dp))
+//                    }
+//                }
+//                Column(horizontalAlignment = Alignment.End, modifier = Modifier.weight(1f)) {
+//                    Text("Reps")
+//                    exercicios.forEach {
+//                        if (it.serieId == 0) return@forEach
+//                        SideEffectTextField(
+//                            it.repeticoes.toString(),
+//                            modifier = Modifier
+//                                .height(40.dp)
+//                                .wrapContentHeight(),
+//                            onUpdate = { updated ->
+//                                onUpdatedSeries(
+//                                    it.copy(repeticoes = updated.toInt()), ExercicioMudou.REPS
+//                                )
+//                            })
+//                        Spacer(Modifier.height(12.dp))
+//                    }
+//                }
+//                Column(
+//                    horizontalAlignment = Alignment.End, modifier = Modifier.weight(1f)
+//                ) {
+//                    Text("Kg")
+//                    exercicios.forEach {
+//                        if (it.serieId == 0) return@forEach
+//                        SideEffectTextField(
+//                            it.pesoKg.toInt().toString(),
+//                            modifier = Modifier
+//                                .height(40.dp)
+//                                .wrapContentHeight(),
+//                            onUpdate = { updated ->
+//                                onUpdatedSeries(
+//                                    it.copy(pesoKg = updated.toFloat()), ExercicioMudou.PESO
+//                                )
+//                            })
+//                        Spacer(Modifier.height(12.dp))
+//                    }
+//                }
+//            }
             IconButton({
                 onUpdatedSeries(
                     exercicio.copy(

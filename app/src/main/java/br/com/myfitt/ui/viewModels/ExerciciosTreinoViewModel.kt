@@ -11,7 +11,9 @@ import br.com.myfitt.domain.models.Ficha
 import br.com.myfitt.domain.models.HistoricoExercicioTreinos
 import br.com.myfitt.domain.models.TreinoExercicioComNome
 import br.com.myfitt.ui.components.Loadable
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flowOf
@@ -29,7 +31,6 @@ class ExerciciosTreinoViewModel(
     val exerciciosByTreino = treinoExercicioRepository.getExerciciosDeUmTreino(treinoId).stateIn(
         scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = emptyList()
     )
-
     fun getHistorico(treinoExercicio: TreinoExercicioComNome): Flow<Loadable<List<HistoricoExercicioTreinos>?>> {
         return merge(
             flowOf(Loadable.Loading),
@@ -42,7 +43,8 @@ class ExerciciosTreinoViewModel(
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     fun insertExercicio(nomeExercicio: String) {
-        viewModelScope.launch {
+
+        viewModelScope.launch(Dispatchers.IO) {
             treinoExercicioRepository.addExercicioAoTreino(
                 treinoId, Exercicio(
                     id = 0,
@@ -64,32 +66,37 @@ class ExerciciosTreinoViewModel(
     suspend fun getSugestoes(query: String) = exercicioRepository.getSugeridosExercicios(query)
 
 
-    fun updateTreinoExercicio(exercicio: TreinoExercicioComNome, mudou: ExercicioMudou) =
-        viewModelScope.launch() {
+    fun updateTreinoExercicio(exercicio: TreinoExercicioComNome, mudou: ExercicioMudou) {
+        val updateScope = CoroutineScope(Dispatchers.IO)
+        updateScope.launch(Dispatchers.IO) {
             treinoExercicioRepository.updateExercicioDoTreino(exercicio, mudou)
+            updateScope.cancel()
         }
+    }
 
     fun deleteExercicio(exercicio: Exercicio) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             exercicioRepository.deleteExercicio(exercicio)
         }
     }
 
     fun deleteExercicioDoTreino(exercicio: TreinoExercicioComNome) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             treinoExercicioRepository.removeExercicioDoTreino(exercicio)
         }
     }
 
-    fun moveExerciseUpByOne(exercicio: TreinoExercicioComNome) = viewModelScope.launch {
-        treinoExercicioRepository.diminuirPosicao(exercicio)
-    }
+    fun moveExerciseUpByOne(exercicio: TreinoExercicioComNome) =
+        viewModelScope.launch(Dispatchers.IO) {
+            treinoExercicioRepository.diminuirPosicao(exercicio)
+        }
 
-    fun moveExerciseDownByOne(exercicio: TreinoExercicioComNome) = viewModelScope.launch {
-        treinoExercicioRepository.aumentarPosicao(exercicio)
-    }
+    fun moveExerciseDownByOne(exercicio: TreinoExercicioComNome) =
+        viewModelScope.launch(Dispatchers.IO) {
+            treinoExercicioRepository.aumentarPosicao(exercicio)
+        }
 
-    fun applyFicha(selectedFicha: Ficha) = viewModelScope.launch() {
+    fun applyFicha(selectedFicha: Ficha) = viewModelScope.launch(Dispatchers.IO) {
         val exerciciosFicha = fichaRepository.getFichaExercicios(selectedFicha.id)
         treinoExercicioRepository.addFromFicha(exerciciosFicha, treinoId)
     }

@@ -1,25 +1,17 @@
 package br.com.myfitt.ui.components
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
@@ -28,12 +20,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.text.isDigitsOnly
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 private const val INTERVALO_DEBOUNCE = 1000L
 
@@ -43,26 +31,22 @@ fun SideEffectTextField(
     initialValue: String,
     modifier: Modifier = Modifier,
     onTextChanged: (String) -> Unit = {},
-    onUpdate: suspend (String) -> Unit = {}
+    onUpdate: (String) -> Unit = {}
 ) {
     var textValue by remember { mutableStateOf(TextFieldValue(initialValue)) }
     var wasFocused by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    DisposableEffect(textValue) {
-        if (textValue.text == initialValue || textValue.text.isEmpty()) return@DisposableEffect onDispose {}
-        val job = scope.launch {
-            delay(INTERVALO_DEBOUNCE)
-            if (textValue.text.isDigitsOnly()) {
-                onUpdate(textValue.text)
-            }
-        }
-        return@DisposableEffect onDispose {
-            job.cancel()
+    var triggerSelectAll by remember { mutableStateOf(false) }
+    LaunchedEffect(triggerSelectAll) {
+        if (triggerSelectAll) {
+            textValue = textValue.copy(selection = TextRange(0, textValue.text.length))
+            triggerSelectAll = false
         }
     }
     BasicTextField(
         value = textValue, onValueChange = {
             textValue = it
+            if (it.text.isEmpty() || it.text == initialValue) return@BasicTextField
+            onUpdate(it.text)
             onTextChanged(it.text)
         }, keyboardOptions = KeyboardOptions(
             autoCorrectEnabled = false,
@@ -74,7 +58,7 @@ fun SideEffectTextField(
             textAlign = TextAlign.End, color = Color.White
         ), modifier = modifier.onFocusChanged {
             if (!wasFocused && it.isFocused) {
-                textValue = textValue.copy(selection = TextRange(0, textValue.text.length))
+                triggerSelectAll = true
             }
             wasFocused = it.isFocused
         })
@@ -83,5 +67,9 @@ fun SideEffectTextField(
 @Preview
 @Composable
 private fun SideEffectTextViewPreview() {
-    SideEffectTextField("adasddas", modifier = Modifier.height(40.dp).wrapContentHeight())
+    SideEffectTextField(
+        "adasddas", modifier = Modifier
+            .height(40.dp)
+            .wrapContentHeight()
+    )
 }

@@ -17,7 +17,6 @@ import br.com.myfitt.domain.models.ExercicioMudou.SERIES
 import br.com.myfitt.domain.models.HistoricoExercicioTreinos
 import br.com.myfitt.domain.models.TreinoExercicioComNome
 import br.com.myfitt.log.LogTool
-import br.com.myfitt.ui.components.ExercicioItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -52,15 +51,18 @@ class TreinoExercicioRepository(
     ) = withContext(
         Dispatchers.IO
     ) {
-        LogTool.log(
-            "updateExercicioDoTreino",
-            Unit,
-            "treinoExercicio" to treinoExercicio,
-            "exercicioMudou" to exercicioMudou
-        )
-        val cached = exercicios.find { treinoExercicio.id == it.id }
-        if (cached == null) return@withContext
-        if (cached != treinoExercicio || exercicioMudou == ExercicioMudou.ADICIONAR || exercicioMudou == ExercicioMudou.REMOVER) {
+        try {
+            LogTool.log(
+                "updateExercicioDoTreino",
+                Unit,
+                "treinoExercicio" to treinoExercicio,
+                "exercicioMudou" to exercicioMudou
+            )
+            val cached = exercicios.find { treinoExercicio.id == it.id }
+            if (cached == null) return@withContext
+            if (cached == treinoExercicio && exercicioMudou != ExercicioMudou.ADICIONAR && exercicioMudou != ExercicioMudou.REMOVER) {
+                return@withContext
+            }
             val entity = when (exercicioMudou) {
                 SERIES -> {
                     dao.update(
@@ -98,7 +100,7 @@ class TreinoExercicioRepository(
                 }
             }.toSeriesEntity()
             dao.insert(entity)
-        }
+        } catch (t: Throwable) { }
     }
 
     suspend fun removeExercicioDoTreino(treinoExercicio: TreinoExercicioComNome) = withContext(

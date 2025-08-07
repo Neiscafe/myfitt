@@ -44,13 +44,16 @@ import androidx.compose.ui.unit.dp
 import br.com.myfitt.domain.models.Exercicio
 import br.com.myfitt.domain.models.ExercicioMudou
 import br.com.myfitt.domain.models.Ficha
+import br.com.myfitt.domain.models.HistoricoExercicioTreinos
 import br.com.myfitt.domain.models.TreinoExercicioComNome
 import br.com.myfitt.ui.components.ExercicioItem
+import br.com.myfitt.ui.components.Loadable
 import br.com.myfitt.ui.components.SuggestionDropdown
 import br.com.myfitt.ui.theme.MyFittTheme
 import br.com.myfitt.ui.viewModels.ExerciciosTreinoViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -66,6 +69,9 @@ private fun _ListaExerciciosTreinoScreen(
     moveExerciseUpByOne: (TreinoExercicioComNome) -> Unit = {},
     moveExerciseDownByOne: (TreinoExercicioComNome) -> Unit = {},
     updateTreinoExercicio: (TreinoExercicioComNome, ExercicioMudou) -> Unit = { _, _ -> },
+    getHistoricoExercicio: (TreinoExercicioComNome) -> Flow<Loadable<List<HistoricoExercicioTreinos>?>> = {
+        flowOf()
+    },
     initial: List<TreinoExercicioComNome> = emptyList()
 ) {
     val context = LocalContext.current
@@ -73,7 +79,7 @@ private fun _ListaExerciciosTreinoScreen(
     val exerciciosDoTreino by exerciciosByTreino().collectAsState(initial)
     var selectedFicha by remember { mutableStateOf<Ficha?>(null) }
     val exercicioDigitado = remember { mutableStateOf("") }
-    var showDialog = remember { mutableStateOf<Exercicio?>(null) }
+    val showDialog = remember { mutableStateOf<Exercicio?>(null) }
 
     @Composable
     fun ApplyFichaButton(mostrar: Boolean, confirma: () -> Unit) {
@@ -183,7 +189,8 @@ private fun _ListaExerciciosTreinoScreen(
                         onDelete = { deleteExercicioDoTreino(exercicio[0]) },
                         onMoveUp = { moveExerciseUpByOne(exercicio[0]) },
                         onMoveDown = { moveExerciseDownByOne(exercicio[0]) },
-                        onUpdatedSeries = updateTreinoExercicio
+                        onUpdatedSeries = updateTreinoExercicio,
+                        onShowHistory = getHistoricoExercicio
                     )
                 }
             }
@@ -206,7 +213,8 @@ fun ListaExerciciosTreinoScreen(
         deleteExercicioDoTreino = viewModel::deleteExercicioDoTreino,
         moveExerciseUpByOne = viewModel::moveExerciseUpByOne,
         moveExerciseDownByOne = viewModel::moveExerciseDownByOne,
-        updateTreinoExercicio = viewModel::updateTreinoExercicio
+        updateTreinoExercicio = viewModel::updateTreinoExercicio,
+        getHistoricoExercicio = viewModel::getHistorico,
     )
 }
 
