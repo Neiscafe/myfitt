@@ -11,11 +11,16 @@ import br.com.myfitt.domain.models.ExercicioMudou
 import br.com.myfitt.domain.models.ExercicioMudou.ADICIONAR
 import br.com.myfitt.domain.models.ExercicioMudou.DESCANSO
 import br.com.myfitt.domain.models.ExercicioMudou.PESO
+import br.com.myfitt.domain.models.ExercicioMudou.REMOVER
 import br.com.myfitt.domain.models.ExercicioMudou.REPS
 import br.com.myfitt.domain.models.ExercicioMudou.SERIES
+import br.com.myfitt.domain.models.HistoricoExercicioTreinos
 import br.com.myfitt.domain.models.TreinoExercicioComNome
+import br.com.myfitt.log.LogTool
+import br.com.myfitt.ui.components.ExercicioItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
@@ -47,6 +52,12 @@ class TreinoExercicioRepository(
     ) = withContext(
         Dispatchers.IO
     ) {
+        LogTool.log(
+            "updateExercicioDoTreino",
+            Unit,
+            "treinoExercicio" to treinoExercicio,
+            "exercicioMudou" to exercicioMudou
+        )
         val cached = exercicios.find { treinoExercicio.id == it.id }
         if (cached == null) return@withContext
         if (cached != treinoExercicio || exercicioMudou == ExercicioMudou.ADICIONAR || exercicioMudou == ExercicioMudou.REMOVER) {
@@ -98,6 +109,7 @@ class TreinoExercicioRepository(
 
     fun getExerciciosDeUmTreino(treinoId: Int): Flow<List<TreinoExercicioComNome>> {
         return dao.getExerciciosByTreino(treinoId).map { listDto ->
+            LogTool.log(listDto)
             listDto.map {
 //                val performance =
 //                    dao.getUltimaPerformance(it.exercicioId, it.data) ?: PerformanceDto()
