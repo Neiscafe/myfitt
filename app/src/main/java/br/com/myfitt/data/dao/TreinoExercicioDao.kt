@@ -81,7 +81,7 @@ interface TreinoExercicioDao {
         ORDER BY te.posicao ASC
     """
     )
-    fun getExerciciosByTreino(treinoId: Int): Flow<List<TreinoExercicioDto>>
+    fun getExerciciosByTreino(treinoId: Int): List<TreinoExercicioDto>
 
     @Query(
         """

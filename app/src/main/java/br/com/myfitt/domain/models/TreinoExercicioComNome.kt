@@ -14,6 +14,7 @@ data class TreinoExercicioComNome(
     val observacao: String? = null,
     val pesoKgUltimoTreino: Float = 0f,
     val repeticoesUltimoTreino: Int = 0,
-    val seriesUltimoTreino: Int = 0
+    val seriesUltimoTreino: Int = 0,
+    val seriesLista: List<Serie>
 ){
 }

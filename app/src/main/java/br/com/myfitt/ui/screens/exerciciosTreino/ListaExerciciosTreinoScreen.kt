@@ -1,4 +1,4 @@
-package br.com.myfitt.ui.screens
+package br.com.myfitt.ui.screens.exerciciosTreino
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -207,7 +207,7 @@ fun ListaExerciciosTreinoScreen(
     _ListaExerciciosTreinoScreen(
         exerciciosByTreino = viewModel::exerciciosByTreino,
         deleteExercicio = viewModel::deleteExercicio,
-        insertExercicio = viewModel::insertExercicio,
+        insertExercicio = viewModel::addAndInsertExercicio,
         insertExercicioTreino = viewModel::insertExercicio,
         getSugestoes = viewModel::getSugestoes,
         deleteExercicioDoTreino = viewModel::deleteExercicioDoTreino,

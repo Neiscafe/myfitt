@@ -28,7 +28,7 @@ private const val TAG = "TreinoExercicioRepo"
 class TreinoExercicioRepository(
     private val dao: TreinoExercicioDao, private val exercicioRepository: ExercicioRepository
 ) {
-    private val exercicios = mutableListOf<TreinoExercicioComNome>()
+    private val exercicios = mutableMapOf<Int, TreinoExercicioComNome>()
 
     suspend fun addExercicioAoTreino(treinoId: Int, exercicio: Exercicio) = withContext(
         Dispatchers.IO
@@ -60,7 +60,7 @@ class TreinoExercicioRepository(
             )
             val cached = exercicios.find { treinoExercicio.id == it.id }
             if (cached == null) return@withContext
-            if (cached == treinoExercicio && exercicioMudou != ExercicioMudou.ADICIONAR && exercicioMudou != ExercicioMudou.REMOVER) {
+            if (cached == treinoExercicio && exercicioMudou != ADICIONAR && exercicioMudou != REMOVER) {
                 return@withContext
             }
             val entity = when (exercicioMudou) {
@@ -95,12 +95,14 @@ class TreinoExercicioRepository(
 
                 ADICIONAR -> treinoExercicio
                 REMOVER -> {
+                    exercicios.remove(treinoExercicio)
                     dao.delete(treinoExercicio.toSeriesEntity())
                     return@withContext
                 }
             }.toSeriesEntity()
             dao.insert(entity)
-        } catch (t: Throwable) { }
+        } catch (t: Throwable) {
+        }
     }
 
     suspend fun removeExercicioDoTreino(treinoExercicio: TreinoExercicioComNome) = withContext(
@@ -109,22 +111,13 @@ class TreinoExercicioRepository(
         dao.deleteAndAdjustPosition(treinoExercicio.toEntity())
     }
 
-    fun getExerciciosDeUmTreino(treinoId: Int): Flow<List<TreinoExercicioComNome>> {
-        return dao.getExerciciosByTreino(treinoId).map { listDto ->
-            LogTool.log(listDto)
-            listDto.map {
-//                val performance =
-//                    dao.getUltimaPerformance(it.exercicioId, it.data) ?: PerformanceDto()
-//                it.copy(
-//                    seriesUltimoTreino = performance.series,
-//                    repeticoesUltimoTreino = performance.repeticoes,
-//                    pesoKgUltimoTreino = performance.pesoKg
-//                )
-                it.toDomain()
-            }.also {
-                exercicios.clear()
-                exercicios.addAll(it)
-            }
+    fun getExerciciosDeUmTreino(treinoId: Int): List<TreinoExercicioComNome> {
+        return dao.getExerciciosByTreino(treinoId).map {
+            LogTool.log(it)
+            it.toDomain()
+        }.also {
+            exercicios.clear()
+            exercicios.addAll(it)
         }
     }
 
