@@ -47,9 +47,10 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import br.com.myfitt.domain.models.ExercicioMudou
+import br.com.myfitt.domain.models.Exercicio
+import br.com.myfitt.domain.models.ExercicioTreino
 import br.com.myfitt.domain.models.HistoricoExercicioTreinos
-import br.com.myfitt.domain.models.TreinoExercicioComNome
+import br.com.myfitt.domain.models.Serie
 import br.com.myfitt.domain.utils.DateUtil
 import br.com.myfitt.ui.theme.MyFittTheme
 import kotlinx.coroutines.flow.Flow
@@ -58,22 +59,23 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ExercicioItem(
-    exercicios: List<TreinoExercicioComNome>,
-    onDelete: () -> Unit = {},
-    onMoveUp: () -> Unit = {},
-    onMoveDown: () -> Unit = {},
-    onShowHistory: (TreinoExercicioComNome) -> Flow<Loadable<List<HistoricoExercicioTreinos>?>> = { flowOf() },
-    onUpdatedSeries: (TreinoExercicioComNome, ExercicioMudou) -> Unit = { _, _ -> }
+    exercicioTreino: ExercicioTreino,
+    deleteExercicioTreino: (ExercicioTreino) -> Unit = {},
+    moveExercicioTreinoUp: (ExercicioTreino) -> Unit = {},
+    moveExercicioTreinoDown: (ExercicioTreino) -> Unit = {},
+    showHistory: (ExercicioTreino) -> Flow<Loadable<List<HistoricoExercicioTreinos>?>> = { flowOf() },
+    removeSerie: (Serie) -> Unit = {},
+    addSerie: (Serie) -> Unit = {},
+    updateSerie: (Serie) -> Unit = {},
 ) {
-    val showHistoryDialog = remember { mutableStateOf<TreinoExercicioComNome?>(null) }
-    val exercicio = exercicios.first()
+    val showHistoryDialog = remember { mutableStateOf<ExercicioTreino?>(null) }
     val scope = rememberCoroutineScope()
     if (showHistoryDialog.value != null) {
         val dialogData =
             remember { mutableStateOf<Loadable<List<HistoricoExercicioTreinos>?>>(Loadable.Loading) }
         LaunchedEffect(Unit) {
             scope.launch {
-                onShowHistory(showHistoryDialog.value!!).collect {
+                showHistory(showHistoryDialog.value!!).collect {
                     dialogData.value = it
                 }
             }
@@ -83,8 +85,6 @@ fun ExercicioItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(500.dp),
-//                    .padding(16.dp)
-
                 shape = RoundedCornerShape(16.dp),
             ) {
                 when (val result = dialogData.value) {
@@ -104,15 +104,16 @@ fun ExercicioItem(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             itemsIndexed(
-                                items = result.data!!,
-                                key = { i, it -> it.serieId }) { i, it ->
+                                items = result.data!!, key = { i, it -> it.serieId }) { i, it ->
                                 if (i == 0) {
-                                    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
                                         Text(
-                                            "Histórico",
-                                            style = MaterialTheme.typography.titleLarge
+                                            "Histórico", style = MaterialTheme.typography.titleLarge
                                         )
-                                        Text(showHistoryDialog.value?.exercicioNome ?: "")
+                                        Text(showHistoryDialog.value?.exercicio?.nome ?: "")
                                     }
                                 }
                                 Card(
@@ -120,7 +121,11 @@ fun ExercicioItem(
                                     colors = CardDefaults.cardColors()
                                         .copy(containerColor = Color.Gray)
                                 ) {
-                                    Column(modifier = Modifier.fillMaxWidth().padding(4.dp), ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(4.dp)
+                                    ) {
                                         Text(DateUtil.format(DateUtil.fromDbNotation(it.dataTreino)))
                                         Row(
                                             horizontalArrangement = Arrangement.End,
@@ -189,12 +194,12 @@ fun ExercicioItem(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                exercicio.exercicioNome, style = MaterialTheme.typography.titleMedium
+                exercicioTreino.exercicio.nome, style = MaterialTheme.typography.titleMedium
             )
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button({
-                showHistoryDialog.value = exercicio
+                showHistoryDialog.value = exercicioTreino
             }, colors = ButtonDefaults.buttonColors().copy(containerColor = Color.White)) {
                 Row(horizontalArrangement = Arrangement.Center) {
                     Icon(Icons.Default.DateRange, null, tint = Color.Black)
@@ -205,7 +210,7 @@ fun ExercicioItem(
             Row {
                 val iconModifier = Modifier.size(20.dp)
                 IconButton(onClick = {
-                    onMoveDown()
+                    moveExercicioTreinoDown(exercicioTreino)
                 }) {
                     Icon(
                         modifier = iconModifier,
@@ -213,14 +218,14 @@ fun ExercicioItem(
                         contentDescription = "Elevar"
                     )
                 }
-                IconButton(onClick = { onMoveUp() }) {
+                IconButton(onClick = { moveExercicioTreinoUp(exercicioTreino) }) {
                     Icon(
                         modifier = iconModifier,
                         imageVector = Icons.Default.KeyboardArrowUp,
                         contentDescription = "Abaixar"
                     )
                 }
-                IconButton(onClick = { onDelete() }) {
+                IconButton(onClick = { deleteExercicioTreino(exercicioTreino) }) {
                     Icon(
                         modifier = iconModifier,
                         imageVector = Icons.Default.Delete,
@@ -256,13 +261,10 @@ fun ExercicioItem(
                     )
                 )
             }
-            exercicios.forEach {
-                if (it.serieId == 0) return@forEach
+            exercicioTreino.seriesLista.forEach {
                 Row {
                     IconButton({
-                        onUpdatedSeries(
-                            it, ExercicioMudou.REMOVER
-                        )
+                        removeSerie(it)
                     }) { Icon(Icons.Default.Close, null) }
                     SideEffectTextField(
                         it.segundosDescanso.toString(),
@@ -270,19 +272,15 @@ fun ExercicioItem(
                             .height(40.dp)
                             .wrapContentHeight(),
                         onUpdate = { updated ->
-                            onUpdatedSeries(
-                                it.copy(segundosDescanso = updated.toInt()), ExercicioMudou.DESCANSO
-                            )
+                            updateSerie(it.copy(segundosDescanso = updated.toInt()))
                         })
                     SideEffectTextField(
-                        it.repeticoes.toString(),
+                        it.reps.toString(),
                         modifier = Modifier
                             .height(40.dp)
                             .wrapContentHeight(),
                         onUpdate = { updated ->
-                            onUpdatedSeries(
-                                it.copy(repeticoes = updated.toInt()), ExercicioMudou.REPS
-                            )
+                            updateSerie(it.copy(reps = updated.toInt()))
                         })
                     SideEffectTextField(
                         it.pesoKg.toInt().toString(),
@@ -290,17 +288,19 @@ fun ExercicioItem(
                             .height(40.dp)
                             .wrapContentHeight(),
                         onUpdate = { updated ->
-                            onUpdatedSeries(
-                                it.copy(pesoKg = updated.toFloat()), ExercicioMudou.PESO
-                            )
+                            updateSerie(it.copy(pesoKg = updated.toFloat()))
                         })
                 }
             }
             IconButton({
-                onUpdatedSeries(
-                    exercicio.copy(
-                        serieId = 0, pesoKg = 0f, segundosDescanso = 0, repeticoes = 0
-                    ), ExercicioMudou.ADICIONAR
+                addSerie(
+                    Serie(
+                        id = 0,
+                        pesoKg = 0f,
+                        segundosDescanso = 0,
+                        reps = 0,
+                        exercicioTreinoId = exercicioTreino.id
+                    )
                 )
             }) { Icon(Icons.Default.Add, null, tint = Color.White) }
         }
@@ -313,31 +313,10 @@ private fun ExercicioItemPreview() {
     MyFittTheme {
         Surface {
             ExercicioItem(
-                listOf(
-                    TreinoExercicioComNome(
-                        0, 0, "akosmdkoasmdako", segundosDescanso = 180, serieId = 1
-                    ),
-                    TreinoExercicioComNome(
-                        0, 0, "akosmdkoasmdakosd", segundosDescanso = 180, serieId = 2
-                    ),
-                    TreinoExercicioComNome(
-                        0, 0, "akosmdkoasmdakosd", segundosDescanso = 180, serieId = 3
-                    ),
-                    TreinoExercicioComNome(
-                        0, 0, "akosmdkoasmdakosd", segundosDescanso = 180, serieId = 5
-                    ),
-                    TreinoExercicioComNome(
-                        0,
-                        0,
-                        "akosmdkoasmdakosd",
-                        segundosDescanso = 180,
-                        pesoKg = 180f,
-                        repeticoes = 8,
-                        serieId = 6
-                    ),
-                )
+                exercicioTreino = ExercicioTreino(
+                    0, 0, Exercicio("Supino inclinado", 0), 0, null, listOf()
+                ),
             )
-
         }
     }
 }
