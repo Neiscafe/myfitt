@@ -10,6 +10,7 @@ import androidx.room.Update
 import br.com.myfitt.data.dto.HistoricoExercicioTreinosDto
 import br.com.myfitt.data.dto.PerformanceDto
 import br.com.myfitt.data.dto.TreinoExercicioDto
+import br.com.myfitt.data.entity.ExercicioWithTreinoExerciciosAndSeries
 import br.com.myfitt.data.entity.TreinoExercicioEntity
 import br.com.myfitt.data.entity.TreinoExercicioSerieEntity
 import kotlinx.coroutines.flow.Flow
@@ -20,7 +21,7 @@ interface TreinoExercicioDao {
     suspend fun insert(treinoExercicio: TreinoExercicioEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(treinoExercicio: TreinoExercicioSerieEntity)
+    suspend fun insert(treinoExercicio: TreinoExercicioSerieEntity): Long
 
     @Update
     suspend fun update(treinoExercicio: TreinoExercicioEntity)
@@ -46,42 +47,16 @@ interface TreinoExercicioDao {
     suspend fun reducePositionsBiggerThan(treinoId: Int, position: Int)
 
     @Delete
-    suspend fun delete(serie: TreinoExercicioSerieEntity)
+    suspend fun delete(serie: TreinoExercicioSerieEntity): Int
 
     @Delete
     suspend fun delete(treinoExercicio: TreinoExercicioEntity)
-
-    /**
-     * Traz dados do cross + nome do exercício.
-     * Necessário um JOIN entre treino_exercicio e exercicios.
-     */
     @Query(
         """
-        SELECT 
-            te.id as id,
-            te.treinoId AS treinoId,
-            te.exercicioId AS exercicioId,
-            ex.nome AS exercicioNome,
-            tr.data AS data,
-            0 AS series,
-            te.posicao AS posicao,
-            tes.id as serieId,
-            tes.segundosDescanso as segundosDescanso,
-            tes.pesoKg AS pesoKg,
-            tes.reps AS repeticoes,
-            te.observacao AS observacao,
-            0 AS pesoKgUltimoTreino,
-            0 AS repeticoesUltimoTreino,
-            0 AS seriesUltimoTreino
-        FROM treino_exercicio te
-        INNER JOIN exercicios ex ON ex.id = te.exercicioId
-        INNER JOIN treinos tr ON tr.id = te.treinoId
-        LEFT JOIN treino_exercicio_serie tes ON tes.treinoExercicioId = te.id
-        WHERE te.treinoId = :treinoId AND COALESCE(ex.dataDesabilitado, DATE('now'))>=tr.data
-        ORDER BY te.posicao ASC
+        SELECT * FROM treino_exercicio WHERE treinoId = :treinoId
     """
     )
-    fun getExerciciosByTreino(treinoId: Int): List<TreinoExercicioDto>
+    fun getExerciciosByTreino(treinoId: Int): Flow<List<ExercicioWithTreinoExerciciosAndSeries>>
 
     @Query(
         """

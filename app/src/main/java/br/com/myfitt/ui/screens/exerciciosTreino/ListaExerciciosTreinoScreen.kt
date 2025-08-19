@@ -42,10 +42,10 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import br.com.myfitt.domain.models.Exercicio
-import br.com.myfitt.domain.models.ExercicioMudou
+import br.com.myfitt.domain.models.ExercicioTreino
 import br.com.myfitt.domain.models.Ficha
 import br.com.myfitt.domain.models.HistoricoExercicioTreinos
-import br.com.myfitt.domain.models.TreinoExercicioComNome
+import br.com.myfitt.domain.models.Serie
 import br.com.myfitt.ui.components.ExercicioItem
 import br.com.myfitt.ui.components.Loadable
 import br.com.myfitt.ui.components.SuggestionDropdown
@@ -60,19 +60,21 @@ import org.koin.core.parameter.parametersOf
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun _ListaExerciciosTreinoScreen(
-    exerciciosByTreino: () -> Flow<List<TreinoExercicioComNome>> = { flow { emptyList<TreinoExercicioComNome>() } },
+    exerciciosByTreino: () -> Flow<List<ExercicioTreino>> = { flow { emptyList<ExercicioTreino>() } },
     deleteExercicio: (Exercicio) -> Unit = {},
-    insertExercicio: (String) -> Unit = {},
+    addAndInsertExercicio: (String) -> Unit = {},
     insertExercicioTreino: (Exercicio) -> Unit = {},
     getSugestoes: suspend (String) -> List<Exercicio> = { emptyList() },
-    deleteExercicioDoTreino: (TreinoExercicioComNome) -> Unit = {},
-    moveExerciseUpByOne: (TreinoExercicioComNome) -> Unit = {},
-    moveExerciseDownByOne: (TreinoExercicioComNome) -> Unit = {},
-    updateTreinoExercicio: (TreinoExercicioComNome, ExercicioMudou) -> Unit = { _, _ -> },
-    getHistoricoExercicio: (TreinoExercicioComNome) -> Flow<Loadable<List<HistoricoExercicioTreinos>?>> = {
+    deleteExercicioTreino: (ExercicioTreino) -> Unit = {},
+    moveExercicioUp: (ExercicioTreino) -> Unit = {},
+    moveExercicioDown: (ExercicioTreino) -> Unit = {},
+    updateSerie: (Serie) -> Unit = { },
+    addSerie: (Serie) -> Unit = { },
+    deleteSerie: (Serie) -> Unit = { },
+    getHistoricoExercicio: (ExercicioTreino) -> Flow<Loadable<List<HistoricoExercicioTreinos>?>> = {
         flowOf()
     },
-    initial: List<TreinoExercicioComNome> = emptyList()
+    initial: List<ExercicioTreino> = emptyList()
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
@@ -119,10 +121,14 @@ private fun _ListaExerciciosTreinoScreen(
             Text("Exercícios do Treino", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.weight(1f))
             TextButton(modifier = Modifier.height(IntrinsicSize.Min), onClick = {
-                val text =
-                    exerciciosDoTreino.map { "${it.exercicioNome}:\n\tÚltimo treino: ${it.seriesUltimoTreino} x ${it.repeticoesUltimoTreino} - ${it.pesoKgUltimoTreino}\n\tAtual: ${it.series} x ${it.repeticoes} - ${it.pesoKg}" }
-                        .joinToString(separator = "\n")
-                clipboardManager.setText(AnnotatedString(text))
+                val text = StringBuilder()
+                exerciciosDoTreino.forEach {
+                    text.append("${it.exercicio.nome}:\n")
+                    it.seriesLista.forEach {
+                        text.append("${it.pesoKg}KG X ${it.reps} - ${it.segundosDescanso}s de intervalo.\n")
+                    }
+                }
+                clipboardManager.setText(AnnotatedString(text.toString()))
                 try {
                     context.startActivity(context.packageManager.getLaunchIntentForPackage("com.hasz.gymrats.app"))
                 } catch (t: Throwable) {
@@ -157,7 +163,7 @@ private fun _ListaExerciciosTreinoScreen(
                         color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
                     ), onClick = {
                     if (exercicioDigitado.value.isNotEmpty()) {
-                        insertExercicio(exercicioDigitado.value)
+                        addAndInsertExercicio(exercicioDigitado.value)
                         exercicioDigitado.value = ""
                     }
                 }) {
@@ -179,18 +185,17 @@ private fun _ListaExerciciosTreinoScreen(
             contentPadding = PaddingValues(0.dp, 8.dp, 0.dp, 24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
         ) {
-
-            val exerciciosDoTreinoAgrupado = exerciciosDoTreino.groupBy { it.id }.map { it.value }
-            items(items = exerciciosDoTreinoAgrupado, key = { it[0].id }) {
-                val exercicio = it
+            items(items = exerciciosDoTreino, key = { it.id }) {
                 Card {
                     ExercicioItem(
-                        exercicio,
-                        onDelete = { deleteExercicioDoTreino(exercicio[0]) },
-                        onMoveUp = { moveExerciseUpByOne(exercicio[0]) },
-                        onMoveDown = { moveExerciseDownByOne(exercicio[0]) },
-                        onUpdatedSeries = updateTreinoExercicio,
-                        onShowHistory = getHistoricoExercicio
+                        it,
+                        deleteExercicioTreino = deleteExercicioTreino,
+                        moveExercicioTreinoUp = moveExercicioUp,
+                        moveExercicioTreinoDown = moveExercicioDown,
+                        showHistory = getHistoricoExercicio,
+                        removeSerie = deleteSerie,
+                        addSerie = addSerie,
+                        updateSerie = updateSerie,
                     )
                 }
             }
@@ -207,14 +212,16 @@ fun ListaExerciciosTreinoScreen(
     _ListaExerciciosTreinoScreen(
         exerciciosByTreino = viewModel::exerciciosByTreino,
         deleteExercicio = viewModel::deleteExercicio,
-        insertExercicio = viewModel::addAndInsertExercicio,
+        addAndInsertExercicio = viewModel::addAndInsertExercicio,
         insertExercicioTreino = viewModel::insertExercicio,
         getSugestoes = viewModel::getSugestoes,
-        deleteExercicioDoTreino = viewModel::deleteExercicioDoTreino,
-        moveExerciseUpByOne = viewModel::moveExerciseUpByOne,
-        moveExerciseDownByOne = viewModel::moveExerciseDownByOne,
-        updateTreinoExercicio = viewModel::updateTreinoExercicio,
+        deleteExercicioTreino = viewModel::deleteExercicioDoTreino,
+        moveExercicioUp = viewModel::moveExerciseUpByOne,
+        moveExercicioDown = viewModel::moveExerciseDownByOne,
         getHistoricoExercicio = viewModel::getHistorico,
+        updateSerie = viewModel::updateSerie,
+        addSerie = viewModel::addSerie,
+        deleteSerie = viewModel::deleteSerie,
     )
 }
 
@@ -225,40 +232,22 @@ fun ListaExerciciosTreinoScreenPreview() {
         Surface {
             _ListaExerciciosTreinoScreen(
                 initial = listOf(
-                    TreinoExercicioComNome(
-                        0,
-                        0,
-                        "ansdijasndijnasd",
-                        exercicioId = 0,
-                        series = 0,
-                        posicao = 1,
-                        pesoKg = 10f,
-                        repeticoes = 0,
-                        serieId = 1,
-                        observacao = "",
-                        pesoKgUltimoTreino = 0f,
-                        repeticoesUltimoTreino = 0,
-                        seriesUltimoTreino = 0
-                    ), TreinoExercicioComNome(
-                        0,
-                        0,
-                        "ansdijasndijnasd",
-                        exercicioId = 0,
-                        series = 0,
-                        posicao = 1,
-                        pesoKg = 10f,
-                        repeticoes = 0,
-                        serieId = 2,
-                        observacao = "",
-                        pesoKgUltimoTreino = 0f,
-                        repeticoesUltimoTreino = 0,
-                        seriesUltimoTreino = 0
+                    ExercicioTreino(
+                        id = 0,
+                        treinoId = 0,
+                        exercicio = Exercicio("Supino banco", 0),
+                        posicao = 0,
+                        seriesLista = listOf()
+                    ),
+                    ExercicioTreino(
+                        id = 1,
+                        treinoId = 0,
+                        exercicio = Exercicio("Supino Mesa", 0),
+                        posicao = 0,
+                        seriesLista = listOf(Serie(1, 0, 20.5f, 30, 20))
                     )
-
-
                 )
             )
-
         }
     }
 }

@@ -19,7 +19,7 @@ object LogTool {
         Log.d(TAG, message(StringBuilder()))
     }
 
-    fun log(function: String, detail: Any, vararg params: Pair<String, Any>) {
+    fun log(function: String, detail: Any, vararg params: Pair<String, Any?>) {
         Log.d(TAG, "$function:\n${params.toMap()}\n$detail")
     }
 }

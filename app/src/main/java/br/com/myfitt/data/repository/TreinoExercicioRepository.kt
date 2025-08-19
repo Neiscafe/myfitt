@@ -2,20 +2,13 @@ package br.com.myfitt.data.repository
 
 import br.com.myfitt.data.dao.TreinoExercicioDao
 import br.com.myfitt.data.entity.TreinoExercicioEntity
-import br.com.myfitt.data.mapper.toDomain
+import br.com.myfitt.data.entity.TreinoExercicioSerieEntity
 import br.com.myfitt.data.mapper.toEntity
-import br.com.myfitt.data.mapper.toSeriesEntity
 import br.com.myfitt.domain.ExerciseValidator
 import br.com.myfitt.domain.models.Exercicio
-import br.com.myfitt.domain.models.ExercicioMudou
-import br.com.myfitt.domain.models.ExercicioMudou.ADICIONAR
-import br.com.myfitt.domain.models.ExercicioMudou.DESCANSO
-import br.com.myfitt.domain.models.ExercicioMudou.PESO
-import br.com.myfitt.domain.models.ExercicioMudou.REMOVER
-import br.com.myfitt.domain.models.ExercicioMudou.REPS
-import br.com.myfitt.domain.models.ExercicioMudou.SERIES
+import br.com.myfitt.domain.models.ExercicioTreino
 import br.com.myfitt.domain.models.HistoricoExercicioTreinos
-import br.com.myfitt.domain.models.TreinoExercicioComNome
+import br.com.myfitt.domain.models.Serie
 import br.com.myfitt.log.LogTool
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -28,7 +21,7 @@ private const val TAG = "TreinoExercicioRepo"
 class TreinoExercicioRepository(
     private val dao: TreinoExercicioDao, private val exercicioRepository: ExercicioRepository
 ) {
-    private val exercicios = mutableMapOf<Int, TreinoExercicioComNome>()
+    private val exercicios = mutableListOf<ExercicioTreino>()
 
     suspend fun addExercicioAoTreino(treinoId: Int, exercicio: Exercicio) = withContext(
         Dispatchers.IO
@@ -46,82 +39,120 @@ class TreinoExercicioRepository(
         )
     }
 
-    suspend fun updateExercicioDoTreino(
-        treinoExercicio: TreinoExercicioComNome, exercicioMudou: ExercicioMudou
-    ) = withContext(
-        Dispatchers.IO
-    ) {
-        try {
+    suspend fun addSeries(serie: Serie): Boolean {
+        return runCatching {
+            dao.insert(
+                TreinoExercicioSerieEntity(
+                    id = serie.id,
+                    treinoExercicioId = serie.exercicioTreinoId,
+                    pesoKg = serie.pesoKg,
+                    reps = serie.reps,
+                    segundosDescanso = serie.segundosDescanso
+                )
+            ) > 0L
+        }.onFailure {
             LogTool.log(
-                "updateExercicioDoTreino",
+                "addSeries",
                 Unit,
-                "treinoExercicio" to treinoExercicio,
-                "exercicioMudou" to exercicioMudou
+                "serie" to serie,
+                "message" to it.message,
+                "stackTrace" to it.stackTraceToString()
             )
-            val cached = exercicios.find { treinoExercicio.id == it.id }
-            if (cached == null) return@withContext
-            if (cached == treinoExercicio && exercicioMudou != ADICIONAR && exercicioMudou != REMOVER) {
-                return@withContext
-            }
-            val entity = when (exercicioMudou) {
-                SERIES -> {
-                    dao.update(
-                        treinoExercicio.copy(
-                            pesoKg = cached.pesoKg,
-                            repeticoes = cached.repeticoes,
-                            segundosDescanso = cached.segundosDescanso
-                        ).toEntity()
-                    )
-                    return@withContext
-                }
-
-                PESO -> {
-                    treinoExercicio.copy(
-                        series = cached.series,
-                        repeticoes = cached.repeticoes,
-                        segundosDescanso = cached.segundosDescanso
-                    )
-                }
-
-                REPS -> treinoExercicio.copy(
-                    pesoKg = cached.pesoKg,
-                    series = cached.series,
-                    segundosDescanso = cached.segundosDescanso
-                )
-
-                DESCANSO -> treinoExercicio.copy(
-                    pesoKg = cached.pesoKg, series = cached.series, repeticoes = cached.repeticoes
-                )
-
-                ADICIONAR -> treinoExercicio
-                REMOVER -> {
-                    exercicios.remove(treinoExercicio)
-                    dao.delete(treinoExercicio.toSeriesEntity())
-                    return@withContext
-                }
-            }.toSeriesEntity()
-            dao.insert(entity)
-        } catch (t: Throwable) {
-        }
+        }.onSuccess {  }.getOrNull() ?: false
     }
 
-    suspend fun removeExercicioDoTreino(treinoExercicio: TreinoExercicioComNome) = withContext(
+
+    suspend fun removeSeries(serie: Serie): Boolean {
+        return runCatching {
+            dao.delete(
+                TreinoExercicioSerieEntity(
+                    id = serie.id,
+                    treinoExercicioId = serie.exercicioTreinoId,
+                    pesoKg = serie.pesoKg,
+                    reps = serie.reps,
+                    segundosDescanso = serie.segundosDescanso
+                )
+            ) > 0L
+        }.onFailure {
+            LogTool.log(
+                "removeSeries",
+                Unit,
+                "serie" to serie,
+                "message" to it.message,
+                "stackTrace" to it.stackTraceToString()
+            )
+        }.getOrNull() ?: false
+    }
+
+    suspend fun updateSeries(
+        serie: Serie
+    ): Boolean {
+        return runCatching {
+            LogTool.log(
+                "updateSeries",
+                Unit,
+                "serie" to serie,
+            )
+//            val exercicioTreinoCached = exercicios.find { it.id == serie.exercicioTreinoId }
+//            val serieCached = exercicioTreinoCached?.seriesLista?.find { it.id == serie.id }
+//            if (exercicioTreinoCached == null || serieCached == null) {
+//                return false
+//            }
+            dao.insert(
+                TreinoExercicioSerieEntity(
+                    id = serie.id,
+                    treinoExercicioId = serie.exercicioTreinoId,
+                    pesoKg = serie.pesoKg,
+                    reps = serie.reps,
+                    segundosDescanso = serie.segundosDescanso
+                )
+            ) > 0L
+        }.onFailure {
+            LogTool.log(
+                "updateSeries",
+                Unit,
+                "serie" to serie,
+                "message" to it.message,
+                "stackTrace" to it.stackTraceToString()
+            )
+        }.getOrNull() ?: false
+    }
+
+    suspend fun removeExercicioDoTreino(treinoExercicio: ExercicioTreino) = withContext(
         Dispatchers.IO
     ) {
         dao.deleteAndAdjustPosition(treinoExercicio.toEntity())
     }
 
-    fun getExerciciosDeUmTreino(treinoId: Int): List<TreinoExercicioComNome> {
+    fun getExerciciosDeUmTreino(treinoId: Int): Flow<List<ExercicioTreino>> {
         return dao.getExerciciosByTreino(treinoId).map {
-            LogTool.log(it)
-            it.toDomain()
-        }.also {
-            exercicios.clear()
-            exercicios.addAll(it)
+            it.map {
+                LogTool.log(it)
+                ExercicioTreino(
+                    id = it.treinoExercicioAndSeries.treinoExercicio.id,
+                    treinoId = treinoId,
+                    exercicio = Exercicio(it.exercicio.nome, it.exercicio.id),
+                    posicao = it.treinoExercicioAndSeries.treinoExercicio.posicao,
+                    observacao = "",
+                    seriesLista = it.treinoExercicioAndSeries.series.map {
+                        Serie(
+                            id = it.id,
+                            pesoKg = it.pesoKg ?: 0f,
+                            reps = it.reps ?: 0,
+                            segundosDescanso = it.segundosDescanso ?: 0,
+                            exercicioTreinoId = it.treinoExercicioId
+                        )
+                    }).also {
+                    synchronized(exercicios) {
+                        exercicios.clear()
+                        exercicios.add(it)
+                    }
+                }
+            }
         }
     }
 
-    suspend fun diminuirPosicao(exercicio: TreinoExercicioComNome) = withContext(
+    suspend fun diminuirPosicao(exercicio: ExercicioTreino) = withContext(
         Dispatchers.IO
     ) {
         if (exercicio.posicao <= 0) return@withContext
@@ -129,7 +160,7 @@ class TreinoExercicioRepository(
         dao.switchPositions(exercicio.treinoId, idAumentar, exercicio.id)
     }
 
-    suspend fun aumentarPosicao(exercicio: TreinoExercicioComNome) = withContext(
+    suspend fun aumentarPosicao(exercicio: ExercicioTreino) = withContext(
         Dispatchers.IO
     ) {
         if (exercicio.posicao >= exercicios.size - 1) return@withContext
