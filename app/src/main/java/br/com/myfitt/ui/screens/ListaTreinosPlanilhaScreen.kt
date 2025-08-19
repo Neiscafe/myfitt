@@ -24,23 +24,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import br.com.myfitt.domain.models.Treino
 import br.com.myfitt.domain.utils.DateUtil
 import br.com.myfitt.ui.components.DefaultTextField
 import br.com.myfitt.ui.components.InsertionTopBar
 import br.com.myfitt.ui.components.TreinoSemanaItem
+import br.com.myfitt.ui.theme.MyFittTheme
 import br.com.myfitt.ui.utils.TreinoByWeekMapper
 import br.com.myfitt.ui.viewModels.TreinosPlanilhaViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListaTreinosPlanilhaScreen(
-    navigate: (Int) -> Unit,
-    viewModel: TreinosPlanilhaViewModel = koinViewModel(),
+fun _ListaTreinosPlanilhaScreen(
+    navigate: (Int) -> Unit = {},
+    getTreinosByPlanilha: Flow<List<Treino>> = flowOf(),
+    insertTreino: suspend (name: String, date: LocalDate) -> Unit = { _, _ -> },
+    deleteTreino: (treino: Treino) -> Unit = {}
 ) {
-    val treinos by viewModel.getTreinosByPlanilha().collectAsState(initial = emptyList())
+    val treinos by getTreinosByPlanilha.collectAsState(initial = emptyList())
     val exercicioEscrito = remember { mutableStateOf("") }
     var dataSelecionada by remember { mutableStateOf(DateUtil.now) }
     val isDateDialogShown = remember { mutableStateOf(false) }
@@ -51,7 +58,7 @@ fun ListaTreinosPlanilhaScreen(
             dataSelecionada = it
         }
         InsertionTopBar(title = "Treinos da Planilha", onAddClicked = {
-            viewModel.insertTreino(exercicioEscrito.value, dataSelecionada)
+            insertTreino(exercicioEscrito.value, dataSelecionada)
         }, InsertionField = {
             DefaultTextField(
                 suffixText = DateUtil.format(dataSelecionada),
@@ -78,9 +85,29 @@ fun ListaTreinosPlanilhaScreen(
                     data,
                     treinosSemana,
                     onClick = { navigate(it.id) },
-                    onDelete = { viewModel.deleteTreino(it) })
+                    onDelete = { deleteTreino(it) })
             }
         }
+    }
+}
+
+@Composable
+fun ListaTreinosPlanilhaScreen(
+    navigate: (Int) -> Unit, viewModel: TreinosPlanilhaViewModel = koinViewModel()
+) {
+    _ListaTreinosPlanilhaScreen(
+        navigate,
+        viewModel.getTreinosByPlanilha(),
+        { it, it1 -> viewModel.insertTreino(it, it1) },
+        viewModel::deleteTreino
+    )
+}
+
+@Preview
+@Composable
+private fun ListaTreinosPlanilhaScreenPreview() {
+    MyFittTheme {
+        _ListaTreinosPlanilhaScreen()
     }
 }
 
