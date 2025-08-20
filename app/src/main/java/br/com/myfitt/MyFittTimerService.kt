@@ -14,16 +14,22 @@ import androidx.core.graphics.drawable.IconCompat
 class MyFittTimerService : Service() {
     companion object{
         const val EXTRA_TYPE_ACTION = "1"
-        const val EXTRA_FINISH_EXERCISE = 1
+        const val EXTRA_FINISH_NOTIFICATION = 1
         const val EXTRA_START_EXERCISE = 2
         const val EXTRA_START_REST = 3
     }
-    private val onTimerTick: (Long) -> Unit = {}
+    private val binder = MyFittTimerBinder(this)
+    class MyFittTimerBinder(private val service: MyFittTimerService): Binder(){
+        fun getMyFittTimerService(): MyFittTimerService{
+            return service
+        }
+    }
+    var onTimerTick: (Int) -> Unit = {}
     override fun onStartCommand(
         intent: Intent?, flags: Int, startId: Int
     ): Int {
         when (val it = intent?.extras?.getInt(EXTRA_TYPE_ACTION)) {
-            EXTRA_FINISH_EXERCISE -> {
+            EXTRA_FINISH_NOTIFICATION -> {
 //                val notification = createCounterNotification()
 //                ServiceCompat.startForeground(
 //                    this, startId, notification,
@@ -43,7 +49,7 @@ class MyFittTimerService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? {
-        return Binder()
+        return binder
     }
 
     private fun createCounterNotification(): Notification {

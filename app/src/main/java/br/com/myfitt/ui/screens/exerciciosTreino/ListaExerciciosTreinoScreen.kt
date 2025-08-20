@@ -1,5 +1,6 @@
 package br.com.myfitt.ui.screens.exerciciosTreino
 
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,12 +19,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -41,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import br.com.myfitt.MyFittTimerService
 import br.com.myfitt.domain.models.Exercicio
 import br.com.myfitt.domain.models.ExercicioTreino
 import br.com.myfitt.domain.models.Ficha
@@ -114,62 +119,73 @@ private fun _ListaExerciciosTreinoScreen(
                 }
             })
     }
-    Column(
-        modifier = Modifier.padding(10.dp, 30.dp, 10.dp, 0.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Exercícios do Treino", style = MaterialTheme.typography.titleLarge)
-            Spacer(modifier = Modifier.weight(1f))
-            TextButton(modifier = Modifier.height(IntrinsicSize.Min), onClick = {
-                val text = StringBuilder()
-                exerciciosDoTreino.forEach {
-                    text.append("${it.exercicio.nome}:\n")
-                    it.seriesLista.forEach {
-                        text.append("${it.pesoKg}KG X ${it.reps} - ${it.segundosDescanso}s de intervalo.\n")
-                    }
-                }
-                clipboardManager.setText(AnnotatedString(text.toString()))
-                try {
-                    context.startActivity(context.packageManager.getLaunchIntentForPackage("com.hasz.gymrats.app"))
-                } catch (t: Throwable) {
-                    Log.d("Erro", "$t")
-                }
-            }) {
-                Text("Ir para Gym Rats", color = MaterialTheme.colorScheme.onBackground)
-            }
+    Scaffold(Modifier.padding(8.dp), floatingActionButton = {
+        FloatingActionButton({
+            // vai para tela nova
+        }) {
+            Icon(
+                Icons.Default.Email,
+                null
+            )
         }
-        Spacer(Modifier.height(16.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+    }) {
+        Column(
+            modifier = Modifier.padding(it)
         ) {
-            SuggestionDropdown(
-                textState = exercicioDigitado,
-                getSuggestions = { getSugestoes(it) },
-                onSuggestionClicked = {
-                    insertExercicioTreino(it)
-                },
-                trailingIcon = Icons.Default.Delete,
-                onIconClick = { deleteExercicio(it) },
-                modifier = Modifier.weight(1f),
-                getText = { it.nome })
-            Button(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .background(
-                        color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10)
-                    ), onClick = {
-                    if (exercicioDigitado.value.isNotEmpty()) {
-                        addAndInsertExercicio(exercicioDigitado.value)
-                        exercicioDigitado.value = ""
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Exercícios do Treino", style = MaterialTheme.typography.titleLarge)
+                Spacer(modifier = Modifier.weight(1f))
+                TextButton(modifier = Modifier.height(IntrinsicSize.Min), onClick = {
+                    val text = StringBuilder()
+                    exerciciosDoTreino.forEach {
+                        text.append("${it.exercicio.nome}:\n")
+                        it.seriesLista.forEach {
+                            text.append("${it.pesoKg}KG X ${it.reps} - ${it.segundosDescanso}s de intervalo.\n")
+                        }
+                    }
+                    clipboardManager.setText(AnnotatedString(text.toString()))
+                    try {
+                        context.startActivity(context.packageManager.getLaunchIntentForPackage("com.hasz.gymrats.app"))
+                    } catch (t: Throwable) {
+                        Log.d("Erro", "$t")
                     }
                 }) {
-                Icon(Icons.Default.Add, "Adicionar")
+                    Text("Ir para Gym Rats", color = MaterialTheme.colorScheme.onBackground)
+                }
             }
-        }
+            Spacer(Modifier.height(16.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                SuggestionDropdown(
+                    textState = exercicioDigitado,
+                    getSuggestions = { getSugestoes(it) },
+                    onSuggestionClicked = {
+                        insertExercicioTreino(it)
+                    },
+                    trailingIcon = Icons.Default.Delete,
+                    onIconClick = { deleteExercicio(it) },
+                    modifier = Modifier.weight(1f),
+                    getText = { it.nome })
+                Button(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .background(
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(10)
+                        ), onClick = {
+                        if (exercicioDigitado.value.isNotEmpty()) {
+                            addAndInsertExercicio(exercicioDigitado.value)
+                            exercicioDigitado.value = ""
+                        }
+                    }) {
+                    Icon(Icons.Default.Add, "Adicionar")
+                }
+            }
 //        Row(verticalAlignment = Alignment.CenterVertically) {
 //            DropdownTextField(fichas.value.toNullableSpinnerList(), { it?.nome ?: "NENHUMA" }, {
 //                selectedFicha = it
@@ -180,26 +196,28 @@ private fun _ListaExerciciosTreinoScreen(
 //
 //            }
 //        }
-        LazyColumn(
-            modifier = Modifier.fillMaxHeight(),
-            contentPadding = PaddingValues(0.dp, 8.dp, 0.dp, 24.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
-        ) {
-            items(items = exerciciosDoTreino, key = { it.id }) {
-                Card {
-                    ExercicioItem(
-                        it,
-                        deleteExercicioTreino = deleteExercicioTreino,
-                        moveExercicioTreinoUp = moveExercicioUp,
-                        moveExercicioTreinoDown = moveExercicioDown,
-                        showHistory = getHistoricoExercicio,
-                        removeSerie = deleteSerie,
-                        addSerie = addSerie,
-                        updateSerie = updateSerie,
-                    )
+            LazyColumn(
+                modifier = Modifier.fillMaxHeight(),
+                contentPadding = PaddingValues(0.dp, 8.dp, 0.dp, 24.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
+            ) {
+                items(items = exerciciosDoTreino, key = { it.id }) {
+                    Card {
+                        ExercicioItem(
+                            it,
+                            deleteExercicioTreino = deleteExercicioTreino,
+                            moveExercicioTreinoUp = moveExercicioUp,
+                            moveExercicioTreinoDown = moveExercicioDown,
+                            showHistory = getHistoricoExercicio,
+                            removeSerie = deleteSerie,
+                            addSerie = addSerie,
+                            updateSerie = updateSerie,
+                        )
+                    }
                 }
             }
         }
+
     }
 }
 
