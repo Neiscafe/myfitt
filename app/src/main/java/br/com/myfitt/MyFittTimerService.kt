@@ -6,26 +6,24 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
-import android.content.pm.ServiceInfo
 import android.os.Binder
-import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import androidx.core.app.ServiceCompat
 import androidx.core.graphics.drawable.IconCompat
 
-private const val ACTION_EXTRA = "TimerActions"
-private const val ACTION_FINISH_EXERCISE = 1
-private const val ACTION_START_EXERCISE = 2
-private const val ACTION_START_REST = 3
-
 class MyFittTimerService : Service() {
+    companion object{
+        const val EXTRA_TYPE_ACTION = "1"
+        const val EXTRA_FINISH_EXERCISE = 1
+        const val EXTRA_START_EXERCISE = 2
+        const val EXTRA_START_REST = 3
+    }
     private val onTimerTick: (Long) -> Unit = {}
     override fun onStartCommand(
         intent: Intent?, flags: Int, startId: Int
     ): Int {
-        when (val it = intent?.extras?.getInt(ACTION_EXTRA)) {
-            ACTION_FINISH_EXERCISE -> {
+        when (val it = intent?.extras?.getInt(EXTRA_TYPE_ACTION)) {
+            EXTRA_FINISH_EXERCISE -> {
 //                val notification = createCounterNotification()
 //                ServiceCompat.startForeground(
 //                    this, startId, notification,
@@ -37,8 +35,8 @@ class MyFittTimerService : Service() {
 //                )
             }
 
-            ACTION_START_EXERCISE -> {}
-            ACTION_START_REST -> {}
+            EXTRA_START_EXERCISE -> {}
+            EXTRA_START_REST -> {}
             else -> error("Tipo inválido de extra ACTION_EXTRA: $it")
         }
         return super.onStartCommand(intent, flags, startId)
@@ -56,7 +54,7 @@ class MyFittTimerService : Service() {
         val stopCounterIntent = Intent(
             this, MyFittTimerService::class.java
         )
-        stopCounterIntent.putExtra(ACTION_EXTRA, true)
+        stopCounterIntent.putExtra(EXTRA_TYPE_ACTION, true)
         val stopCounterPendingIntent = PendingIntent.getService(
             this,
             0,
