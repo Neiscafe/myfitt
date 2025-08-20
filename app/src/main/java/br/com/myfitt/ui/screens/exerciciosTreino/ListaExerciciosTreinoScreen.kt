@@ -198,7 +198,7 @@ private fun _ListaExerciciosTreinoScreen(
 //        }
             LazyColumn(
                 modifier = Modifier.fillMaxHeight(),
-                contentPadding = PaddingValues(0.dp, 8.dp, 0.dp, 24.dp),
+                contentPadding = PaddingValues(0.dp, 8.dp, 0.dp, 48.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
             ) {
                 items(items = exerciciosDoTreino, key = { it.id }) {

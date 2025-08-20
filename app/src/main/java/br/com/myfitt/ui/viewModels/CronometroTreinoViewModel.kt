@@ -55,7 +55,7 @@ class CronometroTreinoViewModel(
                 repository.getTreinoExercicioSeriesById(
                     it.toInt()
                 ).take(1).collect {
-                    _state.update { _->
+                    _state.update { _ ->
                         _state.value.copy(selectedExercicioTreino = it)
                     }
                 }

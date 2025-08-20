@@ -12,16 +12,22 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.graphics.drawable.IconCompat
+import br.com.myfitt.data.repository.TreinoExercicioRepository
+import br.com.myfitt.domain.models.Serie
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 
 class MyFittTimerService : Service() {
     /**
      * If you implement onStartCommand(), it is your responsibility to stop the service when its work is complete by calling stopSelf() or stopService().
      */
+    private var serviceScope: CoroutineScope? = null
     private val binder = MyFittTimerBinder()
+    private val treinoExercicioRepository: TreinoExercicioRepository by inject()
 
     interface MyFittTimerCallback {
         fun onTick(elapsedSeconds: Int, timerType: Int)
@@ -33,12 +39,16 @@ class MyFittTimerService : Service() {
         }
     }
 
+    private var elapsedSeconds = 0
     var timerType = 0
     var onTimerTick: MyFittTimerCallback? = null
+
     override fun onStartCommand(
         intent: Intent?, flags: Int, startId: Int
     ): Int {
+        serviceScope = CoroutineScope(Dispatchers.IO)
         val it = intent?.extras?.getInt(EXTRA_TYPE_ACTION)
+        val treinoExercicioId: Int? = intent?.extras?.getInt(EXTRA_TYPE_TDID)
         val notification = when (it) {
             EXTRA_FINISH_NOTIFICATION -> {
 //                val notification = createCounterNotification()
@@ -54,10 +64,32 @@ class MyFittTimerService : Service() {
             }
 
             EXTRA_START_EXERCISE -> {
+                if (isRunning) {
+                    serviceScope?.launch {
+                        treinoExercicioId?.let {
+                            treinoExercicioRepository.updateSeries(
+                                Serie(
+                                    0, it, 0f, 0, elapsedSeconds
+                                )
+                            )
+                        }
+                    }
+                }
                 createCounterNotification()
             }
 
             EXTRA_START_REST -> {
+                serviceScope?.launch {
+                    // Aqui vai ser colocado a duração da série no banco, só precisa atualizar o valor.
+//                    treinoExercicioId?.let {
+//                        treinoExercicioRepository.updateSeries(
+//                            Serie(
+//                                0, it, 0f, 0, elapsedSeconds
+//                            )
+//                        )
+//                    }
+                }
+
                 createCounterNotification()
             }
 
@@ -73,11 +105,14 @@ class MyFittTimerService : Service() {
         notificationManager.notify(23, notification)
         timerType = it
         isRunning = true
-        return super.onStartCommand(intent, flags, startId)
+
+        return START_NOT_STICKY
     }
 
     override fun onDestroy() {
+        serviceScope?.cancel()
         isRunning = false
+        elapsedSeconds = 0
         super.onDestroy()
     }
 
@@ -88,15 +123,14 @@ class MyFittTimerService : Service() {
     override fun onCreate() {
         super.onCreate()
         CoroutineScope(Dispatchers.IO).launch {
-            var seconds = 0
             delay(500L)
             while ((System.currentTimeMillis() % 1000L) != 0L) {
 
             }
             while (true) {
                 delay(1000L)
-                seconds++
-                onTimerTick?.onTick(seconds, timerType)
+                elapsedSeconds++
+                onTimerTick?.onTick(elapsedSeconds, timerType)
             }
         }
     }
@@ -109,6 +143,7 @@ class MyFittTimerService : Service() {
     companion object {
         var isRunning = false
         const val EXTRA_TYPE_ACTION = "1"
+        const val EXTRA_TYPE_TDID = "2"
         const val EXTRA_FINISH_NOTIFICATION = 1
         const val EXTRA_START_EXERCISE = 2
         const val EXTRA_START_REST = 3
@@ -137,16 +172,13 @@ class MyFittTimerService : Service() {
         val stopCounterAction = NotificationCompat.Action.Builder(
             stopCounterIcon, "Stop current exercise", stopCounterPendingIntent
         ).build()
-        return NotificationCompat.Builder(this, "1")
-            .setUsesChronometer(true)
-            .setOngoing(true)
+        return NotificationCompat.Builder(this, "1").setUsesChronometer(true).setOngoing(true)
             /**
              * Lembrar de desabilitar a notificação manualmente por causa do setOngoing()
              */
             .setSmallIcon(IconCompat.createWithResource(this, R.drawable.ic_launcher_foreground))
-            .setContentText("Cronometrando seu exercício...")
-            .setContentInfo("asdasdasda")
-            .setContentTitle("blah blah blah")
+            .setContentText(if (timerType == EXTRA_START_EXERCISE) "Cronometrando seu exercício..." else "Cronometrando seu descanso...")
+            .setContentInfo("asdasdasda").setContentTitle("blah blah blah")
 //            .addAction(stopCounterAction)
             .build()
     }

@@ -95,6 +95,7 @@ fun _CronometroTreinoScreen(
                         MyFittTimerService.EXTRA_START_REST, startCronometroCallback
                     )
                 )
+                // Abrir dialog de informar peso aqui
                 typeOfCounterText = "Duração do descanso"
                 buttonControl = !buttonControl
             }) { Text("Descansar") }

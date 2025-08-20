@@ -35,6 +35,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -262,34 +263,36 @@ fun ExercicioItem(
                 )
             }
             exercicioTreino.seriesLista.forEach {
-                Row {
-                    IconButton({
-                        removeSerie(it)
-                    }) { Icon(Icons.Default.Close, null) }
-                    SideEffectTextField(
-                        it.segundosDescanso.toString(),
-                        modifier = Modifier
-                            .height(40.dp)
-                            .wrapContentHeight(),
-                        onUpdate = { updated ->
-                            updateSerie(it.copy(segundosDescanso = updated.toInt()))
-                        })
-                    SideEffectTextField(
-                        it.reps.toString(),
-                        modifier = Modifier
-                            .height(40.dp)
-                            .wrapContentHeight(),
-                        onUpdate = { updated ->
-                            updateSerie(it.copy(reps = updated.toInt()))
-                        })
-                    SideEffectTextField(
-                        it.pesoKg.toInt().toString(),
-                        modifier = Modifier
-                            .height(40.dp)
-                            .wrapContentHeight(),
-                        onUpdate = { updated ->
-                            updateSerie(it.copy(pesoKg = updated.toFloat()))
-                        })
+                key(it.id) {
+                    Row {
+                        IconButton({
+                            removeSerie(it)
+                        }) { Icon(Icons.Default.Close, null) }
+                        SideEffectTextField(
+                            it.segundosDescanso.toString(),
+                            modifier = Modifier
+                                .height(40.dp)
+                                .wrapContentHeight(),
+                            onUpdate = { updated ->
+                                updateSerie(it.copy(segundosDescanso = updated.toInt()))
+                            })
+                        SideEffectTextField(
+                            it.reps.toString(),
+                            modifier = Modifier
+                                .height(40.dp)
+                                .wrapContentHeight(),
+                            onUpdate = { updated ->
+                                updateSerie(it.copy(reps = updated.toInt()))
+                            })
+                        SideEffectTextField(
+                            it.pesoKg.toInt().toString(),
+                            modifier = Modifier
+                                .height(40.dp)
+                                .wrapContentHeight(),
+                            onUpdate = { updated ->
+                                updateSerie(it.copy(pesoKg = updated.toFloat()))
+                            })
+                    }
                 }
             }
             IconButton({
