@@ -41,7 +41,7 @@ fun _CronometroTreinoScreen(
     var buttonControl by remember { mutableStateOf(true) }
     val startCronometroCallback = object : MyFittTimerService.MyFittTimerCallback {
         override fun onTick(elapsedSeconds: Int, timerType: Int) {
-            counterText = "${elapsedSeconds / 60}m${elapsedSeconds}s"
+            counterText = "${elapsedSeconds / 60}m${elapsedSeconds%60}s"
         }
     }
 //    LaunchedEffect(Unit) {
