@@ -9,7 +9,6 @@ import androidx.room.Transaction
 import androidx.room.Update
 import br.com.myfitt.data.dto.HistoricoExercicioTreinosDto
 import br.com.myfitt.data.dto.PerformanceDto
-import br.com.myfitt.data.dto.TreinoExercicioDto
 import br.com.myfitt.data.entity.ExercicioWithTreinoExerciciosAndSeries
 import br.com.myfitt.data.entity.TreinoExercicioEntity
 import br.com.myfitt.data.entity.TreinoExercicioSerieEntity
@@ -18,7 +17,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TreinoExercicioDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(treinoExercicio: TreinoExercicioEntity)
+    suspend fun insert(treinoExercicio: TreinoExercicioEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(treinoExercicio: TreinoExercicioSerieEntity): Long
@@ -51,12 +50,20 @@ interface TreinoExercicioDao {
 
     @Delete
     suspend fun delete(treinoExercicio: TreinoExercicioEntity)
+
     @Query(
         """
         SELECT * FROM treino_exercicio WHERE treinoId = :treinoId
     """
     )
     fun getExerciciosByTreino(treinoId: Int): Flow<List<ExercicioWithTreinoExerciciosAndSeries>>
+
+    @Query(
+        """
+        SELECT * FROM treino_exercicio WHERE id = :exercicioTreinoId 
+    """
+    )
+    fun getTreinoExercicioSeriesById(exercicioTreinoId: Int): Flow<ExercicioWithTreinoExerciciosAndSeries?>
 
     @Query(
         """

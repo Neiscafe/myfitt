@@ -23,20 +23,22 @@ class TreinoExercicioRepository(
 ) {
     private val exercicios = mutableListOf<ExercicioTreino>()
 
-    suspend fun addExercicioAoTreino(treinoId: Int, exercicio: Exercicio) = withContext(
+    suspend fun addExercicioAoTreino(treinoId: Int, exercicio: Exercicio): Long? = withContext(
         Dispatchers.IO
     ) {
         var _exercicio = exercicio
         if (_exercicio.id == 0) {
             _exercicio = exercicioRepository.insertExercicio(exercicio)
         }
-        dao.insert(
-            TreinoExercicioEntity(
-                treinoId = treinoId,
-                exercicioId = _exercicio.id,
-                posicao = exercicio.posicao,
+        return@withContext runCatching {
+            dao.insert(
+                TreinoExercicioEntity(
+                    treinoId = treinoId,
+                    exercicioId = _exercicio.id,
+                    posicao = exercicio.posicao,
+                )
             )
-        )
+        }.getOrNull()
     }
 
     suspend fun addSeries(serie: Serie): Boolean {
@@ -58,7 +60,7 @@ class TreinoExercicioRepository(
                 "message" to it.message,
                 "stackTrace" to it.stackTraceToString()
             )
-        }.onSuccess {  }.getOrNull() ?: false
+        }.onSuccess { }.getOrNull() ?: false
     }
 
 
@@ -127,7 +129,7 @@ class TreinoExercicioRepository(
     fun getExerciciosDeUmTreino(treinoId: Int): Flow<List<ExercicioTreino>> {
         return dao.getExerciciosByTreino(treinoId).map {
             it.map {
-                LogTool.log(it)
+//                LogTool.log(it)
                 ExercicioTreino(
                     id = it.treinoExercicioAndSeries.treinoExercicio.id,
                     treinoId = treinoId,
@@ -151,6 +153,30 @@ class TreinoExercicioRepository(
             }
         }
     }
+
+    fun getTreinoExercicioSeriesById(treinoExercicioId: Int): Flow<ExercicioTreino?> {
+        return dao.getTreinoExercicioSeriesById(treinoExercicioId).catch { emit(null) }.map {
+//            LogTool.log(it)
+            it?.let {
+                ExercicioTreino(
+                    id = it.treinoExercicioAndSeries.treinoExercicio.id,
+                    treinoId = it.treinoExercicioAndSeries.treinoExercicio.treinoId,
+                    exercicio = Exercicio(it.exercicio.nome, it.exercicio.id),
+                    posicao = it.treinoExercicioAndSeries.treinoExercicio.posicao,
+                    observacao = "",
+                    seriesLista = it.treinoExercicioAndSeries.series.map {
+                        Serie(
+                            id = it.id,
+                            pesoKg = it.pesoKg ?: 0f,
+                            reps = it.reps ?: 0,
+                            segundosDescanso = it.segundosDescanso ?: 0,
+                            exercicioTreinoId = it.treinoExercicioId
+                        )
+                    })
+            }
+        }
+    }
+
 
     suspend fun diminuirPosicao(exercicio: ExercicioTreino) = withContext(
         Dispatchers.IO

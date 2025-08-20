@@ -16,7 +16,7 @@ fun NavGraphBuilder.listaExerciciosTreinoRoute(navController: NavController) {
         })
     ) {
         ListaExerciciosTreinoScreen(
-            it.arguments?.getInt(TREINO_ID)!!
+            it.arguments?.getInt(TREINO_ID)!!, {navController.navigate(Routes.CRONOMETRO_TREINO.name + "/$it")}
         )
     }
 }

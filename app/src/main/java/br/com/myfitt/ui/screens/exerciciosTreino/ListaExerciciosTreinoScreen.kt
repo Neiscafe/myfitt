@@ -1,6 +1,5 @@
 package br.com.myfitt.ui.screens.exerciciosTreino
 
-import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -45,7 +44,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import br.com.myfitt.MyFittTimerService
 import br.com.myfitt.domain.models.Exercicio
 import br.com.myfitt.domain.models.ExercicioTreino
 import br.com.myfitt.domain.models.Ficha
@@ -65,6 +63,7 @@ import org.koin.core.parameter.parametersOf
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun _ListaExerciciosTreinoScreen(
+    navigate: () -> Unit = {},
     exerciciosByTreino: () -> Flow<List<ExercicioTreino>> = { flow { emptyList<ExercicioTreino>() } },
     deleteExercicio: (Exercicio) -> Unit = {},
     addAndInsertExercicio: (String) -> Unit = {},
@@ -120,12 +119,13 @@ private fun _ListaExerciciosTreinoScreen(
             })
     }
     Scaffold(Modifier.padding(8.dp), floatingActionButton = {
-        FloatingActionButton({
-            // vai para tela nova
-        }) {
+        FloatingActionButton(
+            {
+                navigate()
+            }
+        ) {
             Icon(
-                Icons.Default.Email,
-                null
+                Icons.Default.Email, null
             )
         }
     }) {
@@ -223,11 +223,14 @@ private fun _ListaExerciciosTreinoScreen(
 
 @Composable
 fun ListaExerciciosTreinoScreen(
-    treinoId: Int, viewModel: ExerciciosTreinoViewModel = koinViewModel(parameters = {
+    treinoId: Int,
+    navigate: (Int) -> Unit,
+    viewModel: ExerciciosTreinoViewModel = koinViewModel(parameters = {
         parametersOf(treinoId)
     })
 ) {
     _ListaExerciciosTreinoScreen(
+        { navigate(treinoId) },
         exerciciosByTreino = viewModel::exerciciosByTreino,
         deleteExercicio = viewModel::deleteExercicio,
         addAndInsertExercicio = viewModel::addAndInsertExercicio,
@@ -256,8 +259,7 @@ fun ListaExerciciosTreinoScreenPreview() {
                         exercicio = Exercicio("Supino banco", 0),
                         posicao = 0,
                         seriesLista = listOf()
-                    ),
-                    ExercicioTreino(
+                    ), ExercicioTreino(
                         id = 1,
                         treinoId = 0,
                         exercicio = Exercicio("Supino Mesa", 0),
