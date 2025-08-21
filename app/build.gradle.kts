@@ -34,8 +34,7 @@ android {
         }
         release {
             isMinifyEnabled = true
-//            isDebuggable = true
-//            isProfileable = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

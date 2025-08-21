@@ -2,7 +2,6 @@ package br.com.myfitt.domain.models
 
 import androidx.compose.runtime.Immutable
 
-@Immutable
 data class Serie(
     val id: Int,
     val exercicioTreinoId: Int,

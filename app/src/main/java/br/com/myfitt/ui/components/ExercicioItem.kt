@@ -27,13 +27,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
@@ -43,28 +41,183 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import br.com.myfitt.domain.models.Exercicio
 import br.com.myfitt.domain.models.ExercicioTreino
-import br.com.myfitt.domain.models.HistoricoExercicioTreinos
 import br.com.myfitt.domain.models.Serie
+import br.com.myfitt.ui.screens.exerciciosTreino.ListaExerciciosActions
 import br.com.myfitt.ui.theme.MyFittTheme
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun ExercicioItem(
     exercicioTreino: ExercicioTreino,
-    deleteExercicioTreino: (ExercicioTreino) -> Unit = {},
-    moveExercicioTreinoUp: (ExercicioTreino) -> Unit = {},
-    moveExercicioTreinoDown: (ExercicioTreino) -> Unit = {},
-    showHistory: (ExercicioTreino) -> Flow<Loadable<List<HistoricoExercicioTreinos>?>> = { flowOf() },
-    removeSerie: (Serie) -> Unit = {},
-    addSerie: (Serie) -> Unit = {},
-    updateSerie: (Serie) -> Unit = {},
+    actions: (ListaExerciciosActions) -> Unit = {},
 ) {
     val seriesLista by remember { mutableStateOf(exercicioTreino.seriesLista.toImmutableList()) }
     val showHistoryDialog = remember { mutableStateOf<ExercicioTreino?>(null) }
+    val rememberedActions by remember { mutableStateOf(actions) }
     val scope = rememberCoroutineScope()
-//    if (showHistoryDialog.value != null) {
+    ShowDialog()
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 64.dp)
+            .height(IntrinsicSize.Min)
+            .padding(8.dp),
+    ) {
+        Text(
+            exercicioTreino.exercicio.nome, style = MaterialTheme.typography.titleMedium
+        )
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Button({
+                showHistoryDialog.value = exercicioTreino
+            }, colors = ButtonDefaults.buttonColors().copy(containerColor = Color.White)) {
+                Row(horizontalArrangement = Arrangement.Center) {
+                    Icon(Icons.Default.DateRange, null, tint = Color.Black)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Histórico", color = Color.Black)
+                }
+            }
+            Row {
+                val iconModifier = Modifier.size(20.dp)
+                IconButton(onClick = {
+                    rememberedActions(ListaExerciciosActions.MoveDownExercicioTreino(exercicioTreino))
+                }) {
+                    Icon(
+                        modifier = iconModifier,
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Elevar"
+                    )
+                }
+                IconButton(onClick = {
+                    rememberedActions(ListaExerciciosActions.MoveUpExercicioTreino(exercicioTreino))
+                }) {
+                    Icon(
+                        modifier = iconModifier,
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = "Abaixar"
+                    )
+                }
+                IconButton(onClick = {
+                    rememberedActions(ListaExerciciosActions.DeleteExercicioTreino(exercicioTreino))
+                }) {
+                    Icon(
+                        modifier = iconModifier,
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Remover"
+                    )
+                }
+            }
+        }
+        Column {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                Text(
+                    "Descanso(s)",
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.width(100.dp),
+                    fontSize = TextUnit(
+                        14f, TextUnitType.Sp
+                    )
+                )
+                Text(
+                    "Reps",
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.width(100.dp),
+                    fontSize = TextUnit(
+                        14f, TextUnitType.Sp
+                    )
+                )
+                Text(
+                    "Peso(kg)",
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.width(100.dp),
+                    fontSize = TextUnit(
+                        14f, TextUnitType.Sp
+                    )
+                )
+            }
+            for (serie in seriesLista) {
+                key(serie.id) {
+                    SerieItem(
+                        serie,
+                        rememberedActions,
+                    )
+                }
+            }
+        }
+        IconButton({
+            rememberedActions(
+                ListaExerciciosActions.AddSerie(
+                    Serie(
+                        id = 0,
+                        pesoKg = 0f,
+                        segundosDescanso = 0,
+                        reps = 0,
+                        exercicioTreinoId = exercicioTreino.id
+                    )
+                )
+            )
+        }) { Icon(Icons.Default.Add, null, tint = Color.White) }
+    }
+}
+
+@Composable
+fun SerieItem(
+    it: Serie,
+    actions: (ListaExerciciosActions) -> Unit = {},
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 64.dp),
+        horizontalArrangement = Arrangement.End
+    ) {
+        IconButton({
+            actions(ListaExerciciosActions.DeleteSerie(it))
+        }) { Icon(Icons.Default.Close, null) }
+        SideEffectTextField(
+            it.segundosDescanso.toString(),
+            modifier = Modifier
+                .height(40.dp)
+                .wrapContentHeight(),
+            onUpdate = { updated ->
+                actions(ListaExerciciosActions.UpdateSerie(it.copy(segundosDescanso = updated.toInt())))
+            })
+        SideEffectTextField(
+            it.reps.toString(),
+            modifier = Modifier
+                .height(40.dp)
+                .wrapContentHeight(),
+            onUpdate = { updated ->
+                actions(ListaExerciciosActions.UpdateSerie(it.copy(reps = updated.toInt())))
+            })
+        SideEffectTextField(
+            it.pesoKg.toInt().toString(),
+            modifier = Modifier
+                .height(40.dp)
+                .wrapContentHeight(),
+            onUpdate = { updated ->
+                actions(ListaExerciciosActions.UpdateSerie(it.copy(pesoKg = updated.toFloat())))
+            })
+    }
+
+}
+
+@Preview
+@Composable
+private fun ExercicioItemPreview() {
+    MyFittTheme {
+        Surface {
+            ExercicioItem(
+                exercicioTreino = ExercicioTreino(
+                    0, 0, Exercicio("Supino inclinado", 0), 0, null, listOf()
+                ),
+            )
+        }
+    }
+}
+
+@Composable
+fun ShowDialog(modifier: Modifier = Modifier) {
+    //    if (showHistoryDialog.value != null) {
 //        val dialogData =
 //            remember { mutableStateOf<Loadable<List<HistoricoExercicioTreinos>?>>(Loadable.Loading) }
 //        LaunchedEffect(Unit) {
@@ -176,144 +329,5 @@ fun ExercicioItem(
 //            }
 //        }
 //    }
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 64.dp)
-            .height(IntrinsicSize.Min)
-            .padding(8.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                exercicioTreino.exercicio.nome, style = MaterialTheme.typography.titleMedium
-            )
-        }
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Button({
-                showHistoryDialog.value = exercicioTreino
-            }, colors = ButtonDefaults.buttonColors().copy(containerColor = Color.White)) {
-                Row(horizontalArrangement = Arrangement.Center) {
-                    Icon(Icons.Default.DateRange, null, tint = Color.Black)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Histórico", color = Color.Black)
-                }
-            }
-            Row {
-                val iconModifier = Modifier.size(20.dp)
-                IconButton(onClick = {
-                    moveExercicioTreinoDown(exercicioTreino)
-                }) {
-                    Icon(
-                        modifier = iconModifier,
-                        imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = "Elevar"
-                    )
-                }
-                IconButton(onClick = { moveExercicioTreinoUp(exercicioTreino) }) {
-                    Icon(
-                        modifier = iconModifier,
-                        imageVector = Icons.Default.KeyboardArrowUp,
-                        contentDescription = "Abaixar"
-                    )
-                }
-                IconButton(onClick = { deleteExercicioTreino(exercicioTreino) }) {
-                    Icon(
-                        modifier = iconModifier,
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Remover"
-                    )
-                }
-            }
-        }
-        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End) {
-            Row() {
-                Text(
-                    "Descanso(s)",
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.width(100.dp),
-                    fontSize = TextUnit(
-                        14f, TextUnitType.Sp
-                    )
-                )
-                Text(
-                    "Reps",
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.width(100.dp),
-                    fontSize = TextUnit(
-                        14f, TextUnitType.Sp
-                    )
-                )
-                Text(
-                    "Peso(kg)",
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.width(100.dp),
-                    fontSize = TextUnit(
-                        14f, TextUnitType.Sp
-                    )
-                )
-            }
-            seriesLista.forEach {
-                key(it.id) {
-                    Row(modifier = Modifier.heightIn(min = 64.dp)) {
-                        IconButton({
-                            removeSerie(it)
-                        }) { Icon(Icons.Default.Close, null) }
-                        SideEffectTextField(
-                            it.segundosDescanso.toString(),
-                            modifier = Modifier
-                                .height(40.dp)
-                                .wrapContentHeight(),
-                            onUpdate = { updated ->
-                                updateSerie(it.copy(segundosDescanso = updated.toInt()))
-                            })
-                        SideEffectTextField(
-                            it.reps.toString(),
-                            modifier = Modifier
-                                .height(40.dp)
-                                .wrapContentHeight(),
-                            onUpdate = { updated ->
-                                updateSerie(it.copy(reps = updated.toInt()))
-                            })
-                        SideEffectTextField(
-                            it.pesoKg.toInt().toString(),
-                            modifier = Modifier
-                                .height(40.dp)
-                                .wrapContentHeight(),
-                            onUpdate = { updated ->
-                                updateSerie(it.copy(pesoKg = updated.toFloat()))
-                            })
-                    }
-                }
-            }
-            IconButton({
-                addSerie(
-                    Serie(
-                        id = 0,
-                        pesoKg = 0f,
-                        segundosDescanso = 0,
-                        reps = 0,
-                        exercicioTreinoId = exercicioTreino.id
-                    )
-                )
-            }) { Icon(Icons.Default.Add, null, tint = Color.White) }
-        }
-    }
-}
 
-@Preview
-@Composable
-private fun ExercicioItemPreview() {
-    MyFittTheme {
-        Surface {
-            ExercicioItem(
-                exercicioTreino = ExercicioTreino(
-                    0, 0, Exercicio("Supino inclinado", 0), 0, null, listOf()
-                ),
-            )
-        }
-    }
 }
