@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -54,9 +55,11 @@ import br.com.myfitt.ui.components.Loadable
 import br.com.myfitt.ui.components.SuggestionDropdown
 import br.com.myfitt.ui.theme.MyFittTheme
 import br.com.myfitt.ui.viewModels.ExerciciosTreinoViewModel
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -82,7 +85,7 @@ private fun _ListaExerciciosTreinoScreen(
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
-    val exerciciosDoTreino by exerciciosByTreino().collectAsState(initial)
+    val exerciciosDoTreino by exerciciosByTreino().map { it.toImmutableList() }.collectAsState(initial)
     var selectedFicha by remember { mutableStateOf<Ficha?>(null) }
     val exercicioDigitado = remember { mutableStateOf("") }
     val showDialog = remember { mutableStateOf<Exercicio?>(null) }
@@ -201,8 +204,8 @@ private fun _ListaExerciciosTreinoScreen(
                 contentPadding = PaddingValues(0.dp, 8.dp, 0.dp, 48.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
             ) {
-                items(items = exerciciosDoTreino, key = { it.id }) {
-                    Card {
+                items(items = exerciciosDoTreino, key = { it.id }, ) {
+                    Card(modifier = Modifier.heightIn(min = 64.dp)) {
                         ExercicioItem(
                             it,
                             deleteExercicioTreino = deleteExercicioTreino,

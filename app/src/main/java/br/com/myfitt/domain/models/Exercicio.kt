@@ -1,5 +1,8 @@
 package br.com.myfitt.domain.models
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class Exercicio(
     val nome: String = "",
     val id: Int = 0,

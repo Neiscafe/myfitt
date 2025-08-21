@@ -1,21 +1,17 @@
 package br.com.myfitt.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -25,16 +21,14 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,16 +41,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import br.com.myfitt.domain.models.Exercicio
 import br.com.myfitt.domain.models.ExercicioTreino
 import br.com.myfitt.domain.models.HistoricoExercicioTreinos
 import br.com.myfitt.domain.models.Serie
-import br.com.myfitt.domain.utils.DateUtil
 import br.com.myfitt.ui.theme.MyFittTheme
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.launch
 
 @Composable
 fun ExercicioItem(
@@ -69,123 +61,125 @@ fun ExercicioItem(
     addSerie: (Serie) -> Unit = {},
     updateSerie: (Serie) -> Unit = {},
 ) {
+    val seriesLista by remember { mutableStateOf(exercicioTreino.seriesLista.toImmutableList()) }
     val showHistoryDialog = remember { mutableStateOf<ExercicioTreino?>(null) }
     val scope = rememberCoroutineScope()
-    if (showHistoryDialog.value != null) {
-        val dialogData =
-            remember { mutableStateOf<Loadable<List<HistoricoExercicioTreinos>?>>(Loadable.Loading) }
-        LaunchedEffect(Unit) {
-            scope.launch {
-                showHistory(showHistoryDialog.value!!).collect {
-                    dialogData.value = it
-                }
-            }
-        }
-        Dialog({ showHistoryDialog.value = null }) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(500.dp),
-                shape = RoundedCornerShape(16.dp),
-            ) {
-                when (val result = dialogData.value) {
-                    is Loadable.Loaded -> {
-                        if (result == null) {
-                            Icon(
-                                Icons.Default.Close,
-                                null,
-                                modifier = Modifier
-                                    .width(48.dp)
-                                    .height(48.dp)
-                            )
-                            return@Card
-                        }
-                        LazyColumn(
-                            modifier = Modifier.padding(all = 8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            itemsIndexed(
-                                items = result.data!!, key = { i, it -> it.serieId }) { i, it ->
-                                if (i == 0) {
-                                    Column(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        Text(
-                                            "Histórico", style = MaterialTheme.typography.titleLarge
-                                        )
-                                        Text(showHistoryDialog.value?.exercicio?.nome ?: "")
-                                    }
-                                }
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = CardDefaults.cardColors()
-                                        .copy(containerColor = Color.Gray)
-                                ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(4.dp)
-                                    ) {
-                                        Text(DateUtil.format(DateUtil.fromDbNotation(it.dataTreino)))
-                                        Row(
-                                            horizontalArrangement = Arrangement.End,
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            Column(
-                                                Modifier.width(100.dp),
-                                                horizontalAlignment = Alignment.End
-                                            ) {
-                                                Text(
-                                                    "Descanso(s)",
-                                                    //                                                color = Color.Black,
-                                                    fontSize = TextUnit(14f, TextUnitType.Sp)
-                                                )
-                                                Text(it.segundosDescanso.toString())
-                                            }
-                                            Column(
-                                                Modifier.width(100.dp),
-                                                horizontalAlignment = Alignment.End
-                                            ) {
-                                                Text(
-                                                    "Reps",
-                                                    fontSize = TextUnit(14f, TextUnitType.Sp),
-                                                    //                                                color = Color.Black
-                                                )
-                                                Text(it.repeticoes.toString())
-                                            }
-                                            Column(
-                                                Modifier.width(100.dp),
-                                                horizontalAlignment = Alignment.End
-                                            ) {
-                                                Text(
-                                                    "Peso(kg)",
-                                                    fontSize = TextUnit(14f, TextUnitType.Sp),
-                                                    //                                                color = Color.Black
-                                                )
-                                                Text(it.pesoKg.toString())
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    Loadable.Loading -> {
-                        Box(
-                            contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                }
-            }
-        }
-    }
+//    if (showHistoryDialog.value != null) {
+//        val dialogData =
+//            remember { mutableStateOf<Loadable<List<HistoricoExercicioTreinos>?>>(Loadable.Loading) }
+//        LaunchedEffect(Unit) {
+//            scope.launch {
+//                showHistory(showHistoryDialog.value!!).collect {
+//                    dialogData.value = it
+//                }
+//            }
+//        }
+//        Dialog({ showHistoryDialog.value = null }) {
+//            Card(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(500.dp),
+//                shape = RoundedCornerShape(16.dp),
+//            ) {
+//                when (val result = dialogData.value) {
+//                    is Loadable.Loaded -> {
+//                        if (result == null) {
+//                            Icon(
+//                                Icons.Default.Close,
+//                                null,
+//                                modifier = Modifier
+//                                    .width(48.dp)
+//                                    .height(48.dp)
+//                            )
+//                            return@Card
+//                        }
+//                        LazyColumn(
+//                            modifier = Modifier.padding(all = 8.dp),
+//                            verticalArrangement = Arrangement.spacedBy(8.dp)
+//                        ) {
+//                            itemsIndexed(
+//                                items = result.data!!, key = { i, it -> it.serieId }) { i, it ->
+//                                if (i == 0) {
+//                                    Column(
+//                                        modifier = Modifier.fillMaxWidth(),
+//                                        horizontalAlignment = Alignment.CenterHorizontally
+//                                    ) {
+//                                        Text(
+//                                            "Histórico", style = MaterialTheme.typography.titleLarge
+//                                        )
+//                                        Text(showHistoryDialog.value?.exercicio?.nome ?: "")
+//                                    }
+//                                }
+//                                Card(
+//                                    modifier = Modifier.fillMaxWidth(),
+//                                    colors = CardDefaults.cardColors()
+//                                        .copy(containerColor = Color.Gray)
+//                                ) {
+//                                    Column(
+//                                        modifier = Modifier
+//                                            .fillMaxWidth()
+//                                            .padding(4.dp)
+//                                    ) {
+//                                        Text(DateUtil.format(DateUtil.fromDbNotation(it.dataTreino)))
+//                                        Row(
+//                                            horizontalArrangement = Arrangement.End,
+//                                            modifier = Modifier.fillMaxWidth()
+//                                        ) {
+//                                            Column(
+//                                                Modifier.width(100.dp),
+//                                                horizontalAlignment = Alignment.End
+//                                            ) {
+//                                                Text(
+//                                                    "Descanso(s)",
+//                                                    //                                                color = Color.Black,
+//                                                    fontSize = TextUnit(14f, TextUnitType.Sp)
+//                                                )
+//                                                Text(it.segundosDescanso.toString())
+//                                            }
+//                                            Column(
+//                                                Modifier.width(100.dp),
+//                                                horizontalAlignment = Alignment.End
+//                                            ) {
+//                                                Text(
+//                                                    "Reps",
+//                                                    fontSize = TextUnit(14f, TextUnitType.Sp),
+//                                                    //                                                color = Color.Black
+//                                                )
+//                                                Text(it.repeticoes.toString())
+//                                            }
+//                                            Column(
+//                                                Modifier.width(100.dp),
+//                                                horizontalAlignment = Alignment.End
+//                                            ) {
+//                                                Text(
+//                                                    "Peso(kg)",
+//                                                    fontSize = TextUnit(14f, TextUnitType.Sp),
+//                                                    //                                                color = Color.Black
+//                                                )
+//                                                Text(it.pesoKg.toString())
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//                    Loadable.Loading -> {
+//                        Box(
+//                            contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()
+//                        ) {
+//                            CircularProgressIndicator()
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .heightIn(min = 64.dp)
             .height(IntrinsicSize.Min)
             .padding(8.dp),
     ) {
@@ -262,9 +256,9 @@ fun ExercicioItem(
                     )
                 )
             }
-            exercicioTreino.seriesLista.forEach {
+            seriesLista.forEach {
                 key(it.id) {
-                    Row {
+                    Row(modifier = Modifier.heightIn(min = 64.dp)) {
                         IconButton({
                             removeSerie(it)
                         }) { Icon(Icons.Default.Close, null) }
