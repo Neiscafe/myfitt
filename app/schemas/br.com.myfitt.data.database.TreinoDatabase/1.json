@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "43f6247b9f4a16471ecab790092433cf",
+    "identityHash": "8a9c028da6190b5ffd960fb765f11350",
     "entities": [
       {
         "tableName": "treinos",
@@ -116,8 +116,14 @@
       },
       {
         "tableName": "treino_exercicio",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`treinoId` INTEGER NOT NULL, `exercicioId` INTEGER NOT NULL, `series` INTEGER NOT NULL, `posicao` INTEGER NOT NULL, `pesoKg` REAL NOT NULL, `repeticoes` INTEGER NOT NULL, `observacao` TEXT, PRIMARY KEY(`treinoId`, `exercicioId`), FOREIGN KEY(`treinoId`) REFERENCES `treinos`(`id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`exercicioId`) REFERENCES `exercicios`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `treinoId` INTEGER NOT NULL, `exercicioId` INTEGER NOT NULL, `series` INTEGER NOT NULL, `posicao` INTEGER NOT NULL, `pesoKg` REAL NOT NULL, `repeticoes` INTEGER NOT NULL, `observacao` TEXT, FOREIGN KEY(`treinoId`) REFERENCES `treinos`(`id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`exercicioId`) REFERENCES `exercicios`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
           {
             "fieldPath": "treinoId",
             "columnName": "treinoId",
@@ -162,10 +168,9 @@
           }
         ],
         "primaryKey": {
-          "autoGenerate": false,
+          "autoGenerate": true,
           "columnNames": [
-            "treinoId",
-            "exercicioId"
+            "id"
           ]
         },
         "indices": [
@@ -340,12 +345,78 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "treino_exercicio_serie",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `treinoExercicioId` INTEGER NOT NULL, `pesoKg` REAL, `reps` INTEGER, `segundosDescanso` INTEGER, FOREIGN KEY(`treinoExercicioId`) REFERENCES `treino_exercicio`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "treinoExercicioId",
+            "columnName": "treinoExercicioId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pesoKg",
+            "columnName": "pesoKg",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "reps",
+            "columnName": "reps",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "segundosDescanso",
+            "columnName": "segundosDescanso",
+            "affinity": "INTEGER",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_treino_exercicio_serie_treinoExercicioId",
+            "unique": false,
+            "columnNames": [
+              "treinoExercicioId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_treino_exercicio_serie_treinoExercicioId` ON `${TABLE_NAME}` (`treinoExercicioId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "treino_exercicio",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "treinoExercicioId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '43f6247b9f4a16471ecab790092433cf')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8a9c028da6190b5ffd960fb765f11350')"
     ]
   }
 }
