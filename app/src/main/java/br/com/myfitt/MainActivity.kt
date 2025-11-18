@@ -10,7 +10,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import br.com.myfitt.ui.routes.Routes
 import br.com.myfitt.ui.routes.cronometroTreinoRoute
 import br.com.myfitt.ui.routes.listaExerciciosFichaRoute
 import br.com.myfitt.ui.routes.listaExerciciosTreinoRoute
