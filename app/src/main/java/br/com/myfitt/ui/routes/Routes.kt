@@ -1,5 +1,0 @@
-package br.com.myfitt.ui.routes
-
-enum class Routes {
-    LISTA_TREINOS_PLANILHA, LISTA_EXERCICIOS_TREINO, LISTA_FICHAS_DIVISAO, LISTA_EXERCICIOS_FICHA
-}

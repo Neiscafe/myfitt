@@ -5,6 +5,7 @@ import br.com.myfitt.data.mapper.toDomain
 import br.com.myfitt.data.mapper.toEntity
 import br.com.myfitt.domain.ExerciseValidator
 import br.com.myfitt.domain.models.Exercicio
+import br.com.myfitt.domain.models.TipoExercicio
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -32,6 +33,15 @@ class ExercicioRepository(private val dao: ExercicioDao) {
         dao.getSugeridosExercicios(query).map {
             it.toDomain()
 
+        }
+
+    fun getAllExercicios(): Flow<List<Exercicio>> = dao.getExercicios().map {
+            it.map {
+                Exercicio(
+                    it.exercicio.nome,
+                    it.exercicio.id,
+                    tipo = it.tipo?.let { TipoExercicio(it.id, it.nome) })
+            }
         }
 
     suspend fun updateExercicio(exercicio: Exercicio) = withContext(Dispatchers.IO) {

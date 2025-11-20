@@ -33,9 +33,8 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
         release {
-            isMinifyEnabled = false
-            isDebuggable = true
-            isProfileable = true
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -91,4 +90,6 @@ dependencies {
 
     // NAVIGATION - COMPOSE
     implementation(libs.androidx.navigation.compose)
+
+    implementation(libs.kotlinx.collections.immutable)
 }

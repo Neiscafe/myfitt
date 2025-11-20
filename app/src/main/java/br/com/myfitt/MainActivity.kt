@@ -10,7 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import br.com.myfitt.ui.routes.Routes
+import br.com.myfitt.ui.routes.cronometroTreinoRoute
 import br.com.myfitt.ui.routes.listaExerciciosFichaRoute
 import br.com.myfitt.ui.routes.listaExerciciosTreinoRoute
 import br.com.myfitt.ui.routes.listaFichasDivisaoRoute
@@ -21,6 +21,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             MyFittTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -30,6 +31,7 @@ class MainActivity : ComponentActivity() {
                         startDestination = Routes.LISTA_TREINOS_PLANILHA.name,
                         modifier = Modifier.padding(innerPadding)
                     ) {
+                        cronometroTreinoRoute(navController)
                         listaTreinosPlanilhaRoute(navController)
                         listaFichasDivisaoRoute(navController)
                         listaExerciciosFichaRoute(navController)
