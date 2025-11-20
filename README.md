@@ -17,6 +17,13 @@ A versão atual do app está desatualiza e quebrada, a v2, corrigida e melhorada
 - 🔔 **Lembretes**: Notificações para manter a consistência (TODO)
 - 🏆 **Conquistas**: Sistema de recompensas por metas alcançadas (TODO)
 
+## 📸 Telas
+
+<img src="screenshots/v2/Landing page-(Compressify.io).webp" alt="Landing page">
+<img src="screenshots/v2/Device frame-(Compressify.io).webp" alt="Landing page"> <img src="screenshots/v2/Device frame-(Compressify.io)_1.webp" alt="Landing page"> 
+<img src="screenshots/v2/Edita séries-(Compressify.io).webp" alt="Landing page">
+<img src="screenshots/v2/Lista exercícios-(Compressify.io).webp" alt="Landing page">
+
 ## 📥 Como instalar (Android Studio)
  1. Clone o repositório
 ```bash
@@ -26,28 +33,6 @@ git clone https://github.com/seu-usuario/seu-repositorio.git
 3. Espere o build do projeto finalizar
 4. Escolha um emulador ou dispositivo físico
 5. Clique em Run!
-
-## 📸 Capturas de Tela
-
-### Planilhas
-
-<img src="screenshots/planilhas.png" width="200" alt="Planilhas de treino">
-
-### Treinos
-
-<img src="screenshots/treinos.png" width="200" alt="Histórico completo"> <img src="screenshots/treinos-expandido.png" width="200" alt="Visão expandida">  <img src="screenshots/treinos-data.png" width="200" alt="Agenda de treinos">
-
-### Gerenciamento de Exercícios
-
-<img src="screenshots/exercicios-treino.png" width="200" alt="Treino em andamento"> <img src="screenshots/exercicios-treino-exposto.png" width="200" alt="Detalhes do treino"> <img src="screenshots/ficha-exercicio-exposto.png" width="200" alt="Aplicar">  <img src="screenshots/exercicios-treino-aplicar.png" width="200" alt="Aplicar exercício">
-
-### Divisoes
-
-<img src="screenshots/divisoes.png" width="200" alt="Divisões musculares">
-
-### Fichas
-
-<img src="screenshots/fichas.png" width="200" alt="Fichas de exercícios"> <img src="screenshots/exercicios-ficha.png" width="200" alt="Lista de exercícios"> <img src="screenshots/exercicios-ficha-expandido.png" width="200" alt="Detalhe do exercício"> 
 
 ## 🛠 Tecnologias Utilizadas
 
@@ -60,6 +45,8 @@ git clone https://github.com/seu-usuario/seu-repositorio.git
     Ícones: Material Icons
 
     Design System: Material 3
+
+    Layouts e Design: Figma (Material Plugin)
 
 Guilherme Neis - guilhermeneis132@gmail.com
 
