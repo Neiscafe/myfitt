@@ -2,6 +2,8 @@
 
 Um aplicativo completo para gerenciar treinos, acompanhar progresso e alcançar objetivos na academia (em breve na Playstore...).
 
+*Aviso* Uma versão atualizada, chamada de v2, está sendo desenvolvida na branch feat/v2.
+
 <p align="center">
   <img src="screenshots/demo.gif" alt="Demo do App" width="300">
 </p>
