@@ -48,7 +48,8 @@ class MainActivity : ComponentActivity() {
         ) {
             ExerciciosTreinoScreen(
 //                it.arguments?.getInt(exercicioTreinoArg1)!!
-                1
+                1,
+                voltar = navController::popBackStack
             )
         }
     }
