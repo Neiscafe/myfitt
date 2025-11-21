@@ -15,8 +15,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import br.com.myfitt.ui.screens.ExerciciosTreinoScreen
-import br.com.myfitt.ui.theme.MyFittTheme
+import br.com.myfitt.treinos.ui.screens.ExerciciosTreinoScreen
+import br.com.myfitt.treinos.ui.theme.MyFittTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

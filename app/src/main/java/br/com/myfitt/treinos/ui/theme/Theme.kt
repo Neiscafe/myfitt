@@ -1,4 +1,4 @@
-package br.com.myfitt.ui.theme
+package br.com.myfitt.treinos.ui.theme
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme

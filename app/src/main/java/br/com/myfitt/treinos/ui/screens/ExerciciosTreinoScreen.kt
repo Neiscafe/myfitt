@@ -1,4 +1,4 @@
-package br.com.myfitt.ui.screens
+package br.com.myfitt.treinos.ui.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding

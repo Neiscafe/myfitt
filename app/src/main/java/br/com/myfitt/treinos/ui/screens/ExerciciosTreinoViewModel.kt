@@ -1,4 +1,4 @@
-package br.com.myfitt.ui.screens
+package br.com.myfitt.treinos.ui.screens
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,6 +1,6 @@
 package br.com.myfitt
 
-import br.com.myfitt.ui.screens.ExerciciosTreinoViewModel
+import br.com.myfitt.treinos.ui.screens.ExerciciosTreinoViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
