@@ -85,8 +85,6 @@ private fun ListaExercicios(
 ) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-
-    // Estados de controle do arraste
     var draggingItemIndex by remember { mutableStateOf<Int?>(null) }
     var delta by remember { mutableFloatStateOf(0f) }
     var isDragging by remember { mutableStateOf(false) }
@@ -94,7 +92,6 @@ private fun ListaExercicios(
         itemsIndexed(items = state.exercicios, key = { _, item -> item.exercicioTreinoId }) { index, it ->
             val isCurrentItemDragging = draggingItemIndex == index
             val elevation by animateDpAsState(if (isCurrentItemDragging) 8.dp else 0.dp, label = "elevation")
-            val zIndex = if (isCurrentItemDragging) 1f else 0f
             OutlinedCard(
                 modifier = Modifier
                     .fillMaxWidth().animateItem()
