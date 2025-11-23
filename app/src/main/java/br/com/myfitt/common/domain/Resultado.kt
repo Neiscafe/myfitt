@@ -7,6 +7,8 @@ sealed class Resultado<out T> {
     data class Erro<T>(val erro: String?) : Resultado<T>()
 
     val sucesso = this is Sucesso
+    val erroOrNull = (this as? Erro)?.erro
+    val dataOrNull = (this as? Sucesso)?.data
 }
 
 fun <T, R> Resultado<T>.map(block: (T) -> R = { it as R }): Resultado<R> {
