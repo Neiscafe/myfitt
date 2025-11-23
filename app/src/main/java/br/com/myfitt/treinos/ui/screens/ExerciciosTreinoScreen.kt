@@ -9,14 +9,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,12 +33,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerInputEventHandler
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.myfitt.R
@@ -70,7 +70,7 @@ fun ExerciciosTreinoScreen(
 
 @Composable
 private fun Tela(
-    state: ExerciciosTreinoState, voltar: () -> Boolean, clicks: (Int, ExercicioTreino)->Unit
+    state: ExerciciosTreinoState, voltar: () -> Boolean, clicks: (Int, ExercicioTreino) -> Unit
 ) {
     Scaffold(topBar = { TopAppBar(state, voltar = voltar) }) { innerPadding ->
         ListaExercicios(innerPadding, state, clicks)
@@ -88,111 +88,131 @@ private fun ListaExercicios(
     var draggingItemIndex by remember { mutableStateOf<Int?>(null) }
     var delta by remember { mutableFloatStateOf(0f) }
     var isDragging by remember { mutableStateOf(false) }
-    LazyColumn(state = listState,modifier = Modifier.padding(innerPadding)) {
-        itemsIndexed(items = state.exercicios, key = { _, item -> item.exercicioTreinoId }) { index, it ->
-            val isCurrentItemDragging = draggingItemIndex == index
-            val elevation by animateDpAsState(if (isCurrentItemDragging) 8.dp else 0.dp, label = "elevation")
-            OutlinedCard(
-                modifier = Modifier
-                    .fillMaxWidth().animateItem()
-                    .clickable(true) { clicks(cardClick, it) }.graphicsLayer {
-                        // Aplica o movimento vertical SOMENTE visualmente
-                        translationY = if (isCurrentItemDragging) delta else 0f
+    LazyColumn(state = listState, modifier = Modifier.padding(innerPadding)) {
+        itemsIndexed(
+            items = state.exercicios, key = { _, item -> item.exercicioTreinoId }) { index, it ->
+            val isCurrentItemDragging by remember { mutableStateOf(draggingItemIndex == index) }
+            val elevation by animateDpAsState(
+                if (isCurrentItemDragging) 8.dp else 0.dp, label = "elevation"
+            )
+            val dragCallback = remember<PointerInputEventHandler> {
+                PointerInputEventHandler {
+                    detectDragGesturesAfterLongPress(onDragStart = {
+                        draggingItemIndex = index
+                        isDragging = true
+                    }, onDragEnd = {
+                        draggingItemIndex = null
+                        delta = 0f
+                        isDragging = false
+                    }, onDragCancel = {
+                        draggingItemIndex = null
+                        delta = 0f
+                        isDragging = false
+                    }, onDrag = { change, dragAmount ->
+                        change.consume()
+                        delta += dragAmount.y
 
-                        scaleX = if (isCurrentItemDragging) 1.05f else 1f
-                        scaleY = if (isCurrentItemDragging) 1.05f else 1f
-                    },
-                shape = RoundedCornerShape(0.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = elevation)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(modifier = Modifier.pointerInput(index) { // 'index' como key para recriar se a posição mudar
-                        detectDragGesturesAfterLongPress(
-                            onDragStart = {
-                                draggingItemIndex = index
-                                isDragging = true
-                            },
-                            onDragEnd = {
-                                draggingItemIndex = null
-                                delta = 0f
-                                isDragging = false
-                            },
-                            onDragCancel = {
-                                draggingItemIndex = null
-                                delta = 0f
-                                isDragging = false
-                            },
-                            onDrag = { change, dragAmount ->
-                                change.consume()
-                                delta += dragAmount.y
+                        val currentDraggingIndex =
+                            draggingItemIndex ?: return@detectDragGesturesAfterLongPress
+                        val currentItemInfo =
+                            listState.layoutInfo.visibleItemsInfo.find { it.index == currentDraggingIndex }
+                                ?: return@detectDragGesturesAfterLongPress
 
-                                // Lógica de Swap (Reutilizada)
-                                val currentDraggingIndex = draggingItemIndex ?: return@detectDragGesturesAfterLongPress
-                                val currentItemInfo = listState.layoutInfo.visibleItemsInfo
-                                    .find { it.index == currentDraggingIndex } ?: return@detectDragGesturesAfterLongPress
+                        val viewportEnd = listState.layoutInfo.viewportEndOffset
+                        if (change.position.y > viewportEnd - 150) {
+                            scope.launch { listState.scrollBy(10f) }
+                        }
+                        if (change.position.y < 150) {
+                            scope.launch { listState.scrollBy(-10f) }
+                        }
 
-                                // Scroll Automático nas bordas
-                                val viewportEnd = listState.layoutInfo.viewportEndOffset
-                                if (change.position.y > viewportEnd - 150) {
-                                    scope.launch { listState.scrollBy(10f) }
-                                }
-                                if (change.position.y < 150) {
-                                    scope.launch { listState.scrollBy(-10f) }
-                                }
+                        // Matemática do Swap
+                        if (delta > 0) { // Arrastando para baixo
+                            val nextItem =
+                                listState.layoutInfo.visibleItemsInfo.find { it.index == currentDraggingIndex + 1 }
 
-                                // Matemática do Swap
-                                if (delta > 0) { // Arrastando para baixo
-                                    val nextItem = listState.layoutInfo.visibleItemsInfo
-                                        .find { it.index == currentDraggingIndex + 1 }
-
-                                    if (nextItem != null &&
-                                        (currentItemInfo.offset + delta + currentItemInfo.size) > (nextItem.offset + nextItem.size / 2)) {
-                                        Collections.swap(state.exercicios, currentDraggingIndex, currentDraggingIndex + 1)
-                                        draggingItemIndex = currentDraggingIndex + 1
-                                        delta -= nextItem.size + 8.dp.toPx()
-                                    }
-                                } else if (delta < 0) { // Arrastando para cima
-                                    val prevItem = listState.layoutInfo.visibleItemsInfo
-                                        .find { it.index == currentDraggingIndex - 1 }
-
-                                    if (prevItem != null &&
-                                        (currentItemInfo.offset + delta) < (prevItem.offset + prevItem.size / 2)) {
-                                        Collections.swap(state.exercicios, currentDraggingIndex, currentDraggingIndex - 1)
-                                        draggingItemIndex = currentDraggingIndex - 1
-                                        delta += prevItem.size + 8.dp.toPx()
-                                    }
-                                }
+                            if (nextItem != null && (currentItemInfo.offset + delta + currentItemInfo.size) > (nextItem.offset + nextItem.size / 2)) {
+                                Collections.swap(
+                                    state.exercicios, currentDraggingIndex, currentDraggingIndex + 1
+                                )
+                                draggingItemIndex = currentDraggingIndex + 1
+                                delta -= nextItem.size + 8.dp.toPx()
                             }
-                        )
-                    }, onClick = { clicks(arrastarClick, it) }) {
-                        Icon(
-                            painter = painterResource(R.drawable.baseline_drag_handle_24),
-                            contentDescription = "Arrastar exercício"
-                        )
-                    }
-                    Text(it.exercicioTreinoId.toString(), Modifier.weight(1f))
-                    IconButton({ clicks(removerClick, it) }) {
-                        Icon(
-                            Icons.Filled.Delete, contentDescription = "Remover exercício"
-                        )
-                    }
-                    IconButton({ clicks(substituirClick, it) }) {
-                        Icon(
-                            painter = painterResource(R.drawable.swap_horiz_24dp_e3e3e3_fill0_wght400_grad0_opsz24),
-                            contentDescription = "Substituir exercício",
-                            tint = MaterialTheme.colorScheme.onBackground
-                        )
-                    }
+                        } else if (delta < 0) { // Arrastando para cima
+                            val prevItem =
+                                listState.layoutInfo.visibleItemsInfo.find { it.index == currentDraggingIndex - 1 }
+
+                            if (prevItem != null && (currentItemInfo.offset + delta) < (prevItem.offset + prevItem.size / 2)) {
+                                Collections.swap(
+                                    state.exercicios, currentDraggingIndex, currentDraggingIndex - 1
+                                )
+                                draggingItemIndex = currentDraggingIndex - 1
+                                delta += prevItem.size + 8.dp.toPx()
+                            }
+                        }
+                    })
                 }
             }
-
+            val graphicsLayer = remember<GraphicsLayerScope.() -> Unit> {
+                {
+                    translationY = if (isCurrentItemDragging) delta else 0f
+                    scaleX = if (isCurrentItemDragging) 1.05f else 1f
+                    scaleY = if (isCurrentItemDragging) 1.05f else 1f
+                }
+            }
+            ExercicioTreinoItem(
+                it,
+                index,
+                clicks,
+                elevation = elevation,
+                dragCallback = dragCallback,
+                graphicsLayer = graphicsLayer
+            )
         }
     }
 }
 
-//@Composable
-//private fun ExercicioTreinoItem(it: ExercicioTreino, clicks: (Int) -> Unit) {
-//}
+@Composable
+private fun ExercicioTreinoItem(
+    it: ExercicioTreino,
+    index: Int,
+    clicks: (Int, ExercicioTreino) -> Unit,
+    elevation: Dp,
+    dragCallback: PointerInputEventHandler,
+    graphicsLayer: GraphicsLayerScope.() -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedCard(modifier = modifier
+        .fillMaxWidth()
+        .clickable(true) { clicks(cardClick, it) }
+        .graphicsLayer(graphicsLayer),
+        shape = RoundedCornerShape(0.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = elevation)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(
+                modifier = Modifier.pointerInput(index, dragCallback),
+                onClick = { clicks(arrastarClick, it) }) {
+                Icon(
+                    painter = painterResource(R.drawable.baseline_drag_handle_24),
+                    contentDescription = "Arrastar exercício"
+                )
+            }
+            Text(it.exercicioTreinoId.toString(), Modifier.weight(1f))
+            IconButton({ clicks(removerClick, it) }) {
+                Icon(
+                    Icons.Filled.Delete, contentDescription = "Remover exercício"
+                )
+            }
+            IconButton({ clicks(substituirClick, it) }) {
+                Icon(
+                    painter = painterResource(R.drawable.swap_horiz_24dp_e3e3e3_fill0_wght400_grad0_opsz24),
+                    contentDescription = "Substituir exercício",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
+        }
+    }
+}
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -215,15 +235,19 @@ private fun TopAppBar(state: ExerciciosTreinoState, voltar: () -> Boolean) {
 private fun ExerciciosTreinoScreenPreview() {
     Tela(
         state = ExerciciosTreinoState(
-            mensagemDuracao = "20min", listOf(ExercicioTreino(1, 1, 1))
-        ), voltar = { true }, clicks = {_,_->})
+        mensagemDuracao = "20min", listOf(ExercicioTreino(1, 1, 1))
+    ), voltar = { true }, clicks = { _, _ -> })
 }
 
 @Preview
 @Composable
 private fun ExercicioItemPreview() {
-//    ExercicioTreinoItem(ExercicioTreino(1, 1, 1)) {
-//
-//    }
+    ExercicioTreinoItem(
+        it = ExercicioTreino(1, 1, 1),
+        index = 0,
+        clicks = { _, _ -> },
+        elevation = 1.dp,
+        dragCallback = {},
+        graphicsLayer = {})
 }
 
