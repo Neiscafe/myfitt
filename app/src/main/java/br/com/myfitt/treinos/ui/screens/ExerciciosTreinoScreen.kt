@@ -91,75 +91,72 @@ private fun ListaExercicios(
     LazyColumn(state = listState, modifier = Modifier.padding(innerPadding)) {
         itemsIndexed(
             items = state.exercicios, key = { _, item -> item.exercicioTreinoId }) { index, it ->
-            val isCurrentItemDragging by remember { mutableStateOf(draggingItemIndex == index) }
+            val isCurrentItemDragging = draggingItemIndex == index
             val elevation by animateDpAsState(
                 if (isCurrentItemDragging) 8.dp else 0.dp, label = "elevation"
             )
-            val dragCallback = remember<PointerInputEventHandler> {
-                PointerInputEventHandler {
-                    detectDragGesturesAfterLongPress(onDragStart = {
-                        draggingItemIndex = index
-                        isDragging = true
-                    }, onDragEnd = {
-                        draggingItemIndex = null
-                        delta = 0f
-                        isDragging = false
-                    }, onDragCancel = {
-                        draggingItemIndex = null
-                        delta = 0f
-                        isDragging = false
-                    }, onDrag = { change, dragAmount ->
-                        change.consume()
-                        delta += dragAmount.y
+            val dragCallback = PointerInputEventHandler {
+                detectDragGesturesAfterLongPress(onDragStart = {
+                    draggingItemIndex = index
+                    isDragging = true
+                }, onDragEnd = {
+                    draggingItemIndex = null
+                    delta = 0f
+                    isDragging = false
+                }, onDragCancel = {
+                    draggingItemIndex = null
+                    delta = 0f
+                    isDragging = false
+                }, onDrag = { change, dragAmount ->
+                    change.consume()
+                    delta += dragAmount.y
 
-                        val currentDraggingIndex =
-                            draggingItemIndex ?: return@detectDragGesturesAfterLongPress
-                        val currentItemInfo =
-                            listState.layoutInfo.visibleItemsInfo.find { it.index == currentDraggingIndex }
-                                ?: return@detectDragGesturesAfterLongPress
+                    val currentDraggingIndex =
+                        draggingItemIndex ?: return@detectDragGesturesAfterLongPress
+                    val currentItemInfo =
+                        listState.layoutInfo.visibleItemsInfo.find { it.index == currentDraggingIndex }
+                            ?: return@detectDragGesturesAfterLongPress
 
-                        val viewportEnd = listState.layoutInfo.viewportEndOffset
-                        if (change.position.y > viewportEnd - 150) {
-                            scope.launch { listState.scrollBy(10f) }
+                    val viewportEnd = listState.layoutInfo.viewportEndOffset
+                    if (change.position.y > viewportEnd - 150) {
+                        scope.launch { listState.scrollBy(10f) }
+                    }
+                    if (change.position.y < 150) {
+                        scope.launch { listState.scrollBy(-10f) }
+                    }
+
+                    // Matemática do Swap
+                    if (delta > 0) { // Arrastando para baixo
+                        val nextItem =
+                            listState.layoutInfo.visibleItemsInfo.find { it.index == currentDraggingIndex + 1 }
+
+                        if (nextItem != null && (currentItemInfo.offset + delta + currentItemInfo.size) > (nextItem.offset + nextItem.size / 2)) {
+                            Collections.swap(
+                                state.exercicios, currentDraggingIndex, currentDraggingIndex + 1
+                            )
+                            draggingItemIndex = currentDraggingIndex + 1
+                            delta -= nextItem.size + 8.dp.toPx()
                         }
-                        if (change.position.y < 150) {
-                            scope.launch { listState.scrollBy(-10f) }
+                    } else if (delta < 0) { // Arrastando para cima
+                        val prevItem =
+                            listState.layoutInfo.visibleItemsInfo.find { it.index == currentDraggingIndex - 1 }
+
+                        if (prevItem != null && (currentItemInfo.offset + delta) < (prevItem.offset + prevItem.size / 2)) {
+                            Collections.swap(
+                                state.exercicios, currentDraggingIndex, currentDraggingIndex - 1
+                            )
+                            draggingItemIndex = currentDraggingIndex - 1
+                            delta += prevItem.size + 8.dp.toPx()
                         }
-
-                        // Matemática do Swap
-                        if (delta > 0) { // Arrastando para baixo
-                            val nextItem =
-                                listState.layoutInfo.visibleItemsInfo.find { it.index == currentDraggingIndex + 1 }
-
-                            if (nextItem != null && (currentItemInfo.offset + delta + currentItemInfo.size) > (nextItem.offset + nextItem.size / 2)) {
-                                Collections.swap(
-                                    state.exercicios, currentDraggingIndex, currentDraggingIndex + 1
-                                )
-                                draggingItemIndex = currentDraggingIndex + 1
-                                delta -= nextItem.size + 8.dp.toPx()
-                            }
-                        } else if (delta < 0) { // Arrastando para cima
-                            val prevItem =
-                                listState.layoutInfo.visibleItemsInfo.find { it.index == currentDraggingIndex - 1 }
-
-                            if (prevItem != null && (currentItemInfo.offset + delta) < (prevItem.offset + prevItem.size / 2)) {
-                                Collections.swap(
-                                    state.exercicios, currentDraggingIndex, currentDraggingIndex - 1
-                                )
-                                draggingItemIndex = currentDraggingIndex - 1
-                                delta += prevItem.size + 8.dp.toPx()
-                            }
-                        }
-                    })
-                }
+                    }
+                })
             }
-            val graphicsLayer = remember<GraphicsLayerScope.() -> Unit> {
-                {
-                    translationY = if (isCurrentItemDragging) delta else 0f
-                    scaleX = if (isCurrentItemDragging) 1.05f else 1f
-                    scaleY = if (isCurrentItemDragging) 1.05f else 1f
-                }
+            val graphicsLayer: GraphicsLayerScope.() -> Unit = {
+                translationY = if (isCurrentItemDragging) delta else 0f
+                scaleX = if (isCurrentItemDragging) 1.05f else 1f
+                scaleY = if (isCurrentItemDragging) 1.05f else 1f
             }
+
             ExercicioTreinoItem(
                 it,
                 index,
