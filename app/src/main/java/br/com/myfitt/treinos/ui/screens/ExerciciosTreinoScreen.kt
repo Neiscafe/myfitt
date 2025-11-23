@@ -1,12 +1,13 @@
 package br.com.myfitt.treinos.ui.screens
 
-import android.util.Log
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,7 +26,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -67,14 +70,34 @@ fun ExerciciosTreinoScreen(
     })
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
-    Tela(state.value, voltar, viewModel::clicks)
+    Tela(state.value, voltar, viewModel::clicks, viewModel::limpaEvents)
 }
 
 @Composable
 private fun Tela(
-    state: ExerciciosTreinoState, voltar: () -> Boolean, clicks: (Int, ExercicioTreino) -> Unit
+    state: ExerciciosTreinoState,
+    voltar: () -> Boolean,
+    clicks: (Int, ExercicioTreino) -> Unit,
+    limpaEventos: () -> Unit
 ) {
-    Scaffold(topBar = { TopAppBar(state, voltar = voltar) }) { innerPadding ->
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = { TopAppBar(state, voltar = voltar) }) { innerPadding ->
+        state.erro?.let {
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = it
+                )
+                limpaEventos()
+            }
+        }
+        if (state.carregando) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
         ListaExercicios(innerPadding, state, clicks)
     }
 }
@@ -182,10 +205,11 @@ private fun ExercicioTreinoItem(
     graphicsLayer: GraphicsLayerScope.() -> Unit,
     modifier: Modifier = Modifier
 ) {
-    OutlinedCard(modifier = modifier
-        .fillMaxWidth()
-        .clickable(true) { clicks(cardClick, it) }
-        .graphicsLayer(graphicsLayer),
+    OutlinedCard(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(true) { clicks(cardClick, it) }
+            .graphicsLayer(graphicsLayer),
         shape = RoundedCornerShape(0.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -235,8 +259,11 @@ private fun TopAppBar(state: ExerciciosTreinoState, voltar: () -> Boolean) {
 private fun ExerciciosTreinoScreenPreview() {
     Tela(
         state = ExerciciosTreinoState(
-        mensagemDuracao = "20min", listOf(ExercicioTreino(1, 1, 1))
-    ), voltar = { true }, clicks = { _, _ -> })
+            mensagemDuracao = "20min",
+            exercicios = listOf(ExercicioTreino(1, 1, 1)),
+            carregando = true,
+            erro = "TESTE ERRO"
+        ), voltar = { true }, clicks = { _, _ -> }, {})
 }
 
 @Preview
