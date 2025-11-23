@@ -1,5 +1,6 @@
 package br.com.myfitt.treinos.ui.screens
 
+import android.util.Log
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -23,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -81,7 +83,7 @@ private fun Tela(
 private fun ListaExercicios(
     innerPadding: PaddingValues,
     state: ExerciciosTreinoState,
-    clicks: (Int, ExercicioTreino) -> Unit
+    clicks: (Int, ExercicioTreino) -> Unit,
 ) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -103,6 +105,7 @@ private fun ListaExercicios(
                     draggingItemIndex = null
                     delta = 0f
                     isDragging = false
+                    clicks(arrastarClick, it)
                 }, onDragCancel = {
                     draggingItemIndex = null
                     delta = 0f
