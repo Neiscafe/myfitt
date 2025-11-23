@@ -32,10 +32,20 @@ class ExerciciosTreinoViewModel(treinoId: Int) : ViewModel() {
 
     fun clicks(i: Int, exercicioItem: ExercicioTreino) {
         when (i) {
-            cardClick -> {}
-            removerClick -> {}
-            substituirClick -> {}
-            arrastarClick -> {}
+            cardClick -> {
+                _state.update { it.copy(erro = "Séries detalhadas: Não implementado.") }
+            }
+            removerClick -> {
+//                _state.update { it.copy(exercicios = it.exercicios.minus(exercicioItem)) }
+                _state.update { it.copy(erro = "Remover: Não implementado.") }
+            }
+
+            substituirClick -> {
+                _state.update { it.copy(erro = "Substituir: Não implementado.") }
+            }
+            arrastarClick -> {
+                _state.update { it.copy(erro = "Arrastar: Não implementado.") }
+            }
         }
     }
 
