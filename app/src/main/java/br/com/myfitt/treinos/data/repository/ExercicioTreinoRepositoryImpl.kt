@@ -8,6 +8,17 @@ import kotlinx.coroutines.delay
 
 class ExercicioTreinoRepositoryImpl : ExercicioTreinoRepository {
     private val exerciciosTreino = mutableListOf<ExercicioTreino>()
+
+    init {
+        exerciciosTreino.addAll(
+            listOf(
+                ExercicioTreino(1, 1, 1),
+                ExercicioTreino(2, 1, 1),
+                ExercicioTreino(3, 1, 1),
+            )
+        )
+    }
+
     override suspend fun adiciona(exercicioTreino: ExercicioTreino): Resultado<List<ExercicioTreino>> {
         delay(500L)
         val exercicioTreino = exercicioTreino.copy(exercicioTreinoId = sequenciaExercicioTreino())
@@ -16,7 +27,7 @@ class ExercicioTreinoRepositoryImpl : ExercicioTreinoRepository {
     }
 
     override suspend fun lista(treinoId: Int): Resultado<List<ExercicioTreino>> {
-        delay(500L)
+        delay(1500L)
         return Resultado.Sucesso(exerciciosTreino)
     }
 
