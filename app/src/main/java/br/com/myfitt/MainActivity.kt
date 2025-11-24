@@ -43,21 +43,22 @@ class MainActivity : ComponentActivity() {
         navController: NavController,
     ) {
         composable(
-            route = uriExerciciosTreino
-//            , arguments = exercicioTreinoArgs
+            route = uriExerciciosTreino,
+            arguments = exercicioTreinoArgs
         ) {
             ExerciciosTreinoScreen(
-//                it.arguments?.getInt(exercicioTreinoArg1)!!
-                1,
-                voltar = navController::popBackStack
+                treinoId = it.arguments?.getInt(exercicioTreinoArg1) ?: 0,
+                voltar = navController::popBackStack,
+                irParaSeries = { navController.navigate(uriSeriesExercicio, null) },
+                irParaSubstituicao = {},
             )
         }
     }
 
     companion object {
-        const val exerciciosTreino: Int = 1
         const val exercicioTreinoArg1 = "treinoId"
         const val uriExerciciosTreino = "exerciciosTreino/{$exercicioTreinoArg1}"
+        const val uriExerciciosTreino = "exerciciosTreino?$exercicioTreinoArg1=1"
         val exercicioTreinoArgs =
             listOf(navArgument(exercicioTreinoArg1) { type = NavType.IntType })
     }

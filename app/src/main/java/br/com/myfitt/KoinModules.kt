@@ -2,7 +2,7 @@ package br.com.myfitt
 
 import br.com.myfitt.treinos.data.repository.ExercicioTreinoRepositoryImpl
 import br.com.myfitt.treinos.domain.repository.ExercicioTreinoRepository
-import br.com.myfitt.treinos.ui.screens.ExerciciosTreinoViewModel
+import br.com.myfitt.treinos.ui.screens.exerciciosTreino.ExerciciosTreinoViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
