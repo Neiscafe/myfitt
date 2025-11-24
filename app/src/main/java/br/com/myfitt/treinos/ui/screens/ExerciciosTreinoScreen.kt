@@ -125,10 +125,12 @@ private fun ListaExercicios(
                     draggingItemIndex = index
                     isDragging = true
                 }, onDragEnd = {
+                    if(draggingItemIndex!=null) {
+                        clicks(arrastarClick, it.copy(ordem = (draggingItemIndex?:0)+1))
+                    }
                     draggingItemIndex = null
                     delta = 0f
                     isDragging = false
-                    clicks(arrastarClick, it)
                 }, onDragCancel = {
                     draggingItemIndex = null
                     delta = 0f
