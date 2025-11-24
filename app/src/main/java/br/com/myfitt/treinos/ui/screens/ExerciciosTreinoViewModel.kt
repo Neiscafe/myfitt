@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import br.com.myfitt.common.domain.ExercicioTreino
 import br.com.myfitt.treinos.domain.repository.ExercicioTreinoRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -22,7 +21,9 @@ class ExerciciosTreinoViewModel(treinoId: Int, val treinoRepository: ExercicioTr
             val result = treinoRepository.lista(treinoId)
             _state.update {
                 it.copy(
-                    erro = result.erroOrNull, exercicios = result.dataOrNull?:it.exercicios, carregando = false
+                    erro = result.erroOrNull,
+                    exercicios = result.dataOrNull ?: it.exercicios,
+                    carregando = false
                 )
             }
         }
@@ -37,7 +38,7 @@ class ExerciciosTreinoViewModel(treinoId: Int, val treinoRepository: ExercicioTr
     suspend fun _clicks(i: Int, exercicioItem: ExercicioTreino) {
         when (i) {
             cardClick -> {
-
+                _state.update { it.copy(irParaSeries = exercicioItem) }
             }
 
             removerClick -> {
@@ -53,7 +54,7 @@ class ExerciciosTreinoViewModel(treinoId: Int, val treinoRepository: ExercicioTr
             }
 
             substituirClick -> {
-
+                _state.update { it.copy(irParaSubstituicao = exercicioItem) }
             }
 
             arrastarClick -> {
