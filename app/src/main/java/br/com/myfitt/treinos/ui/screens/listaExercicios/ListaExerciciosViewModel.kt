@@ -1,4 +1,4 @@
-package br.com.myfitt.treinos.ui.screens.exercicios
+package br.com.myfitt.treinos.ui.screens.listaExercicios
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,7 +8,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class ExerciciosViewModel : ViewModel() {
+class ListaExerciciosViewModel : ViewModel() {
     private var pesquisa: String = ""
     private var pesquisaJob: Job? = null
 
