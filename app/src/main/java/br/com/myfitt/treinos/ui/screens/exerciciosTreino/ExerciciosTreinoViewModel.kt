@@ -1,4 +1,4 @@
-package br.com.myfitt.treinos.ui.screens
+package br.com.myfitt.treinos.ui.screens.exerciciosTreino
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

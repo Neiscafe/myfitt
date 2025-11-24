@@ -1,4 +1,4 @@
-package br.com.myfitt.treinos.ui.screens
+package br.com.myfitt.treinos.ui.screens.exerciciosTreino
 
 import androidx.compose.runtime.Immutable
 import br.com.myfitt.common.domain.ExercicioTreino

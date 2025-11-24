@@ -1,4 +1,4 @@
-package br.com.myfitt.treinos.ui.screens
+package br.com.myfitt.treinos.ui.screens.exerciciosTreino
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
@@ -50,10 +50,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.myfitt.R
 import br.com.myfitt.common.domain.ExercicioTreino
-import br.com.myfitt.treinos.ui.screens.ExerciciosTreinoViewModel.Companion.arrastarClick
-import br.com.myfitt.treinos.ui.screens.ExerciciosTreinoViewModel.Companion.cardClick
-import br.com.myfitt.treinos.ui.screens.ExerciciosTreinoViewModel.Companion.removerClick
-import br.com.myfitt.treinos.ui.screens.ExerciciosTreinoViewModel.Companion.substituirClick
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -135,7 +131,7 @@ private fun ListaExercicios(
                     isDragging = true
                 }, onDragEnd = {
                     if (draggingItemIndex != null) {
-                        clicks(arrastarClick, it.copy(ordem = (draggingItemIndex ?: 0) + 1))
+                        clicks(ExerciciosTreinoViewModel.Companion.arrastarClick, it.copy(ordem = (draggingItemIndex ?: 0) + 1))
                     }
                     draggingItemIndex = null
                     delta = 0f
@@ -219,26 +215,26 @@ private fun ExercicioTreinoItem(
     OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(true) { clicks(cardClick, it) }
+            .clickable(true) { clicks(ExerciciosTreinoViewModel.Companion.cardClick, it) }
             .graphicsLayer(graphicsLayer),
         shape = RoundedCornerShape(0.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(
                 modifier = Modifier.pointerInput(index, dragCallback),
-                onClick = { clicks(arrastarClick, it) }) {
+                onClick = { clicks(ExerciciosTreinoViewModel.Companion.arrastarClick, it) }) {
                 Icon(
                     painter = painterResource(R.drawable.baseline_drag_handle_24),
                     contentDescription = "Arrastar exercício"
                 )
             }
             Text(it.exercicioTreinoId.toString(), Modifier.weight(1f))
-            IconButton({ clicks(removerClick, it) }) {
+            IconButton({ clicks(ExerciciosTreinoViewModel.Companion.removerClick, it) }) {
                 Icon(
                     Icons.Filled.Delete, contentDescription = "Remover exercício"
                 )
             }
-            IconButton({ clicks(substituirClick, it) }) {
+            IconButton({ clicks(ExerciciosTreinoViewModel.Companion.substituirClick, it) }) {
                 Icon(
                     painter = painterResource(R.drawable.swap_horiz_24dp_e3e3e3_fill0_wght400_grad0_opsz24),
                     contentDescription = "Substituir exercício",
