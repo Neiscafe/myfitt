@@ -2,6 +2,7 @@ package br.com.myfitt.treinos.ui.screens.exerciciosTreino
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.myfitt.common.domain.ExercicioTreino
 import br.com.myfitt.treinos.domain.repository.ExercicioTreinoRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,8 +10,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ExerciciosTreinoViewModel(treinoId: Int, val treinoRepository: ExercicioTreinoRepository) :
-    ViewModel() {
+class ExerciciosTreinoViewModel(
+    val treinoId: Int, val treinoRepository: ExercicioTreinoRepository
+) : ViewModel() {
     private val _state = MutableStateFlow(ExerciciosTreinoState())
     val state = _state.asStateFlow()
 
@@ -56,7 +58,16 @@ class ExerciciosTreinoViewModel(treinoId: Int, val treinoRepository: ExercicioTr
 
             is Interacao.Substituir -> viewModelScope.launch(Dispatchers.IO) {
                 _state.update { it.copy(carregando = true) }
-                val result = treinoRepository.substitui(it.novo)
+                val result = treinoRepository.substitui(
+                    ExercicioTreino(
+                        exercicioTreinoId = 0,
+                        exercicioId = it.novo.exercicioId,
+                        treinoId = treinoId,
+                        compostoId = null,
+                        nomeExercicio = it.novo.nome,
+                        ordem = it.antigo.ordem
+                    )
+                )
                 _state.update {
                     it.copy(
                         carregando = false,
@@ -68,7 +79,16 @@ class ExerciciosTreinoViewModel(treinoId: Int, val treinoRepository: ExercicioTr
 
             is Interacao.Adicionar -> viewModelScope.launch(Dispatchers.IO) {
                 _state.update { it.copy(carregando = true) }
-                val result = treinoRepository.adiciona(it.novo)
+                val result = treinoRepository.adiciona(
+                    ExercicioTreino(
+                        exercicioTreinoId = 0,
+                        exercicioId = it.novo.exercicioId,
+                        treinoId = treinoId,
+                        ordem = state.value.exercicios.size,
+                        compostoId = null,
+                        nomeExercicio = it.novo.nome
+                    )
+                )
                 _state.update {
                     it.copy(
                         carregando = false,

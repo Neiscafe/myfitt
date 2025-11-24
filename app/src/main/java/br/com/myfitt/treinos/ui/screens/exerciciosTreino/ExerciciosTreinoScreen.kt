@@ -59,6 +59,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import br.com.myfitt.R
 import br.com.myfitt.common.domain.ExercicioTreino
+import br.com.myfitt.treinos.ui.screens.listaExercicios.ListaExerciciosNavigation
+import br.com.myfitt.treinos.ui.screens.listaExercicios.ListaExerciciosViewModel
 import br.com.myfitt.treinos.ui.screens.seriesExercicio.SeriesExercicioNavigation
 import br.com.myfitt.treinos.ui.theme.MyFittTheme
 import kotlinx.coroutines.launch
@@ -82,7 +84,7 @@ object ExerciciosTreinoNavigation {
                 treinoId = getArg(it),
                 voltar = navController::popBackStack,
                 irParaSeries = { navController.navigate(SeriesExercicioNavigation.route + "/$it") },
-                irParaSubstituicao = {},
+                irParaListaExercicios = { navController.navigate(ListaExerciciosNavigation.route) },
             )
         }
     }
@@ -94,7 +96,7 @@ fun ExerciciosTreinoScreen(
     treinoId: Int,
     voltar: () -> Boolean,
     irParaSeries: (Int) -> Unit = {},
-    irParaSubstituicao: () -> Unit = {},
+    irParaListaExercicios: () -> Unit = {},
     viewModel: ExerciciosTreinoViewModel = koinViewModel(parameters = {
         parametersOf(treinoId)
     })
@@ -104,7 +106,7 @@ fun ExerciciosTreinoScreen(
         state.value,
         voltar,
         viewModel::interagir,
-        irParaExercicios = {},
+        irParaExercicios = irParaListaExercicios,
         { irParaSeries(it.exercicioTreinoId) },
         viewModel::limpaEvents
     )
@@ -139,9 +141,14 @@ private fun Tela(
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             ListaExercicios(
-                innerPadding, state, irParaSubstituicao = {}, irParaSeries = irParaSeries, interagir
+                innerPadding, state, irParaExercicios = {}, irParaSeries = irParaSeries, interagir
             )
-            Button(modifier = Modifier.padding(16.dp), onClick = { irParaExercicios() }) {
+            Button(modifier = Modifier.padding(16.dp), onClick = {
+                ListaExerciciosViewModel.setCallback {
+                    interagir(Interacao.Adicionar(it))
+                }
+                irParaExercicios()
+            }) {
                 Icon(Icons.Default.Add, "Adicionar exercício")
                 Text("Exercício")
             }
@@ -153,7 +160,7 @@ private fun Tela(
 private fun ListaExercicios(
     innerPadding: PaddingValues,
     state: ExerciciosTreinoState,
-    irParaSubstituicao: () -> Unit,
+    irParaExercicios: () -> Unit,
     irParaSeries: (ExercicioTreino) -> Unit,
     interagir: (Interacao) -> Unit,
 ) {
@@ -239,7 +246,7 @@ private fun ListaExercicios(
             ExercicioTreinoItem(
                 it,
                 index,
-                irParaSubstituicao,
+                irParaExercicios,
                 irParaSeries,
                 interagir,
                 elevation = elevation,
@@ -254,7 +261,7 @@ private fun ListaExercicios(
 private fun ExercicioTreinoItem(
     it: ExercicioTreino,
     index: Int,
-    irParaSubstituicao: () -> Unit,
+    irParaExercicios: () -> Unit,
     irParaSeries: (ExercicioTreino) -> Unit,
     interagir: (Interacao) -> Unit,
     elevation: Dp,
@@ -283,7 +290,12 @@ private fun ExercicioTreinoItem(
                     Icons.Filled.Delete, contentDescription = "Remover exercício"
                 )
             }
-            IconButton(irParaSubstituicao) {
+            IconButton({
+                ListaExerciciosViewModel.setCallback { novo ->
+                    interagir(Interacao.Substituir(novo, it))
+                }
+                irParaExercicios()
+            }) {
                 Icon(
                     painter = painterResource(R.drawable.swap_horiz_24dp_e3e3e3_fill0_wght400_grad0_opsz24),
                     contentDescription = "Substituir exercício",
@@ -333,7 +345,7 @@ private fun ExercicioItemPreview() {
         elevation = 1.dp,
         dragCallback = {},
         graphicsLayer = {},
-        irParaSubstituicao = {},
+        irParaExercicios = {},
         irParaSeries = {},
         interagir = {},
     )
