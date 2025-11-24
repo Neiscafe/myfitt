@@ -5,7 +5,7 @@ import br.com.myfitt.common.domain.Exercicio
 data class ListaExerciciosState(
     val carregando: Boolean = false,
     val erro: String? = null,
-    val atualizarItens: List<Exercicio>? = null,
+    val exerciciosExibidos: List<Exercicio> = emptyList(),
 ) {
-    fun resetaEventos(): ListaExerciciosState = this.copy(atualizarItens = null, erro = null)
+    fun resetaEventos(): ListaExerciciosState = this.copy(erro = null)
 }

@@ -1,5 +1,6 @@
 package br.com.myfitt.treinos.ui.screens.listaExercicios
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.myfitt.common.domain.Exercicio
@@ -13,23 +14,27 @@ import kotlinx.coroutines.launch
 
 class ListaExerciciosViewModel(private val exercicioRepository: ExercicioRepository) : ViewModel() {
     private val _state = MutableStateFlow(ListaExerciciosState())
-    private val state = _state.asStateFlow()
+    val state = _state.asStateFlow()
     private var pesquisa: String = ""
     private var pesquisaJob: Job? = null
 
     companion object {
-        private var callback: ((Exercicio) -> Unit)? = null
+        private var _callback: ((Exercicio) -> Unit)? = null
         fun setCallback(callback: (Exercicio) -> Unit) {
-            this.callback = callback
+            this._callback = callback
         }
     }
 
-    init {
-        callback = null
+    fun getCallback(): (Exercicio) -> Unit {
+        return (_callback ?: {})
     }
 
     override fun onCleared() {
-        callback = null
+        _callback = null
+    }
+
+    fun resetaEventos() {
+        _state.update { it.resetaEventos() }
     }
 
     fun pesquisaMudou(pesquisa: String) {
@@ -37,11 +42,14 @@ class ListaExerciciosViewModel(private val exercicioRepository: ExercicioReposit
         if (this.pesquisa.length < 3) return
         pesquisaJob?.cancel()
         pesquisaJob = viewModelScope.launch(Dispatchers.IO) {
-            _state.update { it.copy(carregando = false) }
+            _state.update { it.copy(carregando = true) }
             val result = exercicioRepository.lista(this@ListaExerciciosViewModel.pesquisa)
+            Log.d("TESTE", "${result.dataOrNull}")
             _state.update {
                 it.copy(
-                    carregando = false, erro = result.erroOrNull, atualizarItens = result.dataOrNull
+                    carregando = false,
+                    erro = result.erroOrNull,
+                    exerciciosExibidos = result.dataOrNull ?: it.exerciciosExibidos
                 )
             }
         }

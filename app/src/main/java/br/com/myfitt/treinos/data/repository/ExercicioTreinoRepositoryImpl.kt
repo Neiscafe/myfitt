@@ -12,9 +12,9 @@ class ExercicioTreinoRepositoryImpl : ExercicioTreinoRepository {
     init {
         exerciciosTreino.addAll(
             listOf(
-                ExercicioTreino(1, 1, 1, nomeExercicio = "Supino reto"),
-                ExercicioTreino(2, 1, 1, nomeExercicio = "Passada"),
-                ExercicioTreino(3, 1, 1, nomeExercicio = "Rosquinha"),
+                ExercicioTreino(sequenciaExercicioTreino(), 1, 1, nomeExercicio = "Supino reto"),
+                ExercicioTreino(sequenciaExercicioTreino(), 1, 1, nomeExercicio = "Passada"),
+                ExercicioTreino(sequenciaExercicioTreino(), 1, 1, nomeExercicio = "Rosquinha"),
             )
         )
     }

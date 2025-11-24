@@ -1,5 +1,6 @@
 package br.com.myfitt.treinos.ui.screens.exerciciosTreino
 
+import android.util.Log
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -145,7 +146,9 @@ private fun Tela(
             )
             Button(modifier = Modifier.padding(16.dp), onClick = {
                 ListaExerciciosViewModel.setCallback {
+                    Log.d("TESTE", "EXECUTA CALLBACK")
                     interagir(Interacao.Adicionar(it))
+                    voltar()
                 }
                 irParaExercicios()
             }) {

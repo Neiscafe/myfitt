@@ -13,7 +13,7 @@ class ExercicioRepositoryImpl : ExercicioRepository {
     )
 
     override suspend fun lista(pesquisa: String): Resultado<List<Exercicio>> {
-        delay(1500)
-        return Resultado.Sucesso(exercicios.filter { it.nome.contains(pesquisa) })
+        delay(500)
+        return Resultado.Sucesso(exercicios.filter { it.nome.contains(pesquisa, true) })
     }
 }
