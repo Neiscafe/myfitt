@@ -3,12 +3,17 @@ package br.com.myfitt.treinos.ui.screens.listaExercicios
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.myfitt.common.domain.Exercicio
+import br.com.myfitt.treinos.domain.repository.ExercicioRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ListaExerciciosViewModel : ViewModel() {
+class ListaExerciciosViewModel(private val exercicioRepository: ExercicioRepository) : ViewModel() {
+    private val _state = MutableStateFlow(ListaExerciciosState())
+    private val state = _state.asStateFlow()
     private var pesquisa: String = ""
     private var pesquisaJob: Job? = null
 
@@ -32,7 +37,13 @@ class ListaExerciciosViewModel : ViewModel() {
         if (this.pesquisa.length < 3) return
         pesquisaJob?.cancel()
         pesquisaJob = viewModelScope.launch(Dispatchers.IO) {
-            delay(500L)
+            _state.update { it.copy(carregando = false) }
+            val result = exercicioRepository.lista(this@ListaExerciciosViewModel.pesquisa)
+            _state.update {
+                it.copy(
+                    carregando = false, erro = result.erroOrNull, atualizarItens = result.dataOrNull
+                )
+            }
         }
     }
 }
