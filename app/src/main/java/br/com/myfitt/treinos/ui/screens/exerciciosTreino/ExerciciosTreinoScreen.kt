@@ -48,19 +48,48 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
+import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import br.com.myfitt.R
 import br.com.myfitt.common.domain.ExercicioTreino
+import br.com.myfitt.treinos.ui.screens.seriesExercicio.SeriesExercicioNavigation
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import java.util.Collections
+
+object ExerciciosTreinoNavigation {
+    const val arg1 = "treinoId"
+    const val route = "exerciciosTreino"
+    const val routeWithArg = "$route/{$arg1}"
+    val argList = listOf(navArgument(arg1) { type = NavType.IntType })
+
+    fun getArg(entry: NavBackStackEntry) = entry.arguments?.getInt(arg1) ?: -1
+    fun composeNavigation(builder: NavGraphBuilder, navController: NavController) {
+        builder.composable(
+            route = routeWithArg,
+            arguments = argList,
+        ) {
+            ExerciciosTreinoScreen(
+                treinoId = getArg(it),
+                voltar = navController::popBackStack,
+                irParaSeries = { navController.navigate(SeriesExercicioNavigation.route + "/$it") },
+                irParaSubstituicao = {},
+            )
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciciosTreinoScreen(
     treinoId: Int,
     voltar: () -> Boolean,
-    irParaSeries: () -> Unit = {},
+    irParaSeries: (Int) -> Unit = {},
     irParaSubstituicao: () -> Unit = {},
     viewModel: ExerciciosTreinoViewModel = koinViewModel(parameters = {
         parametersOf(treinoId)
@@ -68,10 +97,10 @@ fun ExerciciosTreinoScreen(
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
     state.value.irParaSeries?.let {
-        irParaSeries()
+        irParaSeries(it.exercicioTreinoId)
         viewModel.limpaEvents()
     }
-    state.value.irParaSubstituicao?.let {
+    if (state.value.irParaSubstituicao) {
         irParaSubstituicao()
         viewModel.limpaEvents()
     }
@@ -131,7 +160,10 @@ private fun ListaExercicios(
                     isDragging = true
                 }, onDragEnd = {
                     if (draggingItemIndex != null) {
-                        clicks(ExerciciosTreinoViewModel.Companion.arrastarClick, it.copy(ordem = (draggingItemIndex ?: 0) + 1))
+                        clicks(
+                            ExerciciosTreinoViewModel.Companion.arrastarClick,
+                            it.copy(ordem = (draggingItemIndex ?: 0) + 1)
+                        )
                     }
                     draggingItemIndex = null
                     delta = 0f
@@ -266,11 +298,11 @@ private fun TopAppBar(state: ExerciciosTreinoState, voltar: () -> Boolean) {
 private fun ExerciciosTreinoScreenPreview() {
     Tela(
         state = ExerciciosTreinoState(
-            mensagemDuracao = "20min",
-            exercicios = listOf(ExercicioTreino(1, 1, 1)),
-            carregando = true,
-            erro = "TESTE ERRO"
-        ), voltar = { true }, clicks = { _, _ -> }, {})
+        mensagemDuracao = "20min",
+        exercicios = listOf(ExercicioTreino(1, 1, 1)),
+        carregando = true,
+        erro = "TESTE ERRO"
+    ), voltar = { true }, clicks = { _, _ -> }, {})
 }
 
 @Preview

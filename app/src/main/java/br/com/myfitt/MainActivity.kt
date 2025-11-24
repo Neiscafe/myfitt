@@ -8,14 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import br.com.myfitt.treinos.ui.screens.ExerciciosTreinoScreen
+import br.com.myfitt.treinos.ui.screens.exerciciosTreino.ExerciciosTreinoNavigation
+import br.com.myfitt.treinos.ui.screens.menuPrincipal.MenuPrincipalNavigation
+import br.com.myfitt.treinos.ui.screens.seriesExercicio.SeriesExercicioNavigation
 import br.com.myfitt.treinos.ui.theme.MyFittTheme
 
 class MainActivity : ComponentActivity() {
@@ -29,37 +26,15 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     NavHost(
                         navController = navController,
-                        startDestination = uriExerciciosTreino,
+                        startDestination = MenuPrincipalNavigation.route,
                         modifier = Modifier.padding(innerPadding)
                     ) {
-                        routeExerciciosTreino(navController)
+                        MenuPrincipalNavigation.composeNavigation(this, navController)
+                        ExerciciosTreinoNavigation.composeNavigation(this, navController)
+                        SeriesExercicioNavigation.composeNavigation(this, navController)
                     }
                 }
             }
         }
-    }
-
-    private fun NavGraphBuilder.routeExerciciosTreino(
-        navController: NavController,
-    ) {
-        composable(
-            route = uriExerciciosTreino,
-            arguments = exercicioTreinoArgs
-        ) {
-            ExerciciosTreinoScreen(
-                treinoId = it.arguments?.getInt(exercicioTreinoArg1) ?: 0,
-                voltar = navController::popBackStack,
-                irParaSeries = { navController.navigate(uriSeriesExercicio, null) },
-                irParaSubstituicao = {},
-            )
-        }
-    }
-
-    companion object {
-        const val exercicioTreinoArg1 = "treinoId"
-        const val uriExerciciosTreino = "exerciciosTreino/{$exercicioTreinoArg1}"
-        const val uriExerciciosTreino = "exerciciosTreino?$exercicioTreinoArg1=1"
-        val exercicioTreinoArgs =
-            listOf(navArgument(exercicioTreinoArg1) { type = NavType.IntType })
     }
 }

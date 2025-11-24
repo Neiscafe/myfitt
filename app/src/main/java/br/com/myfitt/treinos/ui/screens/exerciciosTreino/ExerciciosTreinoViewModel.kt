@@ -54,7 +54,7 @@ class ExerciciosTreinoViewModel(treinoId: Int, val treinoRepository: ExercicioTr
             }
 
             substituirClick -> {
-                _state.update { it.copy(irParaSubstituicao = exercicioItem) }
+                _state.update { it.copy(irParaSubstituicao = true) }
             }
 
             arrastarClick -> {
@@ -72,7 +72,7 @@ class ExerciciosTreinoViewModel(treinoId: Int, val treinoRepository: ExercicioTr
     }
 
     fun limpaEvents() {
-        _state.update { it.copy(erro = null, irParaSeries = null, irParaSubstituicao = null) }
+        _state.update { it.copy(erro = null, irParaSeries = null, irParaSubstituicao = false) }
     }
 
     companion object {
