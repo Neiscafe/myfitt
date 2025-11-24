@@ -5,5 +5,6 @@ data class ExercicioTreino(
     val exercicioId: Int,
     val treinoId: Int,
     val ordem: Int = 0,
-    val compostoId: Int? = null
+    val compostoId: Int? = null,
+    val nomeExercicio: String,
 )

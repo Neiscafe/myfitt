@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -57,6 +58,7 @@ import androidx.navigation.navArgument
 import br.com.myfitt.R
 import br.com.myfitt.common.domain.ExercicioTreino
 import br.com.myfitt.treinos.ui.screens.seriesExercicio.SeriesExercicioNavigation
+import br.com.myfitt.treinos.ui.theme.MyFittTheme
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -104,14 +106,17 @@ fun ExerciciosTreinoScreen(
         irParaSubstituicao()
         viewModel.limpaEvents()
     }
-    Tela(state.value, voltar, viewModel::clicks, viewModel::limpaEvents)
+    Tela(
+        state.value, voltar, viewModel::interagir, irParaExercicios = {}, viewModel::limpaEvents
+    )
 }
 
 @Composable
 private fun Tela(
     state: ExerciciosTreinoState,
     voltar: () -> Boolean,
-    clicks: (Int, ExercicioTreino) -> Unit,
+    interagir: (Interacao) -> Unit,
+    irParaExercicios: () -> Unit,
     limpaEventos: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -132,7 +137,8 @@ private fun Tela(
                 CircularProgressIndicator()
             }
         }
-        ListaExercicios(innerPadding, state, clicks)
+        ListaExercicios(innerPadding, state, irParaSubstituicao = {}, irParaSeries = {}, interagir)
+        Button(onClick = { irParaExercicios() }) { }
     }
 }
 
@@ -140,7 +146,9 @@ private fun Tela(
 private fun ListaExercicios(
     innerPadding: PaddingValues,
     state: ExerciciosTreinoState,
-    clicks: (Int, ExercicioTreino) -> Unit,
+    irParaSubstituicao: () -> Unit,
+    irParaSeries: (ExercicioTreino) -> Unit,
+    interagir: (Interacao) -> Unit,
 ) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -160,9 +168,8 @@ private fun ListaExercicios(
                     isDragging = true
                 }, onDragEnd = {
                     if (draggingItemIndex != null) {
-                        clicks(
-                            ExerciciosTreinoViewModel.Companion.arrastarClick,
-                            it.copy(ordem = (draggingItemIndex ?: 0) + 1)
+                        interagir(
+                            Interacao.Reposicionar(it, (draggingItemIndex ?: 0) + 1)
                         )
                     }
                     draggingItemIndex = null
@@ -225,7 +232,9 @@ private fun ListaExercicios(
             ExercicioTreinoItem(
                 it,
                 index,
-                clicks,
+                irParaSubstituicao,
+                irParaSeries,
+                interagir,
                 elevation = elevation,
                 dragCallback = dragCallback,
                 graphicsLayer = graphicsLayer
@@ -238,7 +247,9 @@ private fun ListaExercicios(
 private fun ExercicioTreinoItem(
     it: ExercicioTreino,
     index: Int,
-    clicks: (Int, ExercicioTreino) -> Unit,
+    irParaSubstituicao: () -> Unit,
+    irParaSeries: (ExercicioTreino) -> Unit,
+    interagir: (Interacao) -> Unit,
     elevation: Dp,
     dragCallback: PointerInputEventHandler,
     graphicsLayer: GraphicsLayerScope.() -> Unit,
@@ -247,26 +258,25 @@ private fun ExercicioTreinoItem(
     OutlinedCard(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(true) { clicks(ExerciciosTreinoViewModel.Companion.cardClick, it) }
+            .clickable(true) { irParaSeries(it) }
             .graphicsLayer(graphicsLayer),
         shape = RoundedCornerShape(0.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(
-                modifier = Modifier.pointerInput(index, dragCallback),
-                onClick = { clicks(ExerciciosTreinoViewModel.Companion.arrastarClick, it) }) {
+                modifier = Modifier.pointerInput(index, dragCallback), onClick = { }) {
                 Icon(
                     painter = painterResource(R.drawable.baseline_drag_handle_24),
                     contentDescription = "Arrastar exercício"
                 )
             }
-            Text(it.exercicioTreinoId.toString(), Modifier.weight(1f))
-            IconButton({ clicks(ExerciciosTreinoViewModel.Companion.removerClick, it) }) {
+            Text(it.nomeExercicio, Modifier.weight(1f))
+            IconButton({ interagir(Interacao.Remover(it)) }) {
                 Icon(
                     Icons.Filled.Delete, contentDescription = "Remover exercício"
                 )
             }
-            IconButton({ clicks(ExerciciosTreinoViewModel.Companion.substituirClick, it) }) {
+            IconButton(irParaSubstituicao) {
                 Icon(
                     painter = painterResource(R.drawable.swap_horiz_24dp_e3e3e3_fill0_wght400_grad0_opsz24),
                     contentDescription = "Substituir exercício",
@@ -296,24 +306,29 @@ private fun TopAppBar(state: ExerciciosTreinoState, voltar: () -> Boolean) {
 @Preview
 @Composable
 private fun ExerciciosTreinoScreenPreview() {
-    Tela(
-        state = ExerciciosTreinoState(
-        mensagemDuracao = "20min",
-        exercicios = listOf(ExercicioTreino(1, 1, 1)),
-        carregando = true,
-        erro = "TESTE ERRO"
-    ), voltar = { true }, clicks = { _, _ -> }, {})
+    MyFittTheme {
+        Tela(
+            state = ExerciciosTreinoState(
+                mensagemDuracao = "20min",
+                exercicios = listOf(ExercicioTreino(1, 1, 1, nomeExercicio = "Supino reto")),
+                carregando = true,
+                erro = "TESTE ERRO"
+            ), voltar = { true }, interagir = {}, irParaExercicios = { }, limpaEventos = {})
+    }
 }
 
 @Preview
 @Composable
 private fun ExercicioItemPreview() {
     ExercicioTreinoItem(
-        it = ExercicioTreino(1, 1, 1),
+        it = ExercicioTreino(1, 1, 1, nomeExercicio = "Supino reto"),
         index = 0,
-        clicks = { _, _ -> },
         elevation = 1.dp,
         dragCallback = {},
-        graphicsLayer = {})
+        graphicsLayer = {},
+        irParaSubstituicao = {},
+        irParaSeries = {},
+        interagir = {},
+    )
 }
 

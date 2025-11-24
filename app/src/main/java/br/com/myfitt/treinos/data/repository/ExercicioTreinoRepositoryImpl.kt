@@ -12,9 +12,9 @@ class ExercicioTreinoRepositoryImpl : ExercicioTreinoRepository {
     init {
         exerciciosTreino.addAll(
             listOf(
-                ExercicioTreino(1, 1, 1),
-                ExercicioTreino(2, 1, 1),
-                ExercicioTreino(3, 1, 1),
+                ExercicioTreino(1, 1, 1, nomeExercicio = "Supino reto"),
+                ExercicioTreino(2, 1, 1, nomeExercicio = "Passada"),
+                ExercicioTreino(3, 1, 1, nomeExercicio = "Rosquinha"),
             )
         )
     }
@@ -38,14 +38,15 @@ class ExercicioTreinoRepositoryImpl : ExercicioTreinoRepository {
     }
 
     override suspend fun substitui(
-        velho: ExercicioTreino, novo: ExercicioTreino
+        novo: ExercicioTreino
     ): Resultado<List<ExercicioTreino>> {
         delay(500L)
-        exerciciosTreino.removeAt(velho.ordem - 1)
-        exerciciosTreino.add(
-            velho.ordem - 1, novo.copy(ordem = velho.ordem, treinoId = velho.treinoId)
-        )
-        return Resultado.Sucesso(exerciciosTreino)
+        val atual = exerciciosTreino[novo.ordem - 1]
+        val removeResult = remove(atual)
+        if (!removeResult.sucesso) {
+            return removeResult
+        }
+        return adiciona(novo)
     }
 
     override suspend fun reordena(

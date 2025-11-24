@@ -2,7 +2,6 @@ package br.com.myfitt.treinos.ui.screens.exerciciosTreino
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import br.com.myfitt.common.domain.ExercicioTreino
 import br.com.myfitt.treinos.domain.repository.ExercicioTreinoRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,21 +28,11 @@ class ExerciciosTreinoViewModel(treinoId: Int, val treinoRepository: ExercicioTr
         }
     }
 
-    fun clicks(i: Int, exercicioItem: ExercicioTreino) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _clicks(i, exercicioItem)
-        }
-    }
-
-    suspend fun _clicks(i: Int, exercicioItem: ExercicioTreino) {
-        when (i) {
-            cardClick -> {
-                _state.update { it.copy(irParaSeries = exercicioItem) }
-            }
-
-            removerClick -> {
+    fun interagir(interacao: Interacao) {
+        when (val it = interacao) {
+            is Interacao.Remover -> viewModelScope.launch(Dispatchers.IO) {
                 _state.update { it.copy(carregando = true) }
-                val result = treinoRepository.remove(exercicioItem)
+                val result = treinoRepository.remove(it.exercicioTreino)
                 _state.update {
                     it.copy(
                         carregando = false,
@@ -53,13 +42,33 @@ class ExerciciosTreinoViewModel(treinoId: Int, val treinoRepository: ExercicioTr
                 }
             }
 
-            substituirClick -> {
-                _state.update { it.copy(irParaSubstituicao = true) }
+            is Interacao.Reposicionar -> viewModelScope.launch(Dispatchers.IO) {
+                _state.update { it.copy(carregando = true) }
+                val result = treinoRepository.reordena(it.reposicionar, it.posicao)
+                _state.update {
+                    it.copy(
+                        carregando = false,
+                        erro = result.erroOrNull,
+                        exercicios = result.dataOrNull ?: it.exercicios
+                    )
+                }
             }
 
-            arrastarClick -> {
+            is Interacao.Substituir -> viewModelScope.launch(Dispatchers.IO) {
                 _state.update { it.copy(carregando = true) }
-                val result = treinoRepository.reordena(exercicioItem, exercicioItem.ordem)
+                val result = treinoRepository.substitui(it.novo)
+                _state.update {
+                    it.copy(
+                        carregando = false,
+                        erro = result.erroOrNull,
+                        exercicios = result.dataOrNull ?: it.exercicios
+                    )
+                }
+            }
+
+            is Interacao.Adicionar -> viewModelScope.launch(Dispatchers.IO) {
+                _state.update { it.copy(carregando = true) }
+                val result = treinoRepository.adiciona(it.novo)
                 _state.update {
                     it.copy(
                         carregando = false,
@@ -73,12 +82,5 @@ class ExerciciosTreinoViewModel(treinoId: Int, val treinoRepository: ExercicioTr
 
     fun limpaEvents() {
         _state.update { it.copy(erro = null, irParaSeries = null, irParaSubstituicao = false) }
-    }
-
-    companion object {
-        const val cardClick = 0
-        const val removerClick = 1
-        const val substituirClick = 2
-        const val arrastarClick = 3
     }
 }

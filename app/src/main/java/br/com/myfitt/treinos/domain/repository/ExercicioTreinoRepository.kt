@@ -8,7 +8,10 @@ interface ExercicioTreinoRepository {
     suspend fun adiciona(exercicioTreino: ExercicioTreino): Resultado<List<ExercicioTreino>>
     suspend fun lista(treinoId: Int): Resultado<List<ExercicioTreino>>
     suspend fun remove(exercicioTreino: ExercicioTreino): Resultado<List<ExercicioTreino>>
-    suspend fun substitui(velho: ExercicioTreino, novo: ExercicioTreino): Resultado<List<ExercicioTreino>>
+    suspend fun substitui(
+        novo: ExercicioTreino
+    ): Resultado<List<ExercicioTreino>>
+
     suspend fun reordena(
         exercicioTreino: ExercicioTreino,
         posicaoNova: Int
