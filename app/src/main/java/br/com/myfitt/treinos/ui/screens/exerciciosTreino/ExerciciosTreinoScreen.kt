@@ -142,7 +142,12 @@ private fun Tela(
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             ListaExercicios(
-                innerPadding, state, irParaExercicios = {}, irParaSeries = irParaSeries, interagir
+                innerPadding = innerPadding,
+                state = state,
+                irParaExercicios = irParaExercicios,
+                irParaSeries = irParaSeries,
+                voltar = voltar,
+                interagir = interagir,
             )
             Button(modifier = Modifier.padding(16.dp), onClick = {
                 ListaExerciciosViewModel.setCallback {
@@ -163,6 +168,7 @@ private fun Tela(
 private fun ListaExercicios(
     innerPadding: PaddingValues,
     state: ExerciciosTreinoState,
+    voltar: () -> Boolean,
     irParaExercicios: () -> Unit,
     irParaSeries: (ExercicioTreino) -> Unit,
     interagir: (Interacao) -> Unit,
@@ -251,6 +257,7 @@ private fun ListaExercicios(
                 index,
                 irParaExercicios,
                 irParaSeries,
+                voltar = voltar,
                 interagir,
                 elevation = elevation,
                 dragCallback = dragCallback,
@@ -266,6 +273,7 @@ private fun ExercicioTreinoItem(
     index: Int,
     irParaExercicios: () -> Unit,
     irParaSeries: (ExercicioTreino) -> Unit,
+    voltar: () -> Boolean,
     interagir: (Interacao) -> Unit,
     elevation: Dp,
     dragCallback: PointerInputEventHandler,
@@ -296,6 +304,7 @@ private fun ExercicioTreinoItem(
             IconButton({
                 ListaExerciciosViewModel.setCallback { novo ->
                     interagir(Interacao.Substituir(novo, it))
+                    voltar()
                 }
                 irParaExercicios()
             }) {
@@ -351,6 +360,7 @@ private fun ExercicioItemPreview() {
         irParaExercicios = {},
         irParaSeries = {},
         interagir = {},
+        voltar = { true }
     )
 }
 

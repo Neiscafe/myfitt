@@ -13,10 +13,11 @@ class TreinoRepositoryImpl : TreinoRepository {
         return Resultado.Sucesso(treinos)
     }
 
-    override suspend fun criar(treino: Treino): Resultado<Unit> {
+    override suspend fun criar(treino: Treino): Resultado<Treino> {
         delay(500)
-        treinos.add(treino.copy(treinoId = sequenciaTreinoId()))
-        return Resultado.Sucesso(Unit)
+        val treino = treino.copy(treinoId = sequenciaTreinoId())
+        treinos.add(treino)
+        return Resultado.Sucesso(treino)
     }
 
     companion object {

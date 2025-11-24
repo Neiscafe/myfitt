@@ -15,21 +15,30 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import br.com.myfitt.treinos.ui.screens.exerciciosTreino.ExerciciosTreinoNavigation
 import br.com.myfitt.treinos.ui.theme.MyFittTheme
+import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 object MenuPrincipalNavigation {
     const val route = "menuPrincipal"
@@ -39,42 +48,72 @@ object MenuPrincipalNavigation {
         builder.composable(
             route = route,
         ) {
-            MenuPrincipalScreen(
-                navigation = { it, id ->
-                    when (it) {
-                        treinoDest -> navController.navigate(ExerciciosTreinoNavigation.route + "/$id")
-                    }
-                })
+            MenuPrincipalScreen(navController)
         }
     }
 
 }
 
 @Composable
-fun MenuPrincipalScreen(navigation: (Int, Int) -> Unit) {
-//    navigation(MenuPrincipalNavigation.novoTreinoDest, 0)
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.background)
-            .padding(16.dp, 48.dp, 16.dp, 0.dp)
-    ) {
-        Spacer(modifier = Modifier.height(24.dp))
-        Text("Bem-vindo!", style = MaterialTheme.typography.headlineLarge)
-        Text("O que vamos treinar hoje?", style = MaterialTheme.typography.bodyLarge)
-        Spacer(modifier = Modifier.height(24.dp))
-        Card2Opcoes(
-            icone = {
-                Icon(
-                    imageVector = Icons.Default.Warning, contentDescription = "Peso de treino"
-                )
-            },
-            titulo = "Meus treinos",
-            secundario = "Hora de superar seus limites!",
-            botao1 = "Histórico",
-            botao2 = "Novo",
-            cliqueBotao1 = {},
-            cliqueBotao2 = { navigation(MenuPrincipalNavigation.treinoDest, 0) })
+fun MenuPrincipalScreen(
+    navController: NavController, viewModel: MenuPrincipalViewModel = koinViewModel()
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    Tela(state, {
+        when (it) {
+            Acoes.ListaTreinos -> {}
+            Acoes.NovoTreino -> viewModel.novoTreino()
+            Acoes.ResetaEventos -> viewModel.resetaEventos()
+        }
+    })
+}
+
+@Composable
+private fun Tela(state: MenuPrincipalState, acoes: (Acoes) -> Unit) {
+    state.irParaTreino?.let{
+
+    }
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        modifier = Modifier.padding(16.dp, 48.dp, 16.dp, 0.dp)
+    ) { innerPadding ->
+        if (state.carregando) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                CircularProgressIndicator()
+            }
+        }
+        state.erro?.let {
+            scope.launch {
+                snackbarHostState.showSnackbar(it)
+                acoes(Acoes.ResetaEventos)
+            }
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = MaterialTheme.colorScheme.background)
+                .padding(innerPadding)
+        ) {
+            Spacer(modifier = Modifier.height(24.dp))
+            Text("Bem-vindo!", style = MaterialTheme.typography.headlineLarge)
+            Text("O que vamos treinar hoje?", style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(24.dp))
+            Card2Opcoes(
+                icone = {
+                    Icon(
+                        imageVector = Icons.Default.Warning, contentDescription = "Peso de treino"
+                    )
+                },
+                titulo = "Meus treinos",
+                secundario = "Hora de superar seus limites!",
+                botao1 = "Histórico",
+                botao2 = "Novo",
+                cliqueBotao1 = {},
+                cliqueBotao2 = { irPara() })
+        }
+
     }
 }
 
@@ -135,6 +174,6 @@ private fun Card2Opcoes(
 @Composable
 private fun MenuPrincipalScreenPreview() {
     MyFittTheme {
-        MenuPrincipalScreen { _, _ -> }
+        Tela { _, _ -> }
     }
 }
