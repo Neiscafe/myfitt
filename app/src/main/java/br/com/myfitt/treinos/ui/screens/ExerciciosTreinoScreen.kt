@@ -64,12 +64,21 @@ import java.util.Collections
 fun ExerciciosTreinoScreen(
     treinoId: Int,
     voltar: () -> Boolean,
-    modifier: Modifier = Modifier,
+    irParaSeries: () -> Unit = {},
+    irParaSubstituicao: () -> Unit = {},
     viewModel: ExerciciosTreinoViewModel = koinViewModel(parameters = {
         parametersOf(treinoId)
     })
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
+    state.value.irParaSeries?.let {
+        irParaSeries()
+        viewModel.limpaEvents()
+    }
+    state.value.irParaSubstituicao?.let {
+        irParaSubstituicao()
+        viewModel.limpaEvents()
+    }
     Tela(state.value, voltar, viewModel::clicks, viewModel::limpaEvents)
 }
 
@@ -125,8 +134,8 @@ private fun ListaExercicios(
                     draggingItemIndex = index
                     isDragging = true
                 }, onDragEnd = {
-                    if(draggingItemIndex!=null) {
-                        clicks(arrastarClick, it.copy(ordem = (draggingItemIndex?:0)+1))
+                    if (draggingItemIndex != null) {
+                        clicks(arrastarClick, it.copy(ordem = (draggingItemIndex ?: 0) + 1))
                     }
                     draggingItemIndex = null
                     delta = 0f
