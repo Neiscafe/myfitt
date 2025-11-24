@@ -9,6 +9,4 @@ data class ExerciciosTreinoState(
     val erro: String? = null,
     val carregando: Boolean = true,
     val exercicios: List<ExercicioTreino> = emptyList(),
-    val irParaSubstituicao: Boolean = false,
-    val irParaSeries: ExercicioTreino? = null,
 )

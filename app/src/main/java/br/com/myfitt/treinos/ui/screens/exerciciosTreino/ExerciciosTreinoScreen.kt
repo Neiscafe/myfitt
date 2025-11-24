@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +17,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
@@ -98,16 +100,13 @@ fun ExerciciosTreinoScreen(
     })
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
-    state.value.irParaSeries?.let {
-        irParaSeries(it.exercicioTreinoId)
-        viewModel.limpaEvents()
-    }
-    if (state.value.irParaSubstituicao) {
-        irParaSubstituicao()
-        viewModel.limpaEvents()
-    }
     Tela(
-        state.value, voltar, viewModel::interagir, irParaExercicios = {}, viewModel::limpaEvents
+        state.value,
+        voltar,
+        viewModel::interagir,
+        irParaExercicios = {},
+        { irParaSeries(it.exercicioTreinoId) },
+        viewModel::limpaEvents
     )
 }
 
@@ -117,6 +116,7 @@ private fun Tela(
     voltar: () -> Boolean,
     interagir: (Interacao) -> Unit,
     irParaExercicios: () -> Unit,
+    irParaSeries: (ExercicioTreino) -> Unit,
     limpaEventos: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -137,8 +137,15 @@ private fun Tela(
                 CircularProgressIndicator()
             }
         }
-        ListaExercicios(innerPadding, state, irParaSubstituicao = {}, irParaSeries = {}, interagir)
-        Button(onClick = { irParaExercicios() }) { }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            ListaExercicios(
+                innerPadding, state, irParaSubstituicao = {}, irParaSeries = irParaSeries, interagir
+            )
+            Button(modifier = Modifier.padding(16.dp), onClick = { irParaExercicios() }) {
+                Icon(Icons.Default.Add, "Adicionar exercício")
+                Text("Exercício")
+            }
+        }
     }
 }
 
@@ -313,7 +320,7 @@ private fun ExerciciosTreinoScreenPreview() {
                 exercicios = listOf(ExercicioTreino(1, 1, 1, nomeExercicio = "Supino reto")),
                 carregando = true,
                 erro = "TESTE ERRO"
-            ), voltar = { true }, interagir = {}, irParaExercicios = { }, limpaEventos = {})
+            ), voltar = { true }, interagir = {}, irParaExercicios = { }, {}, limpaEventos = {})
     }
 }
 

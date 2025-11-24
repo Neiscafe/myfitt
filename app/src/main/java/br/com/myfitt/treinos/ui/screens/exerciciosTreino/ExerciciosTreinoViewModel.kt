@@ -81,6 +81,6 @@ class ExerciciosTreinoViewModel(treinoId: Int, val treinoRepository: ExercicioTr
     }
 
     fun limpaEvents() {
-        _state.update { it.copy(erro = null, irParaSeries = null, irParaSubstituicao = false) }
+        _state.update { it.copy(erro = null) }
     }
 }
