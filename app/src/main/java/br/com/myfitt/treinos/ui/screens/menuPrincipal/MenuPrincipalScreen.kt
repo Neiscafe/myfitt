@@ -36,6 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import br.com.myfitt.treinos.ui.screens.exerciciosTreino.ExerciciosTreinoNavigation
 import br.com.myfitt.treinos.ui.theme.MyFittTheme
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -59,6 +60,9 @@ fun MenuPrincipalScreen(
     navController: NavController, viewModel: MenuPrincipalViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    state.irParaTreino?.let {
+        navController.navigate(ExerciciosTreinoNavigation.route + "/${it.treinoId}")
+    }
     Tela(state, {
         when (it) {
             Acoes.ListaTreinos -> {}
@@ -70,9 +74,6 @@ fun MenuPrincipalScreen(
 
 @Composable
 private fun Tela(state: MenuPrincipalState, acoes: (Acoes) -> Unit) {
-    state.irParaTreino?.let{
-
-    }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
@@ -110,8 +111,8 @@ private fun Tela(state: MenuPrincipalState, acoes: (Acoes) -> Unit) {
                 secundario = "Hora de superar seus limites!",
                 botao1 = "Histórico",
                 botao2 = "Novo",
-                cliqueBotao1 = {},
-                cliqueBotao2 = { irPara() })
+                cliqueBotao1 = { acoes(Acoes.ListaTreinos) },
+                cliqueBotao2 = { acoes(Acoes.NovoTreino) })
         }
 
     }
@@ -174,6 +175,6 @@ private fun Card2Opcoes(
 @Composable
 private fun MenuPrincipalScreenPreview() {
     MyFittTheme {
-        Tela { _, _ -> }
+        Tela(MenuPrincipalState(false, null, null)) { }
     }
 }
