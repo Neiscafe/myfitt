@@ -1,5 +1,6 @@
 package br.com.myfitt.treinos.ui.screens.menuPrincipal
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,8 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -25,20 +24,24 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import br.com.myfitt.R
 import br.com.myfitt.treinos.ui.screens.exerciciosTreino.ExerciciosTreinoNavigation
 import br.com.myfitt.treinos.ui.theme.MyFittTheme
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 object MenuPrincipalNavigation {
@@ -49,7 +52,9 @@ object MenuPrincipalNavigation {
         builder.composable(
             route = route,
         ) {
-            MenuPrincipalScreen(navController)
+            MenuPrincipalScreen(
+                navegaNovoTreino = { navController.navigate(ExerciciosTreinoNavigation.route + "/${it}") },
+                navegaListaTreinos = {})
         }
     }
 
@@ -57,24 +62,36 @@ object MenuPrincipalNavigation {
 
 @Composable
 fun MenuPrincipalScreen(
-    navController: NavController, viewModel: MenuPrincipalViewModel = koinViewModel()
+    navegaNovoTreino: (Int) -> Unit,
+    navegaListaTreinos: () -> Unit,
+    viewModel: MenuPrincipalViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    state.irParaTreino?.let {
-        navController.navigate(ExerciciosTreinoNavigation.route + "/${it.treinoId}")
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        viewModel.eventos.flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.STARTED)
+            .collect {
+                when (it) {
+                    MenuPrincipalEvents.NavegaListaTreinos -> {}
+                    is MenuPrincipalEvents.NavegaTreino -> navegaNovoTreino(it.treinoId)
+                }
+            }
     }
-    Tela(state, {
-        when (it) {
-            Acoes.ListaTreinos -> {}
-            Acoes.NovoTreino -> viewModel.novoTreino()
-            Acoes.ResetaEventos -> viewModel.resetaEventos()
-        }
-    })
+    Tela(
+        state = state,
+        resetaEventos = viewModel::resetaEventos,
+        navegaListaTreinos = navegaListaTreinos,
+        novoTreinoClick = viewModel::novoTreino
+    )
 }
 
 @Composable
-private fun Tela(state: MenuPrincipalState, acoes: (Acoes) -> Unit) {
-    val scope = rememberCoroutineScope()
+private fun Tela(
+    state: MenuPrincipalState,
+    resetaEventos: () -> Unit,
+    navegaListaTreinos: () -> Unit,
+    novoTreinoClick: () -> Unit
+) {
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -83,12 +100,6 @@ private fun Tela(state: MenuPrincipalState, acoes: (Acoes) -> Unit) {
         if (state.carregando) {
             Box(modifier = Modifier.fillMaxSize()) {
                 CircularProgressIndicator()
-            }
-        }
-        state.erro?.let {
-            scope.launch {
-                snackbarHostState.showSnackbar(it)
-                acoes(Acoes.ResetaEventos)
             }
         }
         Column(
@@ -101,80 +112,70 @@ private fun Tela(state: MenuPrincipalState, acoes: (Acoes) -> Unit) {
             Text("Bem-vindo!", style = MaterialTheme.typography.headlineLarge)
             Text("O que vamos treinar hoje?", style = MaterialTheme.typography.bodyLarge)
             Spacer(modifier = Modifier.height(24.dp))
-            Card2Opcoes(
-                icone = {
-                    Icon(
-                        imageVector = Icons.Default.Warning, contentDescription = "Peso de treino"
-                    )
-                },
-                titulo = "Meus treinos",
-                secundario = "Hora de superar seus limites!",
-                botao1 = "Histórico",
-                botao2 = "Novo",
-                cliqueBotao1 = { acoes(Acoes.ListaTreinos) },
-                cliqueBotao2 = { acoes(Acoes.NovoTreino) })
+            ElevatedCard(
+                modifier = Modifier.fillMaxWidth()
+
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Box(modifier = Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                            Icon(
+                                painter = painterResource(R.drawable.exercise_24dp_000000_fill0_wght400_grad0_opsz24),
+                                contentDescription = "Peso de treino"
+                            )
+                        }
+                        Column {
+                            Text("Meus treinos", style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                "Hora de superar seus limites!",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp, 0.dp, 8.dp, 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    OutlinedButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        shape = RoundedCornerShape(10.dp),
+                        onClick = navegaListaTreinos
+                    ) {
+                        Text(
+                            "Histórico", color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Button(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        shape = RoundedCornerShape(10.dp),
+                        onClick = novoTreinoClick
+                    ) { Text("Novo") }
+                }
+            }
         }
-
     }
-}
-
-@Composable
-private fun Card2Opcoes(
-    icone: @Composable () -> Unit,
-    titulo: String,
-    secundario: String,
-    botao1: String,
-    botao2: String,
-    cliqueBotao1: () -> Unit,
-    cliqueBotao2: () -> Unit,
-) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Box(modifier = Modifier.size(40.dp), contentAlignment = Alignment.Center) {
-                    icone()
-                }
-                Column {
-                    Text(titulo, style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        secundario, style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(0.dp, 16.dp, 0.dp, 0.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                OutlinedButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    shape = RoundedCornerShape(10.dp),
-                    onClick = {
-                        cliqueBotao1()
-                    }) { Text(botao1, color = MaterialTheme.colorScheme.primary) }
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    shape = RoundedCornerShape(10.dp),
-                    onClick = {
-                        cliqueBotao2()
-                    }) { Text(botao2) }
-            }
+    state.erro?.let {
+        LaunchedEffect(it) {
+            snackbarHostState.showSnackbar(it)
+            resetaEventos()
         }
     }
 }
 
-@Preview
+@Preview(showSystemUi = true, showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun MenuPrincipalScreenPreview() {
     MyFittTheme {
-        Tela(MenuPrincipalState(false, null, null)) { }
+        Tela(MenuPrincipalState(false, null), {}, {}, {})
     }
 }

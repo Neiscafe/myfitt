@@ -5,21 +5,28 @@ import androidx.lifecycle.viewModelScope
 import br.com.myfitt.common.domain.Treino
 import br.com.myfitt.treinos.domain.repository.TreinoRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class MenuPrincipalViewModel(private val treinoRepository: TreinoRepository) : ViewModel() {
     private val _state = MutableStateFlow(MenuPrincipalState())
     val state = _state.asStateFlow()
+    private val _eventos = Channel<MenuPrincipalEvents>()
+    val eventos = _eventos.receiveAsFlow()
     fun novoTreino() {
         viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(carregando = true) }
             val result = treinoRepository.criar(Treino(0))
+            result.dataOrNull?.treinoId?.let {
+                _eventos.send(MenuPrincipalEvents.NavegaTreino(it))
+            }
             _state.update {
                 it.copy(
-                    carregando = false, irParaTreino = result.dataOrNull, erro = result.erroOrNull
+                    carregando = false, erro = result.erroOrNull
                 )
             }
         }
