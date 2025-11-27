@@ -8,6 +8,7 @@ data class SerieExercicio(
     val exercicioId: Int,
     val dhInicio: LocalDateTime,
     val dhFim: LocalDateTime,
+    val duracaoSegundos: Int,
     val segundosDescanso: Int,
     val pesoKg: Int,
     val repeticoes: Int

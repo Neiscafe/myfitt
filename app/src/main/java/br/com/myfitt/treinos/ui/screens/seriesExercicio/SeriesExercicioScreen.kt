@@ -2,6 +2,9 @@
 
 package br.com.myfitt.treinos.ui.screens.seriesExercicio
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,24 +14,39 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -38,6 +56,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import br.com.myfitt.MainActivity
+import br.com.myfitt.R
 import br.com.myfitt.common.domain.SerieExercicio
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -75,8 +95,104 @@ fun SeriesExercicioScreen(
         parametersOf(exercicioTreinoId)
     })
 ) {
+    val mainActivity = LocalContext.current.findActivity() as MainActivity
     val state by viewModel.state.collectAsStateWithLifecycle()
-    Tela(irParaEditarSeries, popBackstack, viewModel::resetaEventos, state)
+    val descansoState by viewModel.descansoState.collectAsStateWithLifecycle()
+    val duracaoState by viewModel.duracaoSerieState.collectAsStateWithLifecycle()
+    var exibeDialogFinalizaSerie by remember { mutableStateOf(false) }
+    Tela(
+        irParaEditarSeries = irParaEditarSeries,
+        popBackstack = popBackstack,
+        resetaEventos = viewModel::resetaEventos,
+        pesoMudou = viewModel::pesoMudou,
+        iniciaSerie = {
+            mainActivity.configuraCronometroBackground(vaiParaSegundoPlano = {
+                viewModel.paraCronometros()!!
+            }, voltaParaPrimeiroPlano = { viewModel.iniciaSerie(it) })
+            viewModel.iniciaSerie()
+        },
+        state = state,
+        duracaoState = duracaoState,
+        descansoState = descansoState,
+        finalizaSerie = { exibeDialogFinalizaSerie = true },
+        finalizaTreino = {
+            viewModel.paraCronometros()
+        })
+    if (exibeDialogFinalizaSerie) {
+        DialogRepeticoes(
+            onDismiss = { exibeDialogFinalizaSerie = false },
+            repeticoesMudou = viewModel::repeticoesMudou,
+            aplicaRepeticoes = {
+                viewModel.aplicaRepeticoes()
+                mainActivity.configuraCronometroBackground(vaiParaSegundoPlano = {
+                    viewModel.paraCronometros()!!
+                }, voltaParaPrimeiroPlano = { viewModel.iniciaDescanso(it) })
+                viewModel.iniciaDescanso()
+                exibeDialogFinalizaSerie = false
+            })
+    }
+}
+
+@Composable
+private fun DialogRepeticoes(
+    onDismiss: () -> Unit, repeticoesMudou: (String) -> Unit, aplicaRepeticoes: () -> Unit
+) {
+    BasicAlertDialog(
+        onDismissRequest = onDismiss,
+    ) {
+        var repeticoesTextFieldValue by remember { mutableStateOf(TextFieldValue("1")) }
+        Icon(Icons.Default.Check, "Série finalizada")
+        Text("Série finalizada!")
+        OutlinedTextField(
+            value = repeticoesTextFieldValue,
+            onValueChange = {
+                repeticoesMudou(it.text)
+            },
+            maxLines = 1,
+            singleLine = true,
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
+            leadingIcon = {
+                IconButton(onClick = {
+                    val diminuido =
+                        (repeticoesTextFieldValue.text.toIntOrNull()?.minus(10) ?: 0).toString()
+                    repeticoesTextFieldValue = TextFieldValue(
+                        text = diminuido, selection = TextRange(diminuido.length)
+                    )
+                }) {
+                    Icon(
+                        painterResource(R.drawable.remove_24dp_000000_fill0_wght400_grad0_opsz24),
+                        "Diminuir mais 10kg"
+                    )
+                }
+            },
+            trailingIcon = {
+                IconButton(onClick = {
+                    val aumentado =
+                        (repeticoesTextFieldValue.text.toIntOrNull()?.plus(10) ?: 0).toString()
+                    repeticoesTextFieldValue = TextFieldValue(
+                        text = aumentado, selection = TextRange(aumentado.length)
+                    )
+                }) {
+                    Icon(
+                        Icons.Default.Add, "Adicionar mais 10kg"
+                    )
+                }
+            })
+        TextButton(onClick = aplicaRepeticoes) {
+            Text(
+                "Confirmar"
+            )
+        }
+    }
+}
+
+internal fun Context.findActivity(): Activity {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is Activity) return context
+        context = context.baseContext
+    }
+    throw IllegalStateException("Permissions should be called in the context of an Activity")
 }
 
 @Composable
@@ -84,27 +200,40 @@ private fun Tela(
     irParaEditarSeries: () -> Unit,
     popBackstack: () -> Boolean,
     resetaEventos: () -> Unit,
+    pesoMudou: (String) -> Unit,
+    iniciaSerie: () -> Unit,
+    finalizaSerie: () -> Unit,
+    finalizaTreino: () -> Unit,
+    duracaoState: CronometroState,
+    descansoState: CronometroState,
     state: SeriesExercicioState
 ) {
+    var pesoTextFieldValue by remember { mutableStateOf(TextFieldValue("")) }
     val snackbarHostState = remember { SnackbarHostState() }
-    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
-        TopAppBar({ Text(state.nomeExercicio) }, navigationIcon = {
-            IconButton(onClick = { popBackstack() }) {
-                Icon(
-                    Icons.AutoMirrored.Default.ArrowBack,
-                    "Voltar para exercícios",
-                )
-            }
-        }, actions = {
-            IconButton(onClick = irParaEditarSeries) {
-                Icon(
-                    Icons.Outlined.Edit,
-                    "Editar séries",
-                )
-            }
-        })
-    }) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
+    Scaffold(
+        floatingActionButton = { FloatingActionButton(onClick = finalizaTreino) { Text("Finalizar treino") } },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            TopAppBar({ Text(state.nomeExercicio) }, navigationIcon = {
+                IconButton(onClick = { popBackstack() }) {
+                    Icon(
+                        Icons.AutoMirrored.Default.ArrowBack,
+                        "Voltar para exercícios",
+                    )
+                }
+            }, actions = {
+                IconButton(onClick = irParaEditarSeries) {
+                    Icon(
+                        Icons.Outlined.Edit,
+                        "Editar séries",
+                    )
+                }
+            })
+        }) { innerPadding ->
+        Column(
+            modifier = Modifier.padding(innerPadding),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             LazyColumn(
                 modifier = Modifier
                     .height(200.dp)
@@ -130,7 +259,62 @@ private fun Tela(
                     }
                 }
             }
-
+            if (descansoState.ativo) {
+                Text("Descansando: ${descansoState.segundos / 60}m${descansoState.segundos % 60}")
+            }
+            if (duracaoState.ativo) {
+                Text("Duração: ${descansoState.segundos / 60}m${descansoState.segundos % 60}")
+                Button(finalizaSerie) {
+                    Text("Finalizar")
+                }
+            }
+            if (state.observacaoExercicio.isNotEmpty()) {
+                Text("Observação:")
+                Text(modifier = Modifier.padding(32.dp, 0.dp), text = state.observacaoExercicio)
+            }
+            if (state.series.isEmpty() || descansoState.ativo) {
+                OutlinedTextField(
+                    value = pesoTextFieldValue,
+                    onValueChange = { pesoMudou(it.text) },
+                    singleLine = true,
+                    maxLines = 1,
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
+                    label = { Text("Peso (Kg)") },
+                    leadingIcon = {
+                        IconButton(onClick = {
+                            val diminuido =
+                                (pesoTextFieldValue.text.toIntOrNull()?.minus(10) ?: 0).toString()
+                            pesoTextFieldValue = TextFieldValue(
+                                text = diminuido, selection = TextRange(diminuido.length)
+                            )
+                        }) {
+                            Icon(
+                                painterResource(R.drawable.remove_24dp_000000_fill0_wght400_grad0_opsz24),
+                                "Diminuir mais 10kg"
+                            )
+                        }
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            val aumentado =
+                                (pesoTextFieldValue.text.toIntOrNull()?.plus(10) ?: 0).toString()
+                            pesoTextFieldValue = TextFieldValue(
+                                text = aumentado, selection = TextRange(aumentado.length)
+                            )
+                        }) {
+                            Icon(
+                                Icons.Default.Add, "Adicionar mais 10kg"
+                            )
+                        }
+                    })
+            }
+            Button(iniciaSerie) {
+                Icon(
+                    painterResource(R.drawable.timer_24dp_000000_fill0_wght400_grad0_opsz24),
+                    "Iniciar contador da série"
+                )
+                Text("Iniciar série")
+            }
         }
     }
     state.erro?.let {
@@ -145,40 +329,31 @@ private fun Tela(
 @Composable
 private fun SeriesExercicioScreenPreview() {
     Tela(
-        {}, { true }, {}, SeriesExercicioState(
-        series = listOf(
-            SerieExercicio(
-                1, 1, 1, LocalDateTime.now(), LocalDateTime.now(), 90, 90, 12
+        irParaEditarSeries = {},
+        popBackstack = { true },
+        resetaEventos = {},
+        pesoMudou = {},
+        iniciaSerie = {},
+        finalizaSerie = {},
+        state = SeriesExercicioState(
+            series = listOf(
+                SerieExercicio(
+                    serieId = 1,
+                    exercicioTreinoId = 1,
+                    exercicioId = 1,
+                    dhInicio = LocalDateTime.now(),
+                    dhFim = LocalDateTime.now(),
+                    duracaoSegundos = 90,
+                    segundosDescanso = 90,
+                    pesoKg = 90,
+                    repeticoes = 12
+                ),
             ),
-            SerieExercicio(
-                2, 1, 1, LocalDateTime.now(), LocalDateTime.now(), 90, 90, 12
-            ),
-            SerieExercicio(
-                3, 1, 1, LocalDateTime.now(), LocalDateTime.now(), 90, 90, 12
-            ),
-            SerieExercicio(
-                4, 1, 1, LocalDateTime.now(), LocalDateTime.now(), 90, 90, 12
-            ),
-            SerieExercicio(
-                5, 1, 1, LocalDateTime.now(), LocalDateTime.now(), 90, 90, 12
-            ),
-            SerieExercicio(
-                6, 1, 1, LocalDateTime.now(), LocalDateTime.now(), 90, 90, 12
-            ),
-            SerieExercicio(
-                7, 1, 1, LocalDateTime.now(), LocalDateTime.now(), 90, 90, 12
-            ),
-            SerieExercicio(
-                8, 1, 1, LocalDateTime.now(), LocalDateTime.now(), 90, 90, 12
-            ),
-            SerieExercicio(
-                9, 1, 1, LocalDateTime.now(), LocalDateTime.now(), 90, 90, 12
-            ),
-            SerieExercicio(
-                10, 1, 1, LocalDateTime.now(), LocalDateTime.now(), 90, 90, 12
-            ),
+            nomeExercicio = "Supino reto",
+            observacaoExercicio = "Fazer pensando na morte da bezerra"
         ),
-        nomeExercicio = "Supino reto",
-    )
+        descansoState = CronometroState(),
+        duracaoState = CronometroState(),
+        finalizaTreino = {},
     )
 }

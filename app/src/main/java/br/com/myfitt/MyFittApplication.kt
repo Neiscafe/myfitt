@@ -1,6 +1,8 @@
 package br.com.myfitt
 
+import android.app.Activity
 import android.app.Application
+import android.os.Bundle
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.loadKoinModules
