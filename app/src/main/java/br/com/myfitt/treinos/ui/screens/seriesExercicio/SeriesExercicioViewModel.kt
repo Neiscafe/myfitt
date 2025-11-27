@@ -27,4 +27,8 @@ class SeriesExercicioViewModel(exercicioTreinoId: Int, seriesRepository: SeriesR
             }
         }
     }
+
+    fun resetaEventos() {
+        _state.update { it.resetaEventos() }
+    }
 }
