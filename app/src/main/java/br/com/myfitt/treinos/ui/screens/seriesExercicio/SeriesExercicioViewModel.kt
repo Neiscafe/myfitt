@@ -1,8 +1,8 @@
 package br.com.myfitt.treinos.ui.screens.seriesExercicio
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.myfitt.common.domain.SerieExercicio
 import br.com.myfitt.treinos.domain.repository.SeriesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -11,6 +11,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Duration
+import java.time.LocalDateTime
+import kotlin.math.abs
 
 class SeriesExercicioViewModel(val exercicioTreinoId: Int, val seriesRepository: SeriesRepository) :
     ViewModel() {
@@ -18,11 +21,13 @@ class SeriesExercicioViewModel(val exercicioTreinoId: Int, val seriesRepository:
     private val _state = MutableStateFlow(SeriesExercicioState())
     val state = _state.asStateFlow()
 
-    private val _descansoState = MutableStateFlow(CronometroState())
-    val descansoState = _descansoState.asStateFlow()
+    private val _cronometroState = MutableStateFlow(CronometroState())
+    val cronometroState = _cronometroState.asStateFlow()
 
-    private val _duracaoSerieState = MutableStateFlow(CronometroState())
-    val duracaoSerieState = _duracaoSerieState.asStateFlow()
+    private var pesoKg: Int = 0
+    private var repeticoes = 0
+    private var serieAtual: SerieExercicio? = null
+
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -38,61 +43,81 @@ class SeriesExercicioViewModel(val exercicioTreinoId: Int, val seriesRepository:
         }
     }
 
-    fun repeticoesMudou(repeticoes: String) {
-
-    }
-
-    fun iniciaDescanso(cronometroState: CronometroState? = null) {
+    fun iniciaDescanso() {
+        val cronometroAtual = cronometroState.value
+        serieAtual = serieAtual?.copy(
+            dhFimSerie = LocalDateTime.now(),
+            duracaoSegundos = cronometroAtual.segundosSerie,
+        )
         cronometroJob?.cancel()
-        _duracaoSerieState.update { it.copy(ativo = false) }
-        _descansoState.update { it.copy(ativo = true, segundos = cronometroState?.segundos ?: 0) }
-        cronometroJob = viewModelScope.launch(Dispatchers.Default) {
-            while (true) {
-                delay(1000L)
-                _descansoState.update { it.copy(segundos = it.segundos + 1) }
-                Log.d("Teste", "${descansoState.value.segundos} de descanso")
-            }
-        }
-    }
-
-    fun paraCronometros(): CronometroState? {
-        cronometroJob?.cancel()
-        val cronometroAtual =
-            if (duracaoSerieState.value.ativo) duracaoSerieState.value else if (descansoState.value.ativo) descansoState.value else null
-        _duracaoSerieState.update { it.copy(ativo = false) }
-        _descansoState.update { it.copy(ativo = false) }
-        return cronometroAtual
-    }
-
-    fun iniciaSerie(cronometroState: CronometroState? = null) {
-        cronometroJob?.cancel()
-        _descansoState.update { it.copy(ativo = false) }
-        _duracaoSerieState.update {
+        _cronometroState.update {
             it.copy(
-                ativo = true, segundos = cronometroState?.segundos ?: 0
+                descansoAtivo = true, serieAtiva = false, segundosDescanso = 0
             )
         }
         cronometroJob = viewModelScope.launch(Dispatchers.Default) {
-            var duracao: Int
             while (true) {
                 delay(1000L)
-                duracao = duracaoSerieState.value.segundos + 1
-                _duracaoSerieState.update { it.copy(segundos = duracao) }
-                Log.d("Teste", "${duracao} de serie")
+                _cronometroState.update { it.copy(segundosDescanso = it.segundosDescanso + 1) }
+            }
+        }
+    }
+
+    fun registraSerie() {
+        viewModelScope.launch(Dispatchers.IO) {
+            serieAtual = serieAtual?.copy(repeticoes = repeticoes)
+            serieAtual?.let {
+                val result = seriesRepository.cria(it)
+                _state.update {
+                    it.copy(
+                        erro = result.erroOrNull,
+                        series = result.dataOrNull ?: it.series,
+                    )
+                }
+                serieAtual = null
+            }
+        }
+    }
+
+    fun iniciaSerie() {
+        val anterior = state.value.series.lastOrNull()
+        serieAtual = SerieExercicio(
+            serieId = 0,
+            exercicioTreinoId = exercicioTreinoId,
+            exercicioId = 0,
+            dhInicioSerie = LocalDateTime.now(),
+            dhFimSerie = LocalDateTime.now(),
+            duracaoSegundos = 0,
+            segundosDescanso = anterior?.dhFimSerie?.let {
+                abs(Duration.between(LocalDateTime.now(), it).seconds).toInt()
+            } ?: 0,
+            pesoKg = this.pesoKg,
+            repeticoes = 0,
+        )
+        cronometroJob?.cancel()
+        _cronometroState.update {
+            it.copy(
+                descansoAtivo = false, serieAtiva = true, segundosSerie = 0
+            )
+        }
+        cronometroJob = viewModelScope.launch(Dispatchers.Default) {
+            while (true) {
+                delay(1000L)
+                _cronometroState.update { it.copy(segundosSerie = it.segundosSerie + 1) }
             }
         }
     }
 
 
-    fun pesoMudou(texto: String) {
+    fun repeticoesMudou(repeticoes: String) {
+        this.repeticoes = repeticoes.toIntOrNull() ?: 0
+    }
 
+    fun pesoMudou(texto: String) {
+        this.pesoKg = texto.toIntOrNull() ?: 0
     }
 
     fun resetaEventos() {
         _state.update { it.resetaEventos() }
-    }
-
-    fun aplicaRepeticoes() {
-
     }
 }

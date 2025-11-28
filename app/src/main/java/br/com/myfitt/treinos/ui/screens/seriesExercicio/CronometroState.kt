@@ -1,3 +1,10 @@
 package br.com.myfitt.treinos.ui.screens.seriesExercicio
 
-data class CronometroState(val ativo: Boolean = false, val segundos: Int = 0, val titulo: String = "", val texto: String = "")
+data class CronometroState(
+    val descansoAtivo: Boolean = false,
+    val serieAtiva: Boolean = false,
+    val segundosDescanso: Int = 0,
+    val segundosSerie: Int = 0,
+){
+    val cronometroServiceAtivo = descansoAtivo && serieAtiva
+}
