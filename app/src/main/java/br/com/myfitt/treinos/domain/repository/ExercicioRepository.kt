@@ -5,4 +5,5 @@ import br.com.myfitt.common.domain.Resultado
 
 interface ExercicioRepository {
     suspend fun lista(pesquisa: String): Resultado<List<Exercicio>>
+    suspend fun busca(exercicioId: Int): Resultado<Exercicio>
 }

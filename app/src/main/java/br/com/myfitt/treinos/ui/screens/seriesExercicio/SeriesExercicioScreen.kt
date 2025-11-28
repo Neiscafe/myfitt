@@ -136,8 +136,7 @@ private fun DialogRepeticoes(
     onDismiss: () -> Unit, repeticoesMudou: (String) -> Unit, aplicaRepeticoes: () -> Unit
 ) {
     BasicAlertDialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(
+        onDismissRequest = onDismiss, properties = DialogProperties(
             dismissOnBackPress = false,
             dismissOnClickOutside = false,
             usePlatformDefaultWidth = true
@@ -148,8 +147,7 @@ private fun DialogRepeticoes(
         var repeticoesTextFieldValue by remember {
             mutableStateOf(
                 TextFieldValue(
-                    "1",
-                    selection = TextRange(1)
+                    "1", selection = TextRange(1)
                 )
             )
         }
@@ -279,8 +277,7 @@ private fun Tela(
             ) {
                 itemsIndexed(items = state.series, key = { i, it -> it.serieId }) { i, it ->
                     OutlinedCard(
-                        shape = RoundedCornerShape(0.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        shape = RoundedCornerShape(0.dp), modifier = Modifier.fillMaxWidth()
                     ) {
                         Box(
                             modifier = Modifier

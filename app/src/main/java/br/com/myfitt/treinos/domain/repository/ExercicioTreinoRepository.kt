@@ -12,6 +12,8 @@ interface ExercicioTreinoRepository {
         novo: ExercicioTreino
     ): Resultado<List<ExercicioTreino>>
 
+    suspend fun busca(exercicioTreinoId: Int): Resultado<ExercicioTreino>
+
     suspend fun reordena(
         exercicioTreino: ExercicioTreino,
         posicaoNova: Int

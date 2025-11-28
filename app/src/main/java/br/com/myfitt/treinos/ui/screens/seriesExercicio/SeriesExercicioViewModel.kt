@@ -2,7 +2,11 @@ package br.com.myfitt.treinos.ui.screens.seriesExercicio
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.myfitt.common.domain.Exercicio
+import br.com.myfitt.common.domain.ExercicioTreino
 import br.com.myfitt.common.domain.SerieExercicio
+import br.com.myfitt.treinos.domain.repository.ExercicioRepository
+import br.com.myfitt.treinos.domain.repository.ExercicioTreinoRepository
 import br.com.myfitt.treinos.domain.repository.SeriesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -15,8 +19,12 @@ import java.time.Duration
 import java.time.LocalDateTime
 import kotlin.math.abs
 
-class SeriesExercicioViewModel(val exercicioTreinoId: Int, val seriesRepository: SeriesRepository) :
-    ViewModel() {
+class SeriesExercicioViewModel(
+    val exercicioTreinoId: Int,
+    val seriesRepository: SeriesRepository,
+    val exercicioTreinoRepository: ExercicioTreinoRepository,
+    val exercicioRepository: ExercicioRepository,
+) : ViewModel() {
     private var cronometroJob: Job? = null
     private val _state = MutableStateFlow(SeriesExercicioState())
     val state = _state.asStateFlow()
@@ -26,18 +34,43 @@ class SeriesExercicioViewModel(val exercicioTreinoId: Int, val seriesRepository:
 
     private var pesoKg: Int = 0
     private var repeticoes = 0
-    private var serieAtual: SerieExercicio? = null
-
+    private var serieEmAndamento: SerieExercicio? = null
+    private var exercicio: Exercicio? = null
+    private var exercicioTreino: ExercicioTreino? = null
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(carregando = true) }
-            val result = seriesRepository.lista(exercicioTreinoId)
+            launch {
+                val result = seriesRepository.lista(exercicioTreinoId)
+                _state.update {
+                    it.copy(
+                        series = result.dataOrNull ?: state.value.series,
+                        erro = result.erroOrNull,
+                        carregando = result.sucesso
+                    )
+                }
+            }
+            val result = exercicioTreinoRepository.busca(exercicioTreinoId)
+            state.value.copy(
+                erro = result.erroOrNull,
+                carregando = result.sucesso
+            )
+            if (!result.sucesso) {
+                return@launch
+            }
+            exercicioTreino = result.dataOrNull
+            val result2 = exercicioRepository.busca(exercicioTreino!!.exercicioId)
+            _state.update { it.copy(erro = result2.erroOrNull, carregando = result2.sucesso) }
+            if (!result2.sucesso) {
+                return@launch
+            }
+            exercicio = result2.dataOrNull
             _state.update {
                 it.copy(
-                    series = result.dataOrNull ?: it.series,
-                    erro = result.erroOrNull,
-                    carregando = false
+                    observacaoExercicio = exercicio?.observacao ?: "",
+                    carregando = false,
+                    nomeExercicio = exercicio?.nome ?: ""
                 )
             }
         }
@@ -45,7 +78,7 @@ class SeriesExercicioViewModel(val exercicioTreinoId: Int, val seriesRepository:
 
     fun iniciaDescanso() {
         val cronometroAtual = cronometroState.value
-        serieAtual = serieAtual?.copy(
+        serieEmAndamento = serieEmAndamento?.copy(
             dhFimSerie = LocalDateTime.now(),
             duracaoSegundos = cronometroAtual.segundosSerie,
         )
@@ -65,8 +98,8 @@ class SeriesExercicioViewModel(val exercicioTreinoId: Int, val seriesRepository:
 
     fun registraSerie() {
         viewModelScope.launch(Dispatchers.IO) {
-            serieAtual = serieAtual?.copy(repeticoes = repeticoes)
-            serieAtual?.let {
+            serieEmAndamento = serieEmAndamento?.copy(repeticoes = repeticoes)
+            serieEmAndamento?.let {
                 val result = seriesRepository.cria(it)
                 _state.update {
                     it.copy(
@@ -74,14 +107,14 @@ class SeriesExercicioViewModel(val exercicioTreinoId: Int, val seriesRepository:
                         series = result.dataOrNull ?: it.series,
                     )
                 }
-                serieAtual = null
+                serieEmAndamento = null
             }
         }
     }
 
     fun iniciaSerie() {
         val anterior = state.value.series.lastOrNull()
-        serieAtual = SerieExercicio(
+        serieEmAndamento = SerieExercicio(
             serieId = 0,
             exercicioTreinoId = exercicioTreinoId,
             exercicioId = 0,

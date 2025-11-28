@@ -1,5 +1,7 @@
 package br.com.myfitt.treinos.data.repository
 
+import android.adservices.ondevicepersonalization.IsolatedService
+import androidx.compose.ui.graphics.RectangleShape
 import br.com.myfitt.common.domain.ExercicioTemplate
 import br.com.myfitt.common.domain.ExercicioTreino
 import br.com.myfitt.common.domain.Resultado
@@ -12,9 +14,27 @@ class ExercicioTreinoRepositoryImpl : ExercicioTreinoRepository {
     init {
         exerciciosTreino.addAll(
             listOf(
-                ExercicioTreino(sequenciaExercicioTreino(), 1, 1, nomeExercicio = "Supino reto", ordem = 1),
-                ExercicioTreino(sequenciaExercicioTreino(), 1, 1, nomeExercicio = "Passada", ordem = 2),
-                ExercicioTreino(sequenciaExercicioTreino(), 1, 1, nomeExercicio = "Rosquinha", ordem = 3),
+                ExercicioTreino(
+                    sequenciaExercicioTreino(),
+                    1,
+                    1,
+                    nomeExercicio = "Supino reto",
+                    ordem = 1
+                ),
+                ExercicioTreino(
+                    sequenciaExercicioTreino(),
+                    1,
+                    1,
+                    nomeExercicio = "Passada",
+                    ordem = 2
+                ),
+                ExercicioTreino(
+                    sequenciaExercicioTreino(),
+                    1,
+                    1,
+                    nomeExercicio = "Rosquinha",
+                    ordem = 3
+                ),
             )
         )
     }
@@ -47,6 +67,12 @@ class ExercicioTreinoRepositoryImpl : ExercicioTreinoRepository {
             return removeResult
         }
         return adiciona(novo)
+    }
+
+    override suspend fun busca(exercicioTreinoId: Int): Resultado<ExercicioTreino> {
+        delay(200L)
+        return exerciciosTreino.firstOrNull { it.exercicioTreinoId == exercicioTreinoId }
+            ?.let { Resultado.Sucesso(it) } ?: Resultado.Erro("Exercício não encontrado!")
     }
 
     override suspend fun reordena(

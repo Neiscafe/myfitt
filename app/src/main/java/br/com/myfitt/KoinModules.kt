@@ -31,6 +31,6 @@ val viewModelModule = module {
     viewModel { ExerciciosTreinoViewModel(it[0], get()) }
     viewModel { ListaExerciciosViewModel(get()) }
     viewModel { MenuPrincipalViewModel(get()) }
-    viewModel { SeriesExercicioViewModel(it[0], get()) }
+    viewModel { SeriesExercicioViewModel(it[0], get(), get(), get()) }
 }
 val appModule = listOf(repositoryModule, daoModule, databaseModule, viewModelModule)
