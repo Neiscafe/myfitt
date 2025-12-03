@@ -8,8 +8,8 @@ import kotlinx.coroutines.delay
 class ExercicioRepositoryImpl : ExercicioRepository {
     private val exercicios: List<Exercicio> = listOf(
         Exercicio(1, "Supino reto", null),
-        Exercicio(2, "Passada", null),
-        Exercicio(3, "Rosquinha", null),
+        Exercicio(2, "Passada", "Observação 1"),
+        Exercicio(3, "Rosquinha", "Testes"),
     )
 
     override suspend fun lista(pesquisa: String): Resultado<List<Exercicio>> {

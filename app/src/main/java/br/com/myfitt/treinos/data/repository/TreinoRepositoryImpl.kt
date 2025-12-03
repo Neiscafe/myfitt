@@ -7,7 +7,7 @@ import kotlinx.coroutines.delay
 import java.time.LocalDateTime
 
 class TreinoRepositoryImpl : TreinoRepository {
-    val treinos = mutableListOf(Treino(sequenciaTreinoId(), LocalDateTime.now().minusDays(1)))
+    val treinos = mutableListOf<Treino>()
     override suspend fun listar(): Resultado<List<Treino>> {
         delay(500)
         return Resultado.Sucesso(treinos)
@@ -18,6 +18,11 @@ class TreinoRepositoryImpl : TreinoRepository {
         val treino = treino.copy(treinoId = sequenciaTreinoId())
         treinos.add(treino)
         return Resultado.Sucesso(treino)
+    }
+
+    override suspend fun busca(treinoId: Int): Resultado<Treino> {
+        return treinos.firstOrNull { it.treinoId == treinoId }?.let { Resultado.Sucesso(it) }
+            ?: Resultado.Erro("Treino não encontrado!")
     }
 
     companion object {

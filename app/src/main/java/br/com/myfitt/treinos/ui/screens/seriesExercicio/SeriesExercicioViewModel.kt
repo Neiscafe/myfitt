@@ -2,7 +2,6 @@ package br.com.myfitt.treinos.ui.screens.seriesExercicio
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import br.com.myfitt.common.domain.Exercicio
 import br.com.myfitt.common.domain.ExercicioTreino
 import br.com.myfitt.common.domain.SerieExercicio
 import br.com.myfitt.treinos.domain.repository.ExercicioRepository
@@ -35,52 +34,71 @@ class SeriesExercicioViewModel(
     private var pesoKg: Int = 0
     private var repeticoes = 0
     private var serieEmAndamento: SerieExercicio? = null
-    private var exercicio: Exercicio? = null
-    private var exercicioTreino: ExercicioTreino? = null
+    private var _exercicioTreino: ExercicioTreino? = null
+    private val exercicioTreino get() = _exercicioTreino!!
+    private val seriesDoTreino: MutableList<SerieExercicio> = mutableListOf()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(carregando = true) }
+            val exercicioTreinoResult = exercicioTreinoRepository.busca(exercicioTreinoId)
+            state.value.copy(
+                erro = exercicioTreinoResult.erroOrNull,
+                carregando = exercicioTreinoResult.sucesso
+            )
+            if (!exercicioTreinoResult.sucesso) {
+                return@launch
+            }
+            _exercicioTreino = exercicioTreinoResult.dataOrNull
             launch {
-                val result = seriesRepository.lista(exercicioTreinoId)
+                val exercicioResult = exercicioRepository.busca(exercicioTreino.exercicioId)
                 _state.update {
                     it.copy(
-                        series = result.dataOrNull ?: state.value.series,
-                        erro = result.erroOrNull,
-                        carregando = result.sucesso
+                        erro = exercicioResult.erroOrNull,
+                        carregando = exercicioResult.sucesso
+                    )
+                }
+                if (!exercicioResult.sucesso) {
+                    return@launch
+                }
+                val exercicio = exercicioResult.dataOrNull
+                _state.update {
+                    it.copy(
+                        observacaoExercicio = exercicio?.observacao ?: "",
+                        carregando = false,
+                        nomeExercicio = exercicio?.nome ?: ""
                     )
                 }
             }
-            val result = exercicioTreinoRepository.busca(exercicioTreinoId)
-            state.value.copy(
-                erro = result.erroOrNull,
-                carregando = result.sucesso
-            )
-            if (!result.sucesso) {
-                return@launch
-            }
-            exercicioTreino = result.dataOrNull
-            val result2 = exercicioRepository.busca(exercicioTreino!!.exercicioId)
-            _state.update { it.copy(erro = result2.erroOrNull, carregando = result2.sucesso) }
-            if (!result2.sucesso) {
-                return@launch
-            }
-            exercicio = result2.dataOrNull
+            val seriesResult = seriesRepository.todasDoTreino(exercicioTreino.treinoId)
+            val seriesDoExercicio =
+                seriesResult.dataOrNull?.filter { it.exercicioTreinoId == exercicioTreinoId }
             _state.update {
                 it.copy(
-                    observacaoExercicio = exercicio?.observacao ?: "",
-                    carregando = false,
-                    nomeExercicio = exercicio?.nome ?: ""
+                    series = seriesDoExercicio ?: state.value.series,
+                    erro = seriesResult.erroOrNull,
+                    carregando = false
                 )
             }
+            if (!seriesResult.sucesso) {
+                return@launch
+            }
+            seriesDoTreino.addAll(seriesResult.dataOrNull!!)
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+    }
+
     fun iniciaDescanso() {
-        val cronometroAtual = cronometroState.value
+        val now = LocalDateTime.now()
         serieEmAndamento = serieEmAndamento?.copy(
-            dhFimSerie = LocalDateTime.now(),
-            duracaoSegundos = cronometroAtual.segundosSerie,
+            dhFimSerie = now,
+            duracaoSegundos = Duration.between(
+                serieEmAndamento!!.dhInicioSerie,
+                now
+            ).seconds.toInt(),
         )
         cronometroJob?.cancel()
         _cronometroState.update {
@@ -108,24 +126,28 @@ class SeriesExercicioViewModel(
                     )
                 }
                 serieEmAndamento = null
+                seriesRepository.todasDoTreino(exercicioTreino.treinoId).dataOrNull?.let {
+                    seriesDoTreino.clear()
+                    seriesDoTreino.addAll(it)
+                }
             }
         }
     }
 
     fun iniciaSerie() {
-        val anterior = state.value.series.lastOrNull()
         serieEmAndamento = SerieExercicio(
             serieId = 0,
             exercicioTreinoId = exercicioTreinoId,
-            exercicioId = 0,
+            exercicioId = exercicioTreino.exercicioId,
             dhInicioSerie = LocalDateTime.now(),
             dhFimSerie = LocalDateTime.now(),
             duracaoSegundos = 0,
-            segundosDescanso = anterior?.dhFimSerie?.let {
+            segundosDescanso = seriesDoTreino.lastOrNull()?.dhFimSerie?.let {
                 abs(Duration.between(LocalDateTime.now(), it).seconds).toInt()
             } ?: 0,
             pesoKg = this.pesoKg,
             repeticoes = 0,
+            treinoId = exercicioTreino.treinoId,
         )
         cronometroJob?.cancel()
         _cronometroState.update {

@@ -52,7 +52,7 @@ class MemoryCache<T>(val maxSize: Int, val timeout: Long = CINCO_MINUTOS, val id
         }
 
         override fun setValue(newValue: T): T {
-            TODO("Not yet implemented")
+            throw UnsupportedOperationException("Operação não implementada!")
         }
     }
 

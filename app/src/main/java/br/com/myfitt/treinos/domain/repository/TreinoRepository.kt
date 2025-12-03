@@ -6,4 +6,5 @@ import br.com.myfitt.common.domain.Treino
 interface TreinoRepository {
     suspend fun listar(): Resultado<List<Treino>>
     suspend fun criar(treino: Treino): Resultado<Treino>
+    suspend fun busca(treinoId: Int): Resultado<Treino>
 }

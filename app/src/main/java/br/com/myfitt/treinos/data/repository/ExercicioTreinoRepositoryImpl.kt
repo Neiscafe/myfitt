@@ -1,7 +1,5 @@
 package br.com.myfitt.treinos.data.repository
 
-import android.adservices.ondevicepersonalization.IsolatedService
-import androidx.compose.ui.graphics.RectangleShape
 import br.com.myfitt.common.domain.ExercicioTemplate
 import br.com.myfitt.common.domain.ExercicioTreino
 import br.com.myfitt.common.domain.Resultado
@@ -10,34 +8,6 @@ import kotlinx.coroutines.delay
 
 class ExercicioTreinoRepositoryImpl : ExercicioTreinoRepository {
     private val exerciciosTreino = mutableListOf<ExercicioTreino>()
-
-    init {
-        exerciciosTreino.addAll(
-            listOf(
-                ExercicioTreino(
-                    sequenciaExercicioTreino(),
-                    1,
-                    1,
-                    nomeExercicio = "Supino reto",
-                    ordem = 1
-                ),
-                ExercicioTreino(
-                    sequenciaExercicioTreino(),
-                    1,
-                    1,
-                    nomeExercicio = "Passada",
-                    ordem = 2
-                ),
-                ExercicioTreino(
-                    sequenciaExercicioTreino(),
-                    1,
-                    1,
-                    nomeExercicio = "Rosquinha",
-                    ordem = 3
-                ),
-            )
-        )
-    }
 
     override suspend fun adiciona(exercicioTreino: ExercicioTreino): Resultado<List<ExercicioTreino>> {
         delay(500L)

@@ -8,17 +8,22 @@ import kotlinx.coroutines.delay
 class SeriesRepositoryImpl : SeriesRepository {
     private val series: MutableList<SerieExercicio> = mutableListOf()
     private val seriesIndex = mutableMapOf<Int, Int>()
+    override suspend fun todasDoTreino(treinoId: Int): Resultado<List<SerieExercicio>> {
+        return Resultado.Sucesso(series)
+    }
+
     override suspend fun lista(exercicioTreinoId: Int): Resultado<List<SerieExercicio>> {
         delay(500)
         return Resultado.Sucesso(series)
     }
+
 
     override suspend fun cria(serie: SerieExercicio): Resultado<List<SerieExercicio>> {
         delay(500)
         val serieId = incrementaSequencia()
         series.add(serie.copy(serieId = serieId))
         seriesIndex[serieId] = series.size - 1
-        return Resultado.Sucesso(series)
+        return Resultado.Sucesso(series.filter { it.exercicioTreinoId == serie.exercicioTreinoId })
     }
 
     override suspend fun altera(alterada: SerieExercicio): Resultado<List<SerieExercicio>> {

@@ -381,7 +381,8 @@ private fun SeriesExercicioScreenPreview() {
                     duracaoSegundos = 90,
                     segundosDescanso = 90,
                     pesoKg = 90,
-                    repeticoes = 12
+                    repeticoes = 12,
+                    treinoId = 1
                 ),
             ),
             nomeExercicio = "Supino reto",
