@@ -16,4 +16,10 @@ class ExercicioRepositoryImpl : ExercicioRepository {
         delay(500)
         return Resultado.Sucesso(exercicios.filter { it.nome.contains(pesquisa, true) })
     }
+
+    override suspend fun busca(exercicioId: Int): Resultado<Exercicio> {
+        delay(500L)
+        return exercicios.find { it.exercicioId == exercicioId }?.let { Resultado.Sucesso(it) }
+            ?: Resultado.Erro("Exercício não encontrado!")
+    }
 }
