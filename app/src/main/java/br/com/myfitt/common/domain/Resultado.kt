@@ -11,6 +11,13 @@ sealed class Resultado<out T> {
     val dataOrNull get() = (this as? Sucesso)?.data
 }
 
+inline fun <T> Resultado<T>.onSucesso(block: (T)-> Unit): Resultado<T>{
+    if(sucesso){
+        block(this.dataOrNull!!)
+    }
+    return this
+}
+
 fun <T, R> Resultado<T>.map(block: (T) -> R = { it as R }): Resultado<R> {
     return (this as? Resultado.Sucesso)?.data?.let {
         Resultado.Sucesso(block(it))

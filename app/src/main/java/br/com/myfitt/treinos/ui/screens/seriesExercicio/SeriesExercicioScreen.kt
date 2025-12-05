@@ -49,7 +49,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
@@ -64,10 +63,10 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import br.com.myfitt.MainActivity
 import br.com.myfitt.R
 import br.com.myfitt.common.domain.SerieExercicio
-import org.koin.androidx.compose.koinViewModel
+import br.com.myfitt.treinos.domain.usecase.TickCronometro
+import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import java.time.LocalDateTime
 
@@ -98,12 +97,10 @@ object SeriesExercicioNavigation {
 fun SeriesExercicioScreen(
     exercicioTreinoId: Int,
     irParaEditarSeries: () -> Unit,
-    popBackstack: () -> Boolean,
-    viewModel: SeriesExercicioViewModel = koinViewModel(parameters = {
-        parametersOf(exercicioTreinoId)
-    })
+    popBackstack: () -> Boolean
 ) {
-    val mainActivity = LocalContext.current.findActivity() as MainActivity
+    val viewModel: SeriesExercicioViewModel =
+        koinInject(parameters = parametersOf(exercicioTreinoId))
     val state by viewModel.state.collectAsStateWithLifecycle()
     val cronometroState by viewModel.cronometroState.collectAsStateWithLifecycle()
     var exibeDialogFinalizaSerie by remember { mutableStateOf(false) }
@@ -112,11 +109,11 @@ fun SeriesExercicioScreen(
         popBackstack = popBackstack,
         resetaEventos = viewModel::resetaEventos,
         pesoMudou = viewModel::pesoMudou,
-        iniciaSerie = viewModel::iniciaSerie,
+        iniciaSerie = viewModel::inicioExecucao,
         state = state,
         cronometroState = cronometroState,
         finalizaSerie = {
-            viewModel.iniciaDescanso()
+            viewModel.fimExecucao()
             exibeDialogFinalizaSerie = true
         },
         finalizaTreino = {})
@@ -125,7 +122,7 @@ fun SeriesExercicioScreen(
             onDismiss = { exibeDialogFinalizaSerie = false },
             repeticoesMudou = viewModel::repeticoesMudou,
             aplicaRepeticoes = {
-                viewModel.registraSerie()
+                viewModel.informaRepeticoes()
                 exibeDialogFinalizaSerie = false
             })
     }
@@ -184,6 +181,7 @@ private fun DialogRepeticoes(
                         IconButton(onClick = {
                             val diminuido = (repeticoesTextFieldValue.text.toIntOrNull()?.minus(2)
                                 ?: 0).toString()
+                            repeticoesMudou(diminuido)
                             repeticoesTextFieldValue = TextFieldValue(
                                 text = diminuido, selection = TextRange(diminuido.length)
                             )
@@ -200,6 +198,7 @@ private fun DialogRepeticoes(
                                 val aumentado =
                                     (repeticoesTextFieldValue.text.toIntOrNull()?.plus(2)
                                         ?: 0).toString()
+                                repeticoesMudou(aumentado)
                                 repeticoesTextFieldValue = TextFieldValue(
                                     text = aumentado, selection = TextRange(aumentado.length),
                                 )
@@ -238,7 +237,7 @@ private fun Tela(
     iniciaSerie: () -> Unit,
     finalizaSerie: () -> Unit,
     finalizaTreino: () -> Unit,
-    cronometroState: CronometroState,
+    cronometroState: TickCronometro,
     state: SeriesExercicioState
 ) {
     var pesoText by remember { mutableStateOf(TextFieldValue("10", TextRange(2))) }
@@ -298,10 +297,10 @@ private fun Tela(
                 }
             }
             if (cronometroState.descansoAtivo) {
-                Text("Descansando: ${cronometroState.segundosDescanso / 60}m${cronometroState.segundosDescanso % 60}")
+                Text("Descansando: ${cronometroState.numero / 60}m${cronometroState.numero % 60}")
             }
             if (cronometroState.serieAtiva) {
-                Text("Duração: ${cronometroState.segundosSerie / 60}m${cronometroState.segundosSerie % 60}")
+                Text("Duração: ${cronometroState.numero / 60}m${cronometroState.numero % 60}")
                 Button(finalizaSerie) {
                     Text("Finalizar")
                 }
@@ -310,7 +309,7 @@ private fun Tela(
                 Text("Observação:")
                 Text(modifier = Modifier.padding(32.dp, 0.dp), text = state.observacaoExercicio)
             }
-            if (cronometroState.descansoAtivo || (state.series.isEmpty() && !cronometroState.serieAtiva)) {
+            if (!cronometroState.serieAtiva) {
                 OutlinedTextField(
                     value = pesoText,
                     onValueChange = {
@@ -324,6 +323,7 @@ private fun Tela(
                     leadingIcon = {
                         IconButton(onClick = {
                             val diminuido = (pesoText.text.toIntOrNull()?.minus(10) ?: 0).toString()
+                            pesoMudou(diminuido)
                             pesoText = TextFieldValue(diminuido, TextRange(diminuido.length))
                         }) {
                             Icon(
@@ -335,6 +335,7 @@ private fun Tela(
                     trailingIcon = {
                         IconButton(onClick = {
                             val aumentado = (pesoText.text.toIntOrNull()?.plus(10) ?: 0).toString()
+                            pesoMudou(aumentado)
                             pesoText = TextFieldValue(aumentado, TextRange(aumentado.length))
                         }) {
                             Icon(
@@ -376,19 +377,22 @@ private fun SeriesExercicioScreenPreview() {
                     serieId = 1,
                     exercicioTreinoId = 1,
                     exercicioId = 1,
-                    dhInicioSerie = LocalDateTime.now(),
-                    dhFimSerie = LocalDateTime.now(),
+                    dhInicioExecucao = LocalDateTime.now(),
+                    dhFimExecucao = LocalDateTime.now(),
                     duracaoSegundos = 90,
                     segundosDescanso = 90,
                     pesoKg = 90,
                     repeticoes = 12,
-                    treinoId = 1
+                    treinoId = 1,
+                    dhInicioDescanso = null,
+                    dhFimDescanso = null,
+                    finalizado = false
                 ),
             ),
             nomeExercicio = "Supino reto",
             observacaoExercicio = "Fazer pensando na morte da bezerra"
         ),
-        cronometroState = CronometroState(),
+        cronometroState = TickCronometro(),
         finalizaTreino = {},
     )
 }

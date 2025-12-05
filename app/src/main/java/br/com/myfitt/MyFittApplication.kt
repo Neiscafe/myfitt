@@ -14,7 +14,7 @@ import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 
 class MyFittApplication: Application() {
-    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     override fun onCreate() {
         super.onCreate()
         startKoin {

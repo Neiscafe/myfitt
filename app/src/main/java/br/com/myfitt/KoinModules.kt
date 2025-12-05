@@ -8,11 +8,14 @@ import br.com.myfitt.treinos.domain.repository.ExercicioRepository
 import br.com.myfitt.treinos.domain.repository.ExercicioTreinoRepository
 import br.com.myfitt.treinos.domain.repository.SeriesRepository
 import br.com.myfitt.treinos.domain.repository.TreinoRepository
+import br.com.myfitt.treinos.domain.usecase.CronometroFacade
 import br.com.myfitt.treinos.ui.screens.exerciciosTreino.ExerciciosTreinoViewModel
 import br.com.myfitt.treinos.ui.screens.listaExercicios.ListaExerciciosViewModel
 import br.com.myfitt.treinos.ui.screens.menuPrincipal.MenuPrincipalViewModel
 import br.com.myfitt.treinos.ui.screens.seriesExercicio.SeriesExercicioViewModel
+import org.koin.android.ext.koin.androidApplication
 import org.koin.core.module.dsl.viewModel
+import org.koin.core.scope.Scope
 import org.koin.dsl.module
 
 val databaseModule = module {
@@ -27,10 +30,14 @@ val repositoryModule = module {
     single<TreinoRepository> { TreinoRepositoryImpl() }
     single<SeriesRepository> { SeriesRepositoryImpl() }
 }
+val facadeModule = module {
+    single { CronometroFacade(application.appScope) }
+}
 val viewModelModule = module {
     viewModel { ExerciciosTreinoViewModel(it[0], get()) }
     viewModel { ListaExerciciosViewModel(get()) }
     viewModel { MenuPrincipalViewModel(get()) }
-    viewModel { SeriesExercicioViewModel(it[0], get(), get(), get()) }
+    viewModel { SeriesExercicioViewModel(it[0], get(), get(), get(), get()) }
 }
-val appModule = listOf(repositoryModule, daoModule, databaseModule, viewModelModule)
+val Scope.application get() = (androidApplication() as MyFittApplication)
+val appModule = listOf(repositoryModule, daoModule, databaseModule, viewModelModule, facadeModule)
