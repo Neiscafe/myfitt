@@ -8,7 +8,7 @@ import br.com.myfitt.common.domain.onSucesso
 import br.com.myfitt.treinos.domain.repository.ExercicioRepository
 import br.com.myfitt.treinos.domain.repository.ExercicioTreinoRepository
 import br.com.myfitt.treinos.domain.repository.SeriesRepository
-import br.com.myfitt.treinos.domain.usecase.CronometroFacade
+import br.com.myfitt.treinos.ui.CronometroFacade
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async

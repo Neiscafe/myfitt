@@ -28,7 +28,7 @@ class SeriesRepositoryImpl : SeriesRepository {
 
     override suspend fun altera(alterada: SerieExercicio): Resultado<List<SerieExercicio>> {
         series[seriesIndex[alterada.serieId]!!] = alterada
-        return Resultado.Sucesso(series)
+        return Resultado.Sucesso(series.filter { it.exercicioTreinoId==alterada.exercicioTreinoId })
     }
 
     companion object {

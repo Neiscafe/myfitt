@@ -1,4 +1,4 @@
-package br.com.myfitt.treinos.domain.usecase
+package br.com.myfitt.treinos.ui
 
 import br.com.myfitt.common.utils.differenceSeconds
 import br.com.myfitt.common.utils.instant
@@ -42,7 +42,7 @@ class CronometroFacade(val externalScope: CoroutineScope) {
         incrementaCronometroJob?.cancel()
         incrementaCronometroJob = externalScope.launch {
             while (true) {
-                delay(1000L)
+                delay(100L)
                 _ticksCronometro.update {
                     it.copy(
                         numero = it.numero + 1

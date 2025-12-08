@@ -65,7 +65,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import br.com.myfitt.R
 import br.com.myfitt.common.domain.SerieExercicio
-import br.com.myfitt.treinos.domain.usecase.TickCronometro
+import br.com.myfitt.treinos.ui.TickCronometro
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import java.time.LocalDateTime
