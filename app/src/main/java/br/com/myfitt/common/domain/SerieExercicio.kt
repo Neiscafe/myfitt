@@ -13,7 +13,7 @@ data class SerieExercicio(
     val dhFimDescanso: LocalDateTime?,
     val duracaoSegundos: Int,
     val segundosDescanso: Int,
-    val pesoKg: Int,
+    val pesoKg: Float,
     val repeticoes: Int,
     val finalizado: Boolean
 ){

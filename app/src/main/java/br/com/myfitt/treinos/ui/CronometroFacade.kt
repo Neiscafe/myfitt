@@ -42,7 +42,7 @@ class CronometroFacade(val externalScope: CoroutineScope) {
         incrementaCronometroJob?.cancel()
         incrementaCronometroJob = externalScope.launch {
             while (true) {
-                delay(100L)
+                delay(1000L)
                 _ticksCronometro.update {
                     it.copy(
                         numero = it.numero + 1

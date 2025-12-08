@@ -65,7 +65,7 @@ class SerieExercicioFacade private constructor() {
     }
 
     fun execucao(
-        pesoKg: Int,
+        pesoKg: Float,
         dhInicioExecucao: LocalDateTime = LocalDateTime.now()
     ): SerieExercicioFacade {
         _instancia = _instancia?.copy(
@@ -98,7 +98,7 @@ class SerieExercicioFacade private constructor() {
             dhFimDescanso = null,
             duracaoSegundos = 0,
             segundosDescanso = 0,
-            pesoKg = 0,
+            pesoKg = 0f,
             repeticoes = 0,
             finalizado = false
         )

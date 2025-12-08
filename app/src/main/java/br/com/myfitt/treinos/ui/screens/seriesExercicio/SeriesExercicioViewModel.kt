@@ -33,7 +33,7 @@ class SeriesExercicioViewModel(
     //    private val _cronometroState = MutableStateFlow(CronometroState())
 //    val cronometroState = _cronometroState.asStateFlow()
     val cronometroState = cronometroFacade.ticksCronometro
-    private var pesoKg: Int = 0
+    private var pesoKg: Float = 0f
     private var repeticoes = 0
     private lateinit var serieExercicioFacade: SerieExercicioFacade
     private var _exercicioTreino: ExercicioTreino? = null
@@ -184,7 +184,7 @@ class SeriesExercicioViewModel(
     }
 
     fun pesoMudou(texto: String) {
-        this.pesoKg = texto.toIntOrNull() ?: 0
+        this.pesoKg = texto.toFloatOrNull() ?: 0f
     }
 
     fun resetaEventos() {
