@@ -66,6 +66,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import br.com.myfitt.R
 import br.com.myfitt.common.domain.ExercicioTreino
+import br.com.myfitt.treinos.ui.TickCronometro
 import br.com.myfitt.treinos.ui.screens.listaExercicios.ListaExerciciosNavigation
 import br.com.myfitt.treinos.ui.screens.listaExercicios.ListaExerciciosViewModel
 import br.com.myfitt.treinos.ui.screens.seriesExercicio.SeriesExercicioNavigation
@@ -109,11 +110,13 @@ fun ExerciciosTreinoScreen(
     })
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
+    val cronometroState = viewModel.cronometroState.collectAsStateWithLifecycle()
     if (state.value.mostrarTreinoFinalizado) {
         TreinoFinalizadoBottomSheet({ voltar() })
     }
     Tela(
         state = state.value,
+//        cronometroState = cronometroState.value,
         voltar = voltar,
         interagir = viewModel::interagir,
         irParaExercicios = irParaListaExercicios,
@@ -150,6 +153,7 @@ fun TreinoFinalizadoBottomSheet(onDismiss: () -> Unit = {}) {
 @Composable
 private fun Tela(
     state: ExerciciosTreinoState,
+//    cronometroState: TickCronometro,
     voltar: () -> Boolean,
     interagir: (Interacao) -> Unit,
     irParaExercicios: () -> Unit,
@@ -371,7 +375,7 @@ private fun ExercicioTreinoItem(
 private fun TopAppBar(state: ExerciciosTreinoState, voltar: () -> Boolean) {
     MediumTopAppBar(title = {
         Text(
-            "Duração: ${state.mensagemDuracao}", maxLines = 2, overflow = TextOverflow.Ellipsis
+            state.mensagemDuracao, maxLines = 2, overflow = TextOverflow.Ellipsis
         )
     }, navigationIcon = {
         IconButton(onClick = { voltar() }) {

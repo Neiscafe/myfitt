@@ -5,26 +5,53 @@ import androidx.lifecycle.viewModelScope
 import br.com.myfitt.common.domain.ExercicioTreino
 import br.com.myfitt.common.domain.Treino
 import br.com.myfitt.treinos.domain.repository.ExercicioTreinoRepository
+import br.com.myfitt.treinos.domain.repository.SeriesRepository
 import br.com.myfitt.treinos.domain.repository.TreinoRepository
+import br.com.myfitt.treinos.ui.CronometroFacade
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Duration
+import java.time.LocalDateTime
 
 class ExerciciosTreinoViewModel(
     val treinoId: Int,
     val exercicioTreinoRepository: ExercicioTreinoRepository,
+    val cronometroFacade: CronometroFacade,
+    val seriesRepository: SeriesRepository,
     val treinoRepository: TreinoRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(ExerciciosTreinoState())
     val state = _state.asStateFlow()
     private var _treino: Treino? = null
     val treino get() = _treino!!
+    val cronometroState = cronometroFacade.ticksCronometro
 
     init {
+        viewModelScope.launch(Dispatchers.IO) {
+            while (true) {
+                val result = seriesRepository.todasDoTreino(treinoId)
+                val inicioTreino =
+                    result.dataOrNull?.firstOrNull { it.dhInicioDescanso == null }?.dhInicioExecucao
+                val minutosDuracao = inicioTreino?.let {
+                    Duration.between(it, LocalDateTime.now()).toMinutes()
+                }
+                val mensagemDuracao = minutosDuracao?.let { "Duração: ${it / 60}h${it % 60}m" }
+                    ?: "Duração: Não iniciado"
+                _state.update {
+                    it.copy(
+                        erro = it.erro ?: result.erroOrNull,
+                        mensagemDuracao = mensagemDuracao
+                    )
+                }
+                delay(1500L)
+            }
+        }
         viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(carregando = true) }
             val treinoResult = async {
@@ -37,7 +64,8 @@ class ExerciciosTreinoViewModel(
             _treino = treinoResult.await().dataOrNull
             _state.update {
                 it.copy(
-                    erro = treinoResult.await().erroOrNull ?: exerciciosResult.await().erroOrNull,
+                    erro = it.erro ?: treinoResult.await().erroOrNull
+                    ?: exerciciosResult.await().erroOrNull,
                     exercicios = exerciciosResult.await().dataOrNull ?: it.exercicios,
                     carregando = false
                 )
