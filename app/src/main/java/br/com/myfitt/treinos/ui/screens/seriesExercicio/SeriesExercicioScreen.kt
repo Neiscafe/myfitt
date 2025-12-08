@@ -246,7 +246,6 @@ private fun Tela(
         pesoMudou(pesoText.text)
     }
     Scaffold(
-        floatingActionButton = { FloatingActionButton(onClick = finalizaTreino) { Text("Finalizar treino") } },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar({ Text(state.nomeExercicio) }, navigationIcon = {

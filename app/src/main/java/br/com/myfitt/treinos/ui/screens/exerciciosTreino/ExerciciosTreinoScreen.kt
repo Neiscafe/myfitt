@@ -24,6 +24,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -104,12 +105,12 @@ fun ExerciciosTreinoScreen(
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
     Tela(
-        state.value,
-        voltar,
-        viewModel::interagir,
+        state = state.value,
+        voltar = voltar,
+        interagir = viewModel::interagir,
         irParaExercicios = irParaListaExercicios,
-        { irParaSeries(it.exercicioTreinoId) },
-        viewModel::limpaEvents
+        irParaSeries = { irParaSeries(it.exercicioTreinoId) },
+        finalizaTreino = {}, limpaEventos = viewModel::limpaEvents
     )
 }
 
@@ -120,11 +121,13 @@ private fun Tela(
     interagir: (Interacao) -> Unit,
     irParaExercicios: () -> Unit,
     irParaSeries: (ExercicioTreino) -> Unit,
+    finalizaTreino: () -> Unit,
     limpaEventos: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
+        floatingActionButton = { FloatingActionButton(onClick = finalizaTreino) { Text("Finalizar treino") } },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = { TopAppBar(state, voltar = voltar) }) { innerPadding ->
         state.erro?.let {
@@ -140,7 +143,10 @@ private fun Tela(
                 CircularProgressIndicator()
             }
         }
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             ListaExercicios(
                 innerPadding = innerPadding,
                 state = state,
@@ -344,7 +350,9 @@ private fun ExerciciosTreinoScreenPreview() {
                 exercicios = listOf(ExercicioTreino(1, 1, 1, nomeExercicio = "Supino reto")),
                 carregando = true,
                 erro = "TESTE ERRO"
-            ), voltar = { true }, interagir = {}, irParaExercicios = { }, {}, limpaEventos = {})
+            ), voltar = { true }, interagir = {}, irParaExercicios = { }, {}, limpaEventos = {},
+            finalizaTreino = {}
+        )
     }
 }
 
