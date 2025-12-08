@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package br.com.myfitt.treinos.ui.screens.exerciciosTreino
 
 import android.util.Log
@@ -5,6 +7,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,16 +22,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -48,6 +52,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerInputEventHandler
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -104,14 +109,42 @@ fun ExerciciosTreinoScreen(
     })
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
+    if (state.value.mostrarTreinoFinalizado) {
+        TreinoFinalizadoBottomSheet({ voltar() })
+    }
     Tela(
         state = state.value,
         voltar = voltar,
         interagir = viewModel::interagir,
         irParaExercicios = irParaListaExercicios,
         irParaSeries = { irParaSeries(it.exercicioTreinoId) },
-        finalizaTreino = {}, limpaEventos = viewModel::limpaEvents
+        finalizaTreino = viewModel::finalizarTreino,
+        limpaEventos = viewModel::limpaEvents
     )
+}
+
+@Composable
+fun TreinoFinalizadoBottomSheet(onDismiss: () -> Unit = {}) {
+    ModalBottomSheet(onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                "Parabéns!",
+                style = MaterialTheme.typography.titleLarge
+            )
+            Text(
+                "Você concluiu um treino! Parabéns pelo seu esforço!",
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center
+            )
+            Button(onDismiss, modifier = Modifier.fillMaxWidth()) { Text("É isso aí!") }
+        }
+    }
 }
 
 @Composable
@@ -127,7 +160,17 @@ private fun Tela(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
-        floatingActionButton = { FloatingActionButton(onClick = finalizaTreino) { Text("Finalizar treino") } },
+        floatingActionButton = {
+            Button(
+                finalizaTreino,
+                enabled = !state.carregando && state.exercicios.isNotEmpty(),
+                shape = RoundedCornerShape(12.dp),
+                contentPadding = PaddingValues(16.dp)
+            ) {
+                Icon(Icons.Default.Check, "Finalizar treino")
+                Text("Finalizar treino")
+            }
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = { TopAppBar(state, voltar = voltar) }) { innerPadding ->
         state.erro?.let {
@@ -144,8 +187,7 @@ private fun Tela(
             }
         }
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
+            horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()
         ) {
             ListaExercicios(
                 innerPadding = innerPadding,
@@ -350,9 +392,21 @@ private fun ExerciciosTreinoScreenPreview() {
                 exercicios = listOf(ExercicioTreino(1, 1, 1, nomeExercicio = "Supino reto")),
                 carregando = true,
                 erro = "TESTE ERRO"
-            ), voltar = { true }, interagir = {}, irParaExercicios = { }, {}, limpaEventos = {},
-            finalizaTreino = {}
-        )
+            ),
+            voltar = { true },
+            interagir = {},
+            irParaExercicios = { },
+            {},
+            limpaEventos = {},
+            finalizaTreino = {})
+    }
+}
+
+@Preview
+@Composable
+private fun BottomSheetPreview() {
+    MyFittTheme {
+        TreinoFinalizadoBottomSheet(onDismiss = {})
     }
 }
 
@@ -368,7 +422,6 @@ private fun ExercicioItemPreview() {
         irParaExercicios = {},
         irParaSeries = {},
         interagir = {},
-        voltar = { true }
-    )
+        voltar = { true })
 }
 

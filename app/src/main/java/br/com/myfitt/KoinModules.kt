@@ -34,7 +34,7 @@ val facadeModule = module {
     single { CronometroFacade(application.appScope) }
 }
 val viewModelModule = module {
-    viewModel { ExerciciosTreinoViewModel(it[0], get()) }
+    viewModel { ExerciciosTreinoViewModel(it[0], get(), get()) }
     viewModel { ListaExerciciosViewModel(get()) }
     viewModel { MenuPrincipalViewModel(get()) }
     viewModel { SeriesExercicioViewModel(it[0], get(), get(), get(), get()) }

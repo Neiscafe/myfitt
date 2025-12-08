@@ -3,6 +3,7 @@ package br.com.myfitt.treinos.domain.repository
 import br.com.myfitt.common.domain.ExercicioTemplate
 import br.com.myfitt.common.domain.ExercicioTreino
 import br.com.myfitt.common.domain.Resultado
+import br.com.myfitt.common.domain.Treino
 
 interface ExercicioTreinoRepository {
     suspend fun adiciona(exercicioTreino: ExercicioTreino): Resultado<List<ExercicioTreino>>

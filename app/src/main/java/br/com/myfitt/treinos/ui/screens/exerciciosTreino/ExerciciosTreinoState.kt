@@ -8,5 +8,6 @@ data class ExerciciosTreinoState(
     val mensagemDuracao: String = "Não iniciado",
     val erro: String? = null,
     val carregando: Boolean = true,
+    val mostrarTreinoFinalizado: Boolean = false,
     val exercicios: List<ExercicioTreino> = emptyList(),
 )

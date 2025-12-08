@@ -3,30 +3,53 @@ package br.com.myfitt.treinos.ui.screens.exerciciosTreino
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.myfitt.common.domain.ExercicioTreino
+import br.com.myfitt.common.domain.Treino
 import br.com.myfitt.treinos.domain.repository.ExercicioTreinoRepository
+import br.com.myfitt.treinos.domain.repository.TreinoRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ExerciciosTreinoViewModel(
-    val treinoId: Int, val treinoRepository: ExercicioTreinoRepository
+    val treinoId: Int,
+    val exercicioTreinoRepository: ExercicioTreinoRepository,
+    val treinoRepository: TreinoRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(ExerciciosTreinoState())
     val state = _state.asStateFlow()
+    private var _treino: Treino? = null
+    val treino get() = _treino!!
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(carregando = true) }
-            val result = treinoRepository.lista(treinoId)
+            val treinoResult = async {
+                treinoRepository.busca(treinoId)
+            }
+            val exerciciosResult = async {
+                exercicioTreinoRepository.lista(treinoId)
+            }
+            awaitAll(treinoResult, exerciciosResult)
+            _treino = treinoResult.await().dataOrNull
             _state.update {
                 it.copy(
-                    erro = result.erroOrNull,
-                    exercicios = result.dataOrNull ?: it.exercicios,
+                    erro = treinoResult.await().erroOrNull ?: exerciciosResult.await().erroOrNull,
+                    exercicios = exerciciosResult.await().dataOrNull ?: it.exercicios,
                     carregando = false
                 )
             }
+        }
+    }
+
+    fun finalizarTreino() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _state.update { it.copy(carregando = true) }
+            treinoRepository.altera(treino.copy(finalizado = true))
+            _state.update { it.copy(carregando = false, mostrarTreinoFinalizado = true) }
         }
     }
 
@@ -34,7 +57,7 @@ class ExerciciosTreinoViewModel(
         when (val it = interacao) {
             is Interacao.Remover -> viewModelScope.launch(Dispatchers.IO) {
                 _state.update { it.copy(carregando = true) }
-                val result = treinoRepository.remove(it.exercicioTreino)
+                val result = exercicioTreinoRepository.remove(it.exercicioTreino)
                 _state.update {
                     it.copy(
                         carregando = false,
@@ -46,7 +69,7 @@ class ExerciciosTreinoViewModel(
 
             is Interacao.Reposicionar -> viewModelScope.launch(Dispatchers.IO) {
                 _state.update { it.copy(carregando = true) }
-                val result = treinoRepository.reordena(it.reposicionar, it.posicao)
+                val result = exercicioTreinoRepository.reordena(it.reposicionar, it.posicao)
                 _state.update {
                     it.copy(
                         carregando = false,
@@ -58,7 +81,7 @@ class ExerciciosTreinoViewModel(
 
             is Interacao.Substituir -> viewModelScope.launch(Dispatchers.IO) {
                 _state.update { it.copy(carregando = true) }
-                val result = treinoRepository.substitui(
+                val result = exercicioTreinoRepository.substitui(
                     ExercicioTreino(
                         exercicioTreinoId = 0,
                         exercicioId = it.novo.exercicioId,
@@ -79,7 +102,7 @@ class ExerciciosTreinoViewModel(
 
             is Interacao.Adicionar -> viewModelScope.launch(Dispatchers.IO) {
                 _state.update { it.copy(carregando = true) }
-                val result = treinoRepository.adiciona(
+                val result = exercicioTreinoRepository.adiciona(
                     ExercicioTreino(
                         exercicioTreinoId = 0,
                         exercicioId = it.novo.exercicioId,

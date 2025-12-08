@@ -4,7 +4,6 @@ import br.com.myfitt.common.domain.Resultado
 import br.com.myfitt.common.domain.Treino
 import br.com.myfitt.treinos.domain.repository.TreinoRepository
 import kotlinx.coroutines.delay
-import java.time.LocalDateTime
 
 class TreinoRepositoryImpl : TreinoRepository {
     val treinos = mutableListOf<Treino>()
@@ -23,6 +22,19 @@ class TreinoRepositoryImpl : TreinoRepository {
     override suspend fun busca(treinoId: Int): Resultado<Treino> {
         return treinos.firstOrNull { it.treinoId == treinoId }?.let { Resultado.Sucesso(it) }
             ?: Resultado.Erro("Treino não encontrado!")
+    }
+
+    override suspend fun altera(novo: Treino): Resultado<Treino> {
+        delay(500L)
+        treinos.updateEntry(novo) { it.treinoId == novo.treinoId }
+        return Resultado.Sucesso(novo)
+    }
+
+    fun <T> MutableList<T>.updateEntry(new: T, compare: (T) -> Boolean) {
+        val index = indexOfFirst { compare(new) }
+        if (index != -1) {
+            this[index] = new
+        }
     }
 
     companion object {
