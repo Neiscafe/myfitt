@@ -23,13 +23,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -43,6 +43,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -151,14 +152,14 @@ private fun DialogRepeticoes(
         var repeticoesTextFieldValue by remember {
             mutableStateOf(
                 TextFieldValue(
-                    "1", selection = TextRange(1)
+                    "8", selection = TextRange(1)
                 )
             )
         }
         LaunchedEffect(Unit) {
             repeticoesMudou(repeticoesTextFieldValue.text)
         }
-        Card() {
+        ElevatedCard(){
             Column(
                 modifier = Modifier.padding(32.dp, 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -166,7 +167,9 @@ private fun DialogRepeticoes(
             ) {
                 Icon(Icons.Default.Check, "Série finalizada")
                 Text("Série finalizada!")
-                OutlinedTextField(
+                TextField(
+                    shape = RoundedCornerShape(0.dp),
+                    label = { Text("Repetições") },
                     modifier = Modifier
                         .width(IntrinsicSize.Min)
                         .focusRequester(focusRequester)
@@ -184,8 +187,21 @@ private fun DialogRepeticoes(
                     maxLines = 1,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
-                    leadingIcon = {
-                        IconButton(onClick = {
+                )
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column {
+                        Button({
+                            val diminuido = (repeticoesTextFieldValue.text.toIntOrNull()?.minus(1)
+                                ?: 0).toString()
+                            repeticoesMudou(diminuido)
+                            repeticoesTextFieldValue = TextFieldValue(
+                                text = diminuido, selection = TextRange(diminuido.length)
+                            )
+                        }) {
+                            Text("- 1")
+                        }
+
+                        Button({
                             val diminuido = (repeticoesTextFieldValue.text.toIntOrNull()?.minus(2)
                                 ?: 0).toString()
                             repeticoesMudou(diminuido)
@@ -193,29 +209,34 @@ private fun DialogRepeticoes(
                                 text = diminuido, selection = TextRange(diminuido.length)
                             )
                         }) {
-                            Icon(
-                                painterResource(R.drawable.remove_24dp_000000_fill0_wght400_grad0_opsz24),
-                                "Diminuir 2 repetições"
-                            )
+                            Text("- 2")
                         }
-                    },
-                    trailingIcon = {
-                        IconButton(
-                            onClick = {
-                                val aumentado =
-                                    (repeticoesTextFieldValue.text.toIntOrNull()?.plus(2)
-                                        ?: 0).toString()
-                                repeticoesMudou(aumentado)
-                                repeticoesTextFieldValue = TextFieldValue(
-                                    text = aumentado, selection = TextRange(aumentado.length),
-                                )
-                            },
-                        ) {
-                            Icon(
-                                Icons.Default.Add, "Adicionar 2 repetições"
+
+                    }
+                    Column {
+                        Button({
+                            val aumentado = (repeticoesTextFieldValue.text.toIntOrNull()?.plus(1)
+                                ?: 0).toString()
+                            repeticoesMudou(aumentado)
+                            repeticoesTextFieldValue = TextFieldValue(
+                                text = aumentado, selection = TextRange(aumentado.length),
                             )
+                        }) {
+                            Text("+ 1")
                         }
-                    })
+
+                        Button({
+                            val aumentado = (repeticoesTextFieldValue.text.toIntOrNull()?.plus(2)
+                                ?: 0).toString()
+                            repeticoesMudou(aumentado)
+                            repeticoesTextFieldValue = TextFieldValue(
+                                text = aumentado, selection = TextRange(aumentado.length),
+                            )
+                        }) {
+                            Text("+ 2")
+                        }
+                    }
+                }
                 Box(modifier = Modifier.fillMaxWidth()) {
                     TextButton(
                         modifier = Modifier.align(Alignment.CenterEnd), onClick = aplicaRepeticoes
@@ -254,8 +275,7 @@ private fun Tela(
     }
     Scaffold(
 //        modifier = Modifier.verticalScroll(rememberScrollState()),
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
+        snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
             TopAppBar({ Text(state.nomeExercicio) }, navigationIcon = {
                 IconButton(onClick = { popBackstack() }) {
                     Icon(
@@ -402,7 +422,7 @@ private fun Tela(
                                 .padding(0.dp, 8.dp),
                             textAlign = TextAlign.Center
                         )
-                        Column(Modifier.padding(24.dp, 24.dp, 24.dp, 0.dp)) {
+                        Column(Modifier.padding(24.dp, 24.dp, 24.dp, 8.dp)) {
                             TextField(
                                 modifier = Modifier
                                     .fillMaxWidth()
