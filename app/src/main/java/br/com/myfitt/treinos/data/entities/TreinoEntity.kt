@@ -8,7 +8,6 @@ data class TreinoEntity(
     @PrimaryKey(autoGenerate = true)
     val treinoId: Int = 0,
     val dhCriado: LocalDateTime = LocalDateTime.now(),
-    val finalizado: Boolean = false,
     val dhInicio: LocalDateTime? = null,
     val dhFim: LocalDateTime? = null
 )

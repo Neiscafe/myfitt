@@ -7,7 +7,6 @@ fun TreinoEntity.toDomain(): Treino {
     return Treino(
         treinoId = this.treinoId,
         dhCriado = this.dhCriado,
-        finalizado = this.finalizado,
         dhInicio = this.dhInicio,
         dhFim = this.dhFim
     )
@@ -17,7 +16,6 @@ fun Treino.toEntity(): TreinoEntity {
     return TreinoEntity(
         treinoId = this.treinoId,
         dhCriado = this.dhCriado,
-        finalizado = this.finalizado,
         dhInicio = this.dhInicio,
         dhFim = this.dhFim
     )
