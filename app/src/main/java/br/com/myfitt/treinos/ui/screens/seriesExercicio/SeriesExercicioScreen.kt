@@ -28,7 +28,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -36,15 +35,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -159,7 +157,7 @@ private fun DialogRepeticoes(
         LaunchedEffect(Unit) {
             repeticoesMudou(repeticoesTextFieldValue.text)
         }
-        ElevatedCard(){
+        ElevatedCard() {
             Column(
                 modifier = Modifier.padding(32.dp, 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -188,7 +186,10 @@ private fun DialogRepeticoes(
                     singleLine = true,
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
                 )
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Column {
                         Button({
                             val diminuido = (repeticoesTextFieldValue.text.toIntOrNull()?.minus(1)
@@ -300,7 +301,7 @@ private fun Tela(
             OutlinedCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .height(240.dp)
                     .padding(24.dp, 0.dp)
             ) {
                 Text(
@@ -319,26 +320,16 @@ private fun Tela(
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center
                 ) {
-                    itemsIndexed(items = state.series, key = { i, it -> it.serieId }) { i, it ->
-                        OutlinedCard(
-                            shape = RoundedCornerShape(0.dp), modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .fillMaxWidth(),
-                            ) {
-                                Text("${i + 1}.", Modifier.align(Alignment.CenterStart))
-                                Text(
-                                    "${it.pesoKg}kg x ${it.repeticoes}",
-                                    Modifier.align(Alignment.Center)
-                                )
-                                Text(
-                                    "Intervalo: ${it.segundosDescanso / 60}m${it.segundosDescanso % 60}s",
-                                    Modifier.align(Alignment.CenterEnd)
-                                )
-                            }
+                    item {
+                        Row(modifier = Modifier.padding(16.dp, 0.dp)) {
+                            Text("", modifier = Modifier.weight(0.5f))
+                            Text("Peso", modifier = Modifier.weight(1f))
+                            Text("Reps", modifier = Modifier.weight(1f))
+                            Text("Interv.", modifier = Modifier.weight(1f))
                         }
+                    }
+                    itemsIndexed(items = state.series, key = { i, it -> it.serieId }) { i, it ->
+                        itemResumoSeries(i, it)
                     }
                 }
             }
@@ -494,6 +485,36 @@ private fun Tela(
                 snackbarHostState.showSnackbar(it)
                 resetaEventos()
             }
+        }
+    }
+}
+
+@Composable
+private fun itemResumoSeries(i: Int, it: SerieExercicio) {
+    OutlinedCard(
+        shape = RoundedCornerShape(0.dp), modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+        ) {
+            Text("${i + 1}", Modifier.weight(0.5f))
+
+            Text(
+                "${
+                    String.format("%.1f", it.pesoKg)
+                }kg", modifier = Modifier.weight(1f)
+            )
+
+            Text(
+                "${it.repeticoes}", modifier = Modifier.weight(1f)
+            )
+            VerticalDivider()
+            Text(
+                "${it.segundosDescanso / 60}m${it.segundosDescanso % 60}s",
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
