@@ -101,16 +101,18 @@ private fun Tela(
             Modifier
                 .fillMaxSize()
                 .padding(innerPadding), state.exerciciosExibidos, { it, index ->
-                Text(
+                Column(
                     modifier = Modifier
-                        .padding(8.dp)
                         .fillMaxWidth()
                         .clickable {
                             onItemClick(it)
-                        }, text = it.toString()
-                )
-                if (index != state.exerciciosExibidos.size - 1) {
-                    HorizontalDivider()
+                        }) {
+                    Text(
+                        text = it.toString(), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(24.dp)
+                    )
+                    if (index != state.exerciciosExibidos.size - 1) {
+                        HorizontalDivider()
+                    }
                 }
             }, onTextChanged, popBackstack
         )
