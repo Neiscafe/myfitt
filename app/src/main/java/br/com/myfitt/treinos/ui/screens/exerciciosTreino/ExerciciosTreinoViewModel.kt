@@ -91,7 +91,8 @@ class ExerciciosTreinoViewModel(
                 _state.update { it.copy(carregando = false, erro = result1.erroOrNull) }
                 return@launch
             }
-            val result2 = treinoRepository.altera(result1.dataOrNull!!.copy(finalizado = true))
+            val result2 =
+                treinoRepository.altera(result1.dataOrNull!!.copy(dhFim = LocalDateTime.now()))
             _state.update {
                 it.copy(
                     carregando = false,

@@ -13,6 +13,7 @@ class ExercicioTreinoRepositoryImpl : ExercicioTreinoRepository {
         delay(500L)
         val exercicioTreino = exercicioTreino.copy(exercicioTreinoId = sequenciaExercicioTreino())
         exerciciosTreino.add(exercicioTreino)
+        ///Aqui deve adicionar dhInicio no Treino
         return Resultado.Sucesso(exerciciosTreino)
     }
 
