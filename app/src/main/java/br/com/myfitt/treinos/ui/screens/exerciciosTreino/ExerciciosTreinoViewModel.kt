@@ -3,14 +3,10 @@ package br.com.myfitt.treinos.ui.screens.exerciciosTreino
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.myfitt.common.domain.ExercicioTreino
-import br.com.myfitt.common.domain.Treino
+import br.com.myfitt.treinos.domain.facade.TreinoFacade
 import br.com.myfitt.treinos.domain.repository.ExercicioTreinoRepository
-import br.com.myfitt.treinos.domain.repository.SeriesRepository
 import br.com.myfitt.treinos.domain.repository.TreinoRepository
-import br.com.myfitt.treinos.ui.CronometroFacade
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,66 +14,91 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDateTime
+import kotlin.math.abs
 
 class ExerciciosTreinoViewModel(
     val treinoId: Int,
     val exercicioTreinoRepository: ExercicioTreinoRepository,
-    val cronometroFacade: CronometroFacade,
-    val seriesRepository: SeriesRepository,
-    val treinoRepository: TreinoRepository
+    val treinoRepository: TreinoRepository,
+    val treinoFacade: TreinoFacade,
 ) : ViewModel() {
     private val _state = MutableStateFlow(ExerciciosTreinoState())
     val state = _state.asStateFlow()
-    private var _treino: Treino? = null
-    val treino get() = _treino!!
-    val cronometroState = cronometroFacade.ticksCronometro
+    private var inicializacao = true
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            while (true) {
-                val result = seriesRepository.todasDoTreino(treinoId)
-                val inicioTreino =
-                    result.dataOrNull?.firstOrNull { it.dhInicioDescanso == null }?.dhInicioExecucao
-                val minutosDuracao = inicioTreino?.let {
-                    Duration.between(it, LocalDateTime.now()).toMinutes()
-                }
-                val mensagemDuracao = minutosDuracao?.let { "Duração: ${it / 60}h${it % 60}m" }
-                    ?: "Duração: Não iniciado"
-                _state.update {
-                    it.copy(
-                        erro = it.erro ?: result.erroOrNull,
-                        mensagemDuracao = mensagemDuracao
-                    )
-                }
-                delay(1500L)
-            }
-        }
-        viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(carregando = true) }
-            val treinoResult = async {
-                treinoRepository.busca(treinoId)
-            }
-            val exerciciosResult = async {
-                exercicioTreinoRepository.lista(treinoId)
-            }
-            awaitAll(treinoResult, exerciciosResult)
-            _treino = treinoResult.await().dataOrNull
+            val result = treinoFacade.buscar(treinoId)
             _state.update {
                 it.copy(
-                    erro = it.erro ?: treinoResult.await().erroOrNull
-                    ?: exerciciosResult.await().erroOrNull,
-                    exercicios = exerciciosResult.await().dataOrNull ?: it.exercicios,
-                    carregando = false
+                    erro = result.erroOrNull,
+                    carregando = false,
+                    exercicios = result.dataOrNull?.exerciciosTreino ?: it.exercicios,
+                    mensagemDuracao = result.dataOrNull?.series?.firstOrNull()?.let {
+                        abs(
+                            Duration.between(
+                                it.dhInicioExecucao, LocalDateTime.now()
+                            ).toMinutes()
+                        ).let {
+                            "${it / 60}h ${it % 60}m"
+                        }
+                    } ?: "Não iniciado",
+                    exercicioEmAndamento = result.dataOrNull?.exerciciosTreino?.firstOrNull { result.dataOrNull?.series?.lastOrNull()?.exercicioTreinoId == it.exercicioTreinoId },
                 )
             }
+            while (true) {
+                delay(60000L)
+                atualizaTreino()
+            }
+        }
+    }
+
+    private suspend fun atualizaTreino() {
+        val result = treinoFacade.buscar(treinoId)
+        _state.update {
+            it.copy(
+                erro = result.erroOrNull,
+                mensagemDuracao = result.dataOrNull?.series?.firstOrNull()?.let {
+                    abs(
+                        Duration.between(
+                            it.dhInicioExecucao, LocalDateTime.now()
+                        ).toMinutes()
+                    ).let {
+                        "${it / 60}h ${it % 60}m"
+                    }
+                } ?: "Não iniciado",
+                exercicioEmAndamento = result.dataOrNull?.exerciciosTreino?.firstOrNull { result.dataOrNull?.series?.lastOrNull()?.exercicioTreinoId == it.exercicioTreinoId },
+            )
+        }
+    }
+
+    fun forcaAtualizaTreino() {
+        if (inicializacao) {
+            inicializacao = false
+            return
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            atualizaTreino()
         }
     }
 
     fun finalizarTreino() {
         viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(carregando = true) }
-            treinoRepository.altera(treino.copy(finalizado = true))
-            _state.update { it.copy(carregando = false, mostrarTreinoFinalizado = true) }
+            val result1 = treinoRepository.busca(treinoId)
+            if (!result1.sucesso) {
+                _state.update { it.copy(carregando = false, erro = result1.erroOrNull) }
+                return@launch
+            }
+            val result2 = treinoRepository.altera(result1.dataOrNull!!.copy(finalizado = true))
+            _state.update {
+                it.copy(
+                    carregando = false,
+                    mostrarTreinoFinalizado = result2.sucesso,
+                    erro = result2.erroOrNull
+                )
+            }
         }
     }
 

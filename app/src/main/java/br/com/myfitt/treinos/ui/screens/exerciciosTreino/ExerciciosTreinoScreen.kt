@@ -2,7 +2,6 @@
 
 package br.com.myfitt.treinos.ui.screens.exerciciosTreino
 
-import android.util.Log
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -33,12 +32,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -57,7 +58,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.currentStateAsState
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -66,7 +70,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import br.com.myfitt.R
 import br.com.myfitt.common.domain.ExercicioTreino
-import br.com.myfitt.treinos.ui.TickCronometro
 import br.com.myfitt.treinos.ui.screens.listaExercicios.ListaExerciciosNavigation
 import br.com.myfitt.treinos.ui.screens.listaExercicios.ListaExerciciosViewModel
 import br.com.myfitt.treinos.ui.screens.seriesExercicio.SeriesExercicioNavigation
@@ -109,17 +112,25 @@ fun ExerciciosTreinoScreen(
         parametersOf(treinoId)
     })
 ) {
+    val currentLifecycleState = LocalLifecycleOwner.current.lifecycle.currentStateAsState()
     val state = viewModel.state.collectAsStateWithLifecycle()
-    val cronometroState = viewModel.cronometroState.collectAsStateWithLifecycle()
+    LaunchedEffect(currentLifecycleState.value == Lifecycle.State.RESUMED) {
+        viewModel.forcaAtualizaTreino()
+    }
     if (state.value.mostrarTreinoFinalizado) {
         TreinoFinalizadoBottomSheet({ voltar() })
     }
     Tela(
         state = state.value,
-//        cronometroState = cronometroState.value,
         voltar = voltar,
         interagir = viewModel::interagir,
-        irParaExercicios = irParaListaExercicios,
+        irParaExercicios = {
+            ListaExerciciosViewModel.setCallback {
+                viewModel.interagir(Interacao.Adicionar(it))
+                voltar()
+            }
+            irParaListaExercicios()
+        },
         irParaSeries = { irParaSeries(it.exercicioTreinoId) },
         finalizaTreino = viewModel::finalizarTreino,
         limpaEventos = viewModel::limpaEvents
@@ -137,8 +148,7 @@ fun TreinoFinalizadoBottomSheet(onDismiss: () -> Unit = {}) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                "Parabéns!",
-                style = MaterialTheme.typography.titleLarge
+                "Parabéns!", style = MaterialTheme.typography.titleLarge
             )
             Text(
                 "Você concluiu um treino! Parabéns pelo seu esforço!",
@@ -153,7 +163,6 @@ fun TreinoFinalizadoBottomSheet(onDismiss: () -> Unit = {}) {
 @Composable
 private fun Tela(
     state: ExerciciosTreinoState,
-//    cronometroState: TickCronometro,
     voltar: () -> Boolean,
     interagir: (Interacao) -> Unit,
     irParaExercicios: () -> Unit,
@@ -191,7 +200,8 @@ private fun Tela(
             }
         }
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth(),
         ) {
             ListaExercicios(
                 innerPadding = innerPadding,
@@ -201,16 +211,33 @@ private fun Tela(
                 voltar = voltar,
                 interagir = interagir,
             )
-            Button(modifier = Modifier.padding(16.dp), onClick = {
-                ListaExerciciosViewModel.setCallback {
-                    Log.d("TESTE", "EXECUTA CALLBACK")
-                    interagir(Interacao.Adicionar(it))
-                    voltar()
+            Row(
+                modifier = Modifier.padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                state.exercicioEmAndamento?.let {
+                    OutlinedButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentPadding = PaddingValues(12.dp),
+                        onClick = {
+                            irParaSeries(it)
+                        }) {
+                        Text("Continuar ${state.exercicioEmAndamento.nomeExercicio}")
+                    }
                 }
-                irParaExercicios()
-            }) {
-                Icon(Icons.Default.Add, "Adicionar exercício")
-                Text("Exercício")
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentPadding = PaddingValues(9.dp),
+                    onClick = {
+                        irParaExercicios()
+                    }) {
+                    Icon(Icons.Default.Add, "Adicionar exercício")
+                    Text("Exercício")
+                }
             }
         }
     }
@@ -375,7 +402,7 @@ private fun ExercicioTreinoItem(
 private fun TopAppBar(state: ExerciciosTreinoState, voltar: () -> Boolean) {
     MediumTopAppBar(title = {
         Text(
-            state.mensagemDuracao, maxLines = 2, overflow = TextOverflow.Ellipsis
+            "Duração: ${state.mensagemDuracao}", maxLines = 2, overflow = TextOverflow.Ellipsis
         )
     }, navigationIcon = {
         IconButton(onClick = { voltar() }) {
@@ -395,7 +422,8 @@ private fun ExerciciosTreinoScreenPreview() {
                 mensagemDuracao = "20min",
                 exercicios = listOf(ExercicioTreino(1, 1, 1, nomeExercicio = "Supino reto")),
                 carregando = true,
-                erro = "TESTE ERRO"
+                erro = "TESTE ERRO",
+                exercicioEmAndamento = ExercicioTreino(1, 1, 1, 1, 1, "Rosca direta"),
             ),
             voltar = { true },
             interagir = {},
