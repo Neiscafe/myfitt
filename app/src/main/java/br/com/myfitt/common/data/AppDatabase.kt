@@ -2,6 +2,8 @@ package br.com.myfitt.common.data
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import br.com.myfitt.treinos.data.converters.Converters
 import br.com.myfitt.treinos.data.dao.ExercicioDao
 import br.com.myfitt.treinos.data.dao.ExercicioTreinoDao
 import br.com.myfitt.treinos.data.dao.SerieExercicioDao
@@ -15,6 +17,7 @@ import br.com.myfitt.treinos.data.entities.TreinoEntity
     entities = [TreinoEntity::class, ExercicioTreinoEntity::class, SerieExercicioEntity::class, ExercicioEntity::class],
     version = 1
 )
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun treinoDao(): TreinoDao
     abstract fun exercicioDao(): ExercicioDao
