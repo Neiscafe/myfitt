@@ -2,6 +2,7 @@ package br.com.myfitt.treinos.ui.screens.seriesExercicio
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.myfitt.common.domain.Exercicio
 import br.com.myfitt.common.domain.ExercicioTreino
 import br.com.myfitt.common.domain.builder.SerieExercicioFacade
 import br.com.myfitt.common.domain.onSucesso
@@ -37,7 +38,7 @@ class SeriesExercicioViewModel(
     private var repeticoes = 0
     private lateinit var serieExercicioFacade: SerieExercicioFacade
     private var _exercicioTreino: ExercicioTreino? = null
-    private val exercicioTreino get() = _exercicioTreino!!
+    val exercicioTreino get() = _exercicioTreino!!
     private val dadosIniciaisDeferred: Deferred<Boolean>
 
     init {
@@ -89,6 +90,10 @@ class SeriesExercicioViewModel(
             }
             listOf(exercicioDeferred, seriesDeferred).awaitAll().all { it }
         }
+    }
+
+    fun atualiza(exercicio: Exercicio){
+        _state.update { it.copy(observacaoExercicio = exercicio.observacao?:"") }
     }
 
     private suspend fun nomeObservacaoExercicio(): Boolean {

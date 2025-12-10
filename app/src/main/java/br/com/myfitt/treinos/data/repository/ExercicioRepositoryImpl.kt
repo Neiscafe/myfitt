@@ -7,7 +7,7 @@ import br.com.myfitt.treinos.domain.repository.ExercicioRepository
 import kotlinx.coroutines.delay
 
 class ExercicioRepositoryImpl : ExercicioRepository {
-    private val exercicios: List<Exercicio> = listOf(
+    private val exercicios: MutableList<Exercicio> = mutableListOf(
         Exercicio(1, "Supino reto", null, tipoExercicioId = 1, tipoExercicioDescr = "Peito"),
         Exercicio(
             2, "Passada", "Observação 1", tipoExercicioId = 2, tipoExercicioDescr = "Quadriceps"
@@ -24,5 +24,11 @@ class ExercicioRepositoryImpl : ExercicioRepository {
         delay(500L)
         return exercicios.find { it.exercicioId == exercicioId }?.let { Resultado.Sucesso(it) }
             ?: Resultado.Erro("Exercício não encontrado!")
+    }
+
+    override suspend fun altera(novo: Exercicio): Resultado<Exercicio> {
+        val i = exercicios.indexOfFirst { it.exercicioId == novo.exercicioId }
+        exercicios[i] = novo
+        return Resultado.Sucesso(exercicios[i])
     }
 }

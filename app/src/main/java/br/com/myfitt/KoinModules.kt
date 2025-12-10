@@ -12,6 +12,7 @@ import br.com.myfitt.treinos.domain.repository.SeriesRepository
 import br.com.myfitt.treinos.domain.repository.TipoExercicioRepository
 import br.com.myfitt.treinos.domain.repository.TreinoRepository
 import br.com.myfitt.treinos.ui.CronometroFacade
+import br.com.myfitt.treinos.ui.screens.detalhesExercicio.DetalhesExercicioViewModel
 import br.com.myfitt.treinos.ui.screens.exerciciosTreino.ExerciciosTreinoViewModel
 import br.com.myfitt.treinos.ui.screens.listaExercicios.ListaExerciciosViewModel
 import br.com.myfitt.treinos.ui.screens.listaTreinos.ListaTreinoViewModel
@@ -42,6 +43,7 @@ val facadeModule = module {
 val viewModelModule = module {
     viewModel { ExerciciosTreinoViewModel(it[0], get(), get(), get()) }
     viewModel { ListaTreinoViewModel(get(), get()) }
+    viewModel { DetalhesExercicioViewModel(it[0],get()) }
     viewModel { ListaExerciciosViewModel(get()) }
     viewModel { MenuPrincipalViewModel(get()) }
     viewModel { SeriesExercicioViewModel(it[0], get(), get(), get(), get()) }

@@ -24,6 +24,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.BasicAlertDialog
@@ -72,8 +73,10 @@ import androidx.navigation.navArgument
 import br.com.myfitt.R
 import br.com.myfitt.common.domain.SerieExercicio
 import br.com.myfitt.treinos.ui.TickCronometro
+import br.com.myfitt.treinos.ui.screens.detalhesExercicio.DetalhesExercicioNavigation
+import br.com.myfitt.treinos.ui.screens.detalhesExercicio.DetalhesExercicioViewModel
 import br.com.myfitt.treinos.ui.theme.MyFittTheme
-import org.koin.compose.koinInject
+import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import java.time.Instant
 import java.time.LocalDateTime
@@ -94,8 +97,10 @@ object SeriesExercicioNavigation {
             SeriesExercicioScreen(
                 exercicioTreinoId = exercicioSerieId,
                 irParaEditarSeries = {},
-                popBackstack = navController::popBackStack
-            )
+                popBackstack = navController::popBackStack,
+                irParaDetalhesExercicio = {
+                    navController.navigate(DetalhesExercicioNavigation.route + "/${it}")
+                })
         }
 
     }
@@ -103,10 +108,13 @@ object SeriesExercicioNavigation {
 
 @Composable
 fun SeriesExercicioScreen(
-    exercicioTreinoId: Int, irParaEditarSeries: () -> Unit, popBackstack: () -> Boolean
+    exercicioTreinoId: Int,
+    irParaEditarSeries: () -> Unit,
+    irParaDetalhesExercicio: (Int) -> Unit,
+    popBackstack: () -> Boolean
 ) {
     val viewModel: SeriesExercicioViewModel =
-        koinInject(parameters = parametersOf(exercicioTreinoId))
+        koinViewModel(parameters = { parametersOf(exercicioTreinoId) })
     val state by viewModel.state.collectAsStateWithLifecycle()
     val cronometroState by viewModel.cronometroState.collectAsStateWithLifecycle()
     var exibeDialogFinalizaSerie by remember { mutableStateOf(false) }
@@ -122,7 +130,13 @@ fun SeriesExercicioScreen(
             viewModel.fimExecucao()
             exibeDialogFinalizaSerie = true
         },
-        finalizaTreino = {})
+        irParaDetalhesExercicio = {
+            DetalhesExercicioViewModel.onSalvar {
+                viewModel.atualiza(it)
+                popBackstack()
+            }
+            irParaDetalhesExercicio(viewModel.exercicioTreino.exercicioId)
+        })
     if (exibeDialogFinalizaSerie) {
         DialogRepeticoes(
             onDismiss = { exibeDialogFinalizaSerie = false },
@@ -265,7 +279,7 @@ private fun Tela(
     pesoMudou: (String) -> Unit,
     iniciaSerie: () -> Unit,
     finalizaSerie: () -> Unit,
-    finalizaTreino: () -> Unit,
+    irParaDetalhesExercicio: () -> Unit,
     cronometroState: TickCronometro,
     state: SeriesExercicioState
 ) {
@@ -274,25 +288,23 @@ private fun Tela(
     LaunchedEffect(Unit) {
         pesoMudou(pesoText.text)
     }
-    Scaffold(
-//        modifier = Modifier.verticalScroll(rememberScrollState()),
-        snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
-            TopAppBar({ Text(state.nomeExercicio) }, navigationIcon = {
-                IconButton(onClick = { popBackstack() }) {
-                    Icon(
-                        Icons.AutoMirrored.Default.ArrowBack,
-                        "Voltar para exercícios",
-                    )
-                }
-            }, actions = {
-                IconButton(onClick = irParaEditarSeries) {
-                    Icon(
-                        Icons.Outlined.Edit,
-                        "Editar séries",
-                    )
-                }
-            })
-        }) { innerPadding ->
+    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
+        TopAppBar({ Text(state.nomeExercicio) }, navigationIcon = {
+            IconButton(onClick = { popBackstack() }) {
+                Icon(
+                    Icons.AutoMirrored.Default.ArrowBack,
+                    "Voltar para exercícios",
+                )
+            }
+        }, actions = {
+            IconButton(onClick = irParaEditarSeries) {
+                Icon(
+                    Icons.Outlined.Edit,
+                    "Editar séries",
+                )
+            }
+        })
+    }) { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding),
             horizontalAlignment = Alignment.Start,
@@ -333,31 +345,40 @@ private fun Tela(
                     }
                 }
             }
-            if (state.observacaoExercicio.isNotBlank()) {
-                OutlinedCard(
+
+            OutlinedCard(
+                modifier = Modifier
+                    .height(IntrinsicSize.Min)
+                    .fillMaxWidth()
+                    .padding(24.dp, 0.dp),
+            ) {
+                Column(
                     modifier = Modifier
-                        .height(IntrinsicSize.Min)
-                        .fillMaxWidth()
-                        .padding(24.dp, 0.dp),
+                        .fillMaxSize()
+                        .padding(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+
+                    if (state.observacaoExercicio.isNotBlank()) {
                         Icon(Icons.Default.Info, "Observações exercício")
                         Text(
                             text = state.observacaoExercicio,
-//                            style = MaterialTheme.typography.bodyLarge,
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
                         )
+                    } else {
+                        TextButton(
+                            onClick = irParaDetalhesExercicio, modifier = Modifier.fillMaxSize()
+                        ) {
+                            Icon(Icons.Default.Edit, "Adicionar observação")
+                            Text("Observação")
+                        }
                     }
                 }
             }
+
 
             if (cronometroState.descansoAtivo || cronometroState.serieAtiva) {
                 OutlinedCard(
@@ -552,7 +573,7 @@ private fun SeriesExercicioScreenPreview() {
                 observacaoExercicio = "Fazer pensando na morte da bezerra"
             ),
             cronometroState = TickCronometro(1, Instant.now(), true, false),
-            finalizaTreino = {},
+            irParaDetalhesExercicio = {},
         )
     }
 }
