@@ -113,9 +113,9 @@ fun ListaTreinoItem(it: Treino, i: Int) {
                     )
                     Text("Treino ${it.treinoId}", style = MaterialTheme.typography.titleMedium)
                 }
-                if (it.tipoTreino != null) {
+                if (it.tipoTreinoDescr != null) {
                     Text(
-                        it.tipoTreino,
+                        it.tipoTreinoDescr,
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier
                             .background(
@@ -196,7 +196,7 @@ private fun TelaPreview() {
                     1,
                     dhInicio = LocalDateTime.now().minusHours(2).minusMinutes(2),
                     dhFim = LocalDateTime.now(),
-                    tipoTreino = "Pernas"
+                    tipoTreinoDescr = "Pernas"
                 )
             ),
             0,
