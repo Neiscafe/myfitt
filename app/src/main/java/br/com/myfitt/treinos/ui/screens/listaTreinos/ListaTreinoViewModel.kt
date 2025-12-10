@@ -33,8 +33,12 @@ class ListaTreinoViewModel(
     val state = _state.asStateFlow()
 
     init {
-        carregaFiltrosTipos()
+//        carregaFiltrosTipos()
         buscaTreinos()
+    }
+
+    fun limpaEventos(){
+        _state.update { it.copy(erro = null) }
     }
 
     private fun carregaFiltrosTipos() {

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package br.com.myfitt.treinos.ui.screens.listaTreinos
 
 import androidx.compose.foundation.background
@@ -10,19 +12,25 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -30,18 +38,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import br.com.myfitt.R
+import br.com.myfitt.common.domain.TipoExercicio
 import br.com.myfitt.common.domain.Treino
+import br.com.myfitt.treinos.ui.screens.exerciciosTreino.ExerciciosTreinoNavigation
 import br.com.myfitt.treinos.ui.theme.MyFittTheme
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 object ListaTreinoNavigation {
-    val route = "listaTreinos"
+    val route = "listaTreino"
     fun composeNavigation(builder: NavGraphBuilder, navController: NavController) {
         builder.composable(
             route = route
@@ -53,14 +65,39 @@ object ListaTreinoNavigation {
 
 @Composable
 fun ListaTreinosScreen(navController: NavController) {
-
+    val viewModel: ListaTreinoViewModel = koinViewModel()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    Tela(
+        state = state,
+        limpaEventos = viewModel::limpaEventos,
+        irParaTreino = {
+            navController.navigate(ExerciciosTreinoNavigation.route + "/${it.treinoId}")
+        },
+        voltar = { navController.popBackStack() }
+    )
 }
 
 @Composable
-fun Tela(state: ListaTreinoState, limpaEventos: () -> Unit, irParaTreino: (Treino) -> Unit) {
+fun Tela(
+    state: ListaTreinoState,
+    limpaEventos: () -> Unit,
+    irParaTreino: (Treino) -> Unit,
+    voltar: () -> Unit = {}
+) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
+    Scaffold(topBar = {
+        TopAppBar(
+            { Text("Histórico de treinos") },
+            navigationIcon = {
+                IconButton(voltar) {
+                    Icon(
+                        Icons.AutoMirrored.Default.ArrowBack,
+                        "Voltar"
+                    )
+                }
+            })
+    }, snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
         state.erro?.let {
             scope.launch {
                 snackbarHostState.showSnackbar(
@@ -77,7 +114,7 @@ fun Tela(state: ListaTreinoState, limpaEventos: () -> Unit, irParaTreino: (Trein
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 itemsIndexed(
                     items = state.treinos, key = { i, it -> it.treino.treinoId }) { i, it ->
-                    ListaTreinoItem(it, i)
+                    ListaTreinoItem(it, i) { irParaTreino(it.treino) }
                 }
                 if (state.carregando) {
                     item {
@@ -92,7 +129,7 @@ fun Tela(state: ListaTreinoState, limpaEventos: () -> Unit, irParaTreino: (Trein
 }
 
 @Composable
-fun ListaTreinoItem(it: ListaTreinoModel, i: Int) {
+fun ListaTreinoItem(it: ListaTreinoModel, i: Int, onClick: () -> Unit) {
     val cardWidthModifier = Modifier.fillMaxWidth()
     ElevatedCard(
         cardWidthModifier.padding(16.dp)
@@ -118,7 +155,11 @@ fun ListaTreinoItem(it: ListaTreinoModel, i: Int) {
                     )
                 }
                 Text(
-                    "${it.treino.dhInicio!!.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))}",
+                    "${
+                        if (it.treino.dhInicio == null) "Não iniciado" else it.treino.dhInicio.format(
+                            DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                        )
+                    }",
                     style = textStyle.copy(MaterialTheme.colorScheme.inverseOnSurface),
                     modifier = Modifier
                         .background(
@@ -128,7 +169,16 @@ fun ListaTreinoItem(it: ListaTreinoModel, i: Int) {
                 )
             }
             LazyRow {
-
+                items(items = it.tipoExercicios, key = { it.tipoExercicioId }) {
+                    Text(
+                        text = it.descricao, style = textStyle, modifier = Modifier
+                            .background(
+                                MaterialTheme.colorScheme.surfaceVariant,
+                                MaterialTheme.shapes.medium
+                            )
+                            .padding(8.dp, 4.dp)
+                    )
+                }
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -140,7 +190,7 @@ fun ListaTreinoItem(it: ListaTreinoModel, i: Int) {
                         "Início", style = textStyle
                     )
                     Text(
-                        "${it.treino.dhInicio!!.format(DateTimeFormatter.ofPattern("hh:mm"))}",
+                        "${if(it.treino.dhInicio==null) "00:00" else it.treino.dhInicio?.format(DateTimeFormatter.ofPattern("hh:mm"))}",
                         style = textStyle
                     )
                 }
@@ -160,7 +210,7 @@ fun ListaTreinoItem(it: ListaTreinoModel, i: Int) {
                     )
                 }
             }
-            Button({}, modifier = cardWidthModifier, shape = MaterialTheme.shapes.small) {
+            Button(onClick, modifier = cardWidthModifier, shape = MaterialTheme.shapes.small) {
                 Text("Visualizar")
             }
         }
@@ -179,7 +229,7 @@ private fun ListaTreinoItemPreview() {
                     dhFim = LocalDateTime.now()
                 ), emptyList()
             ), 0
-        )
+        ) {}
     }
 }
 
@@ -189,16 +239,16 @@ private fun TelaPreview() {
     MyFittTheme {
         Tela(
             ListaTreinoState(
-            treinos = listOf(
-                ListaTreinoModel(
-                    Treino(
-                        1,
-                        dhInicio = LocalDateTime.now().minusHours(2).minusMinutes(2),
-                        dhFim = LocalDateTime.now()
-                    ), emptyList()
-                )
-            ),
-            0,
-        ), {}, {})
+                treinos = listOf(
+                    ListaTreinoModel(
+                        Treino(
+                            1,
+                            dhInicio = LocalDateTime.now().minusHours(2).minusMinutes(2),
+                            dhFim = LocalDateTime.now()
+                        ), listOf(TipoExercicio(1, "Bíceps"))
+                    )
+                ),
+                0,
+            ), {}, {})
     }
 }

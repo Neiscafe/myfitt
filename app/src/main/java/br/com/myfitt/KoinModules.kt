@@ -3,15 +3,18 @@ package br.com.myfitt
 import br.com.myfitt.treinos.data.repository.ExercicioRepositoryImpl
 import br.com.myfitt.treinos.data.repository.ExercicioTreinoRepositoryImpl
 import br.com.myfitt.treinos.data.repository.SeriesRepositoryImpl
+import br.com.myfitt.treinos.data.repository.TipoExercicioRepositoryImpl
 import br.com.myfitt.treinos.data.repository.TreinoRepositoryImpl
 import br.com.myfitt.treinos.domain.facade.TreinoFacade
 import br.com.myfitt.treinos.domain.repository.ExercicioRepository
 import br.com.myfitt.treinos.domain.repository.ExercicioTreinoRepository
 import br.com.myfitt.treinos.domain.repository.SeriesRepository
+import br.com.myfitt.treinos.domain.repository.TipoExercicioRepository
 import br.com.myfitt.treinos.domain.repository.TreinoRepository
 import br.com.myfitt.treinos.ui.CronometroFacade
 import br.com.myfitt.treinos.ui.screens.exerciciosTreino.ExerciciosTreinoViewModel
 import br.com.myfitt.treinos.ui.screens.listaExercicios.ListaExerciciosViewModel
+import br.com.myfitt.treinos.ui.screens.listaTreinos.ListaTreinoViewModel
 import br.com.myfitt.treinos.ui.screens.menuPrincipal.MenuPrincipalViewModel
 import br.com.myfitt.treinos.ui.screens.seriesExercicio.SeriesExercicioViewModel
 import org.koin.android.ext.koin.androidApplication
@@ -29,6 +32,7 @@ val repositoryModule = module {
     single<ExercicioTreinoRepository> { ExercicioTreinoRepositoryImpl() }
     single<ExercicioRepository> { ExercicioRepositoryImpl() }
     single<TreinoRepository> { TreinoRepositoryImpl() }
+    single<TipoExercicioRepository> { TipoExercicioRepositoryImpl() }
     single<SeriesRepository> { SeriesRepositoryImpl() }
 }
 val facadeModule = module {
@@ -37,6 +41,7 @@ val facadeModule = module {
 }
 val viewModelModule = module {
     viewModel { ExerciciosTreinoViewModel(it[0], get(), get(), get()) }
+    viewModel { ListaTreinoViewModel(get(), get()) }
     viewModel { ListaExerciciosViewModel(get()) }
     viewModel { MenuPrincipalViewModel(get()) }
     viewModel { SeriesExercicioViewModel(it[0], get(), get(), get(), get()) }

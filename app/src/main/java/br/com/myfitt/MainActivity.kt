@@ -21,6 +21,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import br.com.myfitt.treinos.ui.screens.exerciciosTreino.ExerciciosTreinoNavigation
 import br.com.myfitt.treinos.ui.screens.listaExercicios.ListaExerciciosNavigation
+import br.com.myfitt.treinos.ui.screens.listaTreinos.ListaTreinoNavigation
 import br.com.myfitt.treinos.ui.screens.menuPrincipal.MenuPrincipalNavigation
 import br.com.myfitt.treinos.ui.screens.seriesExercicio.SeriesExercicioNavigation
 import br.com.myfitt.treinos.ui.theme.MyFittTheme
@@ -57,6 +58,7 @@ class MainActivity : ComponentActivity() {
                         ExerciciosTreinoNavigation.composeNavigation(this, navController)
                         SeriesExercicioNavigation.composeNavigation(this, navController)
                         ListaExerciciosNavigation.composeNavigation(this, navController)
+                        ListaTreinoNavigation.composeNavigation(this, navController)
                     }
                 }
             }

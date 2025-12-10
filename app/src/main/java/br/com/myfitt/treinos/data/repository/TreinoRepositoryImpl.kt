@@ -19,13 +19,8 @@ class TreinoRepositoryImpl : TreinoRepository {
         if (tamPagina == 0 || pagina == 0) {
             return Resultado.Sucesso(treinos)
         }
-        if (treinos.size < (tamPagina * pagina)) {
-            return Resultado.Sucesso(emptyList())
-        }
         val offset = (pagina - 1) * tamPagina
-        return runCatching {
-            Resultado.Sucesso(treinos.slice(offset..offset + tamPagina))
-        }.getOrNull() ?: Resultado.Erro("Ocorreu um erro: estamos trabalhando para resolvê-lo")
+        return Resultado.Sucesso(treinos.filter { (it.dhInicio?: LocalDate.now())!=null })
     }
 
 

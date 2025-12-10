@@ -41,6 +41,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import br.com.myfitt.R
 import br.com.myfitt.treinos.ui.screens.exerciciosTreino.ExerciciosTreinoNavigation
+import br.com.myfitt.treinos.ui.screens.listaTreinos.ListaTreinoNavigation
 import br.com.myfitt.treinos.ui.theme.MyFittTheme
 import org.koin.androidx.compose.koinViewModel
 
@@ -54,7 +55,7 @@ object MenuPrincipalNavigation {
         ) {
             MenuPrincipalScreen(
                 navegaNovoTreino = { navController.navigate(ExerciciosTreinoNavigation.route + "/${it}") },
-                navegaListaTreinos = {})
+                navegaListaTreinos = { navController.navigate(ListaTreinoNavigation.route) })
         }
     }
 
