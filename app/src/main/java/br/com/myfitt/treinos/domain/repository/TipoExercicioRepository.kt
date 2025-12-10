@@ -1,0 +1,9 @@
+package br.com.myfitt.treinos.domain.repository
+
+import br.com.myfitt.common.domain.Resultado
+import br.com.myfitt.common.domain.TipoExercicio
+
+interface TipoExercicioRepository {
+    suspend fun lista(emTreino: Boolean): Resultado<List<TipoExercicio>>
+    suspend fun doTreino(treinoIds: List<Int>): Resultado<List<Pair<Int, TipoExercicio>>>
+}

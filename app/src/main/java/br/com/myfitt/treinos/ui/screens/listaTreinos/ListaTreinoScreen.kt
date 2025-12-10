@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -74,7 +75,8 @@ fun Tela(state: ListaTreinoState, limpaEventos: () -> Unit, irParaTreino: (Trein
                 .padding(innerPadding)
         ) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                itemsIndexed(items = state.treinos, key = { i, it -> it.treinoId }) { i, it ->
+                itemsIndexed(
+                    items = state.treinos, key = { i, it -> it.treino.treinoId }) { i, it ->
                     ListaTreinoItem(it, i)
                 }
                 if (state.carregando) {
@@ -90,7 +92,7 @@ fun Tela(state: ListaTreinoState, limpaEventos: () -> Unit, irParaTreino: (Trein
 }
 
 @Composable
-fun ListaTreinoItem(it: Treino, i: Int) {
+fun ListaTreinoItem(it: ListaTreinoModel, i: Int) {
     val cardWidthModifier = Modifier.fillMaxWidth()
     ElevatedCard(
         cardWidthModifier.padding(16.dp)
@@ -111,29 +113,23 @@ fun ListaTreinoItem(it: Treino, i: Int) {
                         painterResource(R.drawable.exercise_24dp_000000_fill0_wght400_grad0_opsz24),
                         "Id treino"
                     )
-                    Text("Treino ${it.treinoId}", style = MaterialTheme.typography.titleMedium)
-                }
-                if (it.tipoTreinoDescr != null) {
                     Text(
-                        it.tipoTreinoDescr,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier
-                            .background(
-                                MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.small
-                            )
-                            .padding(8.dp, 4.dp),
+                        "Treino ${it.treino.treinoId}", style = MaterialTheme.typography.titleMedium
                     )
                 }
+                Text(
+                    "${it.treino.dhInicio!!.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))}",
+                    style = textStyle.copy(MaterialTheme.colorScheme.inverseOnSurface),
+                    modifier = Modifier
+                        .background(
+                            MaterialTheme.colorScheme.inverseSurface, MaterialTheme.shapes.medium
+                        )
+                        .padding(8.dp, 4.dp)
+                )
             }
-            Text(
-                "${it.dhInicio!!.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))}",
-                style = textStyle.copy(MaterialTheme.colorScheme.inverseOnSurface),
-                modifier = Modifier
-                    .background(
-                        MaterialTheme.colorScheme.inverseSurface, MaterialTheme.shapes.medium
-                    )
-                    .padding(8.dp, 4.dp)
-            )
+            LazyRow {
+
+            }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = rowSpacing,
@@ -144,7 +140,7 @@ fun ListaTreinoItem(it: Treino, i: Int) {
                         "Início", style = textStyle
                     )
                     Text(
-                        "${it.dhInicio.format(DateTimeFormatter.ofPattern("hh:mm"))}",
+                        "${it.treino.dhInicio!!.format(DateTimeFormatter.ofPattern("hh:mm"))}",
                         style = textStyle
                     )
                 }
@@ -159,7 +155,7 @@ fun ListaTreinoItem(it: Treino, i: Int) {
                 Column {
                     Text("Duração:", style = textStyle)
                     Text(
-                        "${it.segundosDuracao / 60 / 60}h${(it.segundosDuracao / 60) % 60}m",
+                        "${it.treino.segundosDuracao / 60 / 60}h${(it.treino.segundosDuracao / 60) % 60}m",
                         style = textStyle
                     )
                 }
@@ -176,10 +172,12 @@ fun ListaTreinoItem(it: Treino, i: Int) {
 private fun ListaTreinoItemPreview() {
     MyFittTheme {
         ListaTreinoItem(
-            Treino(
-                1,
-                dhInicio = LocalDateTime.now().minusHours(2).minusMinutes(2),
-                dhFim = LocalDateTime.now()
+            it = ListaTreinoModel(
+                Treino(
+                    1,
+                    dhInicio = LocalDateTime.now().minusHours(2).minusMinutes(2),
+                    dhFim = LocalDateTime.now()
+                ), emptyList()
             ), 0
         )
     }
@@ -192,11 +190,12 @@ private fun TelaPreview() {
         Tela(
             ListaTreinoState(
             treinos = listOf(
-                Treino(
-                    1,
-                    dhInicio = LocalDateTime.now().minusHours(2).minusMinutes(2),
-                    dhFim = LocalDateTime.now(),
-                    tipoTreinoDescr = "Pernas"
+                ListaTreinoModel(
+                    Treino(
+                        1,
+                        dhInicio = LocalDateTime.now().minusHours(2).minusMinutes(2),
+                        dhFim = LocalDateTime.now()
+                    ), emptyList()
                 )
             ),
             0,
