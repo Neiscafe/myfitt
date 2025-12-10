@@ -13,11 +13,12 @@ import br.com.myfitt.treinos.data.dao.TreinoDao
 import br.com.myfitt.treinos.data.entities.ExercicioEntity
 import br.com.myfitt.treinos.data.entities.ExercicioTreinoEntity
 import br.com.myfitt.treinos.data.entities.SerieExercicioEntity
+import br.com.myfitt.treinos.data.entities.TipoExercicioEntity
 import br.com.myfitt.treinos.data.entities.TipoTreinoEntity
 import br.com.myfitt.treinos.data.entities.TreinoEntity
 
 @Database(
-    entities = [TreinoEntity::class, ExercicioTreinoEntity::class, SerieExercicioEntity::class, ExercicioEntity::class, TipoTreinoEntity::class],
+    entities = [TreinoEntity::class, ExercicioTreinoEntity::class, SerieExercicioEntity::class, ExercicioEntity::class, TipoTreinoEntity::class, TipoExercicioEntity::class],
     version = 1
 )
 @TypeConverters(Converters::class)
