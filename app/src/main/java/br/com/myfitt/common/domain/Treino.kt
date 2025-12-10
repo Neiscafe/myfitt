@@ -7,8 +7,6 @@ import kotlin.math.abs
 data class Treino(
     val treinoId: Int,
     val dhCriado: LocalDateTime = LocalDateTime.now(),
-    val tipoTreinoId: Int? = null,
-    val tipoTreinoDescr: String? = null,
     val dhInicio: LocalDateTime? = null,
     val dhFim: LocalDateTime? = null
 ) {
