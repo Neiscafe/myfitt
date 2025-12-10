@@ -7,5 +7,5 @@ import androidx.room.PrimaryKey
 data class TipoTreinoEntity(
     @PrimaryKey(autoGenerate = true)
     val tipoTreinoId: Int = 0,
-    val descr: String,
+    val descricao: String,
 )

@@ -8,7 +8,7 @@ fun TreinoComTipoRelation.toDomain(): Treino {
     return Treino(
         treinoId = this.treino.treinoId,
         tipoTreinoId = this.treino.tipoTreinoId, // Vem da entidade principal
-        tipoTreinoDescr = this.tipo.descr,   // Vem da entidade relacionada (JOIN)
+        tipoTreinoDescr = this.tipo.descricao,   // Vem da entidade relacionada (JOIN)
         dhCriado = this.treino.dhCriado,
         dhFim = this.treino.dhFim,
         dhInicio = this.treino.dhInicio,

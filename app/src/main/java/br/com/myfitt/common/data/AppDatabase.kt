@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.sqlite.db.SupportSQLiteDatabase
 import br.com.myfitt.treinos.data.converters.Converters
 import br.com.myfitt.treinos.data.dao.ExercicioDao
 import br.com.myfitt.treinos.data.dao.ExercicioTreinoDao
@@ -29,6 +30,58 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun exercicioTreinoDao(): ExercicioTreinoDao
     fun build(context: Context): AppDatabase {
         return Room.databaseBuilder(context, AppDatabase::class.java, "AppDatabase.db")
-            .fallbackToDestructiveMigration().build()
+            .fallbackToDestructiveMigration().addCallback(PopulaOnCreate).build()
+    }
+
+    object PopulaOnCreate : Callback() {
+
+        override fun onCreate(db: SupportSQLiteDatabase) {
+            super.onCreate(db)
+            db.beginTransaction()
+            try {
+                val tiposExercicio = listOf(
+                    "Quadriceps",
+                    "Posterior de coxa",
+                    "Glúteo",
+                    "Panturrilhas",
+                    "Adutores",
+                    "Peito",
+                    "Ombro",
+                    "Tríceps",
+                    "Bíceps",
+                    "Antebraço",
+                    "Abdômen",
+                    "Trapézio",
+                    "Dorsal",
+                    "Lombar"
+                )
+
+                tiposExercicio.forEach { descricao ->
+                    db.execSQL("INSERT INTO tipos_exercicio (descricao) VALUES ('$descricao')")
+                }
+
+                val tiposTreino = listOf(
+                    "Corpo completo",
+                    "Superiores completo",
+                    "Inferiores completo",
+                    "Empurrar",
+                    "Puxar",
+                    "Braços",
+                    "Ombros",
+                    "Braços+Ombros",
+                    "Inferiores (anterior)",
+                    "Inferiores (posterior)",
+                    "Glúteos+Coxas"
+                )
+
+                tiposTreino.forEach { descricao ->
+                    db.execSQL("INSERT INTO tipos_treino (descricao) VALUES ('$descricao')")
+                }
+
+                db.setTransactionSuccessful()
+            } finally {
+                db.endTransaction()
+            }
+        }
     }
 }
