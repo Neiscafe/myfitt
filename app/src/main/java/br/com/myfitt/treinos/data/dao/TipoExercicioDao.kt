@@ -17,7 +17,7 @@ interface TipoExercicioDao {
 
     @Query(
         """
-        SELECT
+        SELECT DISTINCT
             a.treinoId,
             c.* 
         FROM 
