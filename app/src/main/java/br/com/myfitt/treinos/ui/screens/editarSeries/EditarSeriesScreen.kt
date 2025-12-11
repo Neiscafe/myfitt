@@ -32,7 +32,9 @@ import br.com.myfitt.treinos.ui.theme.MyFittTheme
 fun EditarSeriesScreen(modifier: Modifier = Modifier) {
 
 }
+
 data class CamposStateWrapper(val campos: List<String> = emptyList())
+
 @Composable
 fun Tela(
     camposState: CamposStateWrapper,
@@ -92,6 +94,8 @@ fun Tela(
 @Composable
 private fun EditarSeriesPreview() {
     MyFittTheme {
-        Tela()
+        Tela(
+            camposState = CamposStateWrapper(),
+        )
     }
 }

@@ -3,11 +3,15 @@ package br.com.myfitt.treinos.data.repository
 import br.com.myfitt.common.domain.Resultado
 import br.com.myfitt.common.domain.TipoExercicio
 import br.com.myfitt.common.domain.Treino
+import br.com.myfitt.common.domain.map
+import br.com.myfitt.common.domain.wrapSuspend
+import br.com.myfitt.treinos.data.dao.TreinoDao
+import br.com.myfitt.treinos.data.mappers.toDomain
+import br.com.myfitt.treinos.data.mappers.toEntity
 import br.com.myfitt.treinos.domain.repository.TreinoRepository
-import kotlinx.coroutines.delay
 import java.time.LocalDate
 
-class TreinoRepositoryImpl : TreinoRepository {
+class TreinoRepositoryImpl(private val treinoDao: TreinoDao) : TreinoRepository {
     val treinos = mutableListOf<Treino>()
     override suspend fun listar(
         tamPagina: Int,
@@ -15,45 +19,21 @@ class TreinoRepositoryImpl : TreinoRepository {
         filtroTipos: List<TipoExercicio>?,
         filtroData: LocalDate?,
     ): Resultado<List<Treino>> {
-        delay(500)
-        if (tamPagina == 0 || pagina == 0) {
-            return Resultado.Sucesso(treinos)
-        }
-        val offset = (pagina - 1) * tamPagina
-        return Resultado.Sucesso(treinos.filter { (it.dhInicio?: LocalDate.now())!=null })
+        return wrapSuspend { treinoDao.lista(tamPagina, pagina).toDomain() }
     }
 
 
     override suspend fun criar(treino: Treino): Resultado<Treino> {
-        delay(500)
-        val treino = treino.copy(treinoId = sequenciaTreinoId())
-        treinos.add(treino)
-        return Resultado.Sucesso(treino)
+        return wrapSuspend {
+            treinoDao.insere(treino.toEntity())
+        }.map { treino.copy(treinoId = it.toInt()) }
     }
 
     override suspend fun busca(treinoId: Int): Resultado<Treino> {
-        return treinos.firstOrNull { it.treinoId == treinoId }?.let { Resultado.Sucesso(it) }
-            ?: Resultado.Erro("Treino não encontrado!")
+        return wrapSuspend { treinoDao.busca(treinoId).toDomain() }
     }
 
     override suspend fun altera(novo: Treino): Resultado<Treino> {
-        delay(500L)
-        treinos.updateEntry(novo) { it.treinoId == novo.treinoId }
-        return Resultado.Sucesso(novo)
-    }
-
-    fun <T> MutableList<T>.updateEntry(new: T, compare: (T) -> Boolean) {
-        val index = indexOfFirst { compare(new) }
-        if (index != -1) {
-            this[index] = new
-        }
-    }
-
-    companion object {
-        private var contadorTreinoId = 0
-        fun sequenciaTreinoId(): Int {
-            contadorTreinoId++
-            return contadorTreinoId
-        }
+        return wrapSuspend { treinoDao.altera(novo.toEntity()) }.map { novo }
     }
 }

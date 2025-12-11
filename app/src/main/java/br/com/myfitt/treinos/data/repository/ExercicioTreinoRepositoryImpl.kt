@@ -3,70 +3,63 @@ package br.com.myfitt.treinos.data.repository
 import br.com.myfitt.common.domain.ExercicioTemplate
 import br.com.myfitt.common.domain.ExercicioTreino
 import br.com.myfitt.common.domain.Resultado
+import br.com.myfitt.common.domain.wrapSuspend
+import br.com.myfitt.treinos.data.dao.ExercicioTreinoDao
+import br.com.myfitt.treinos.data.mappers.toDomain
+import br.com.myfitt.treinos.data.mappers.toEntity
 import br.com.myfitt.treinos.domain.repository.ExercicioTreinoRepository
-import kotlinx.coroutines.delay
 
-class ExercicioTreinoRepositoryImpl : ExercicioTreinoRepository {
-    private val exerciciosTreino = mutableListOf<ExercicioTreino>()
+class ExercicioTreinoRepositoryImpl(val exercicioTreinoDao: ExercicioTreinoDao) :
+    ExercicioTreinoRepository {
 
     override suspend fun adiciona(exercicioTreino: ExercicioTreino): Resultado<List<ExercicioTreino>> {
-        delay(500L)
-        val exercicioTreino = exercicioTreino.copy(exercicioTreinoId = sequenciaExercicioTreino())
-        exerciciosTreino.add(exercicioTreino)
-        ///Aqui deve adicionar dhInicio no Treino
-        return Resultado.Sucesso(exerciciosTreino)
+        return wrapSuspend {
+            exercicioTreinoDao.adiciona(exercicioTreino.toEntity())
+            exercicioTreinoDao.lista(exercicioTreino.treinoId).toDomain()
+        }
     }
 
     override suspend fun lista(treinoId: Int): Resultado<List<ExercicioTreino>> {
-        delay(1500L)
-        return Resultado.Sucesso(exerciciosTreino)
+        return wrapSuspend { exercicioTreinoDao.lista(treinoId).toDomain() }
     }
 
     override suspend fun remove(exercicioTreino: ExercicioTreino): Resultado<List<ExercicioTreino>> {
-        delay(500L)
-        exerciciosTreino.removeAt(exercicioTreino.ordem - 1)
-        return Resultado.Sucesso(exerciciosTreino)
+        return wrapSuspend {
+            exercicioTreinoDao.remove(exercicioTreino.toEntity())
+            exercicioTreinoDao.lista(exercicioTreino.treinoId).toDomain()
+        }
     }
 
     override suspend fun substitui(
         novo: ExercicioTreino
     ): Resultado<List<ExercicioTreino>> {
-        delay(500L)
-        val atual = exerciciosTreino[novo.ordem - 1]
-        val removeResult = remove(atual)
-        if (!removeResult.sucesso) {
-            return removeResult
+        return wrapSuspend {
+            exercicioTreinoDao.atualiza(novo.toEntity())
+            exercicioTreinoDao.lista(novo.treinoId).toDomain()
         }
-        return adiciona(novo)
     }
 
     override suspend fun busca(exercicioTreinoId: Int): Resultado<ExercicioTreino> {
-        delay(200L)
-        return exerciciosTreino.firstOrNull { it.exercicioTreinoId == exercicioTreinoId }
-            ?.let { Resultado.Sucesso(it) } ?: Resultado.Erro("Exercício não encontrado!")
+        return wrapSuspend { exercicioTreinoDao.busca(exercicioTreinoId).toDomain() }
     }
 
     override suspend fun reordena(
         exercicioTreino: ExercicioTreino, posicaoNova: Int
     ): Resultado<List<ExercicioTreino>> {
-        delay(500L)
-        val modificado = exerciciosTreino[posicaoNova - 1]
-        exerciciosTreino[posicaoNova - 1] = exercicioTreino.copy(ordem = posicaoNova)
-        exerciciosTreino[exercicioTreino.ordem - 1] = modificado
-        return Resultado.Sucesso(exerciciosTreino)
+        return wrapSuspend {
+            val listaAtual = exercicioTreinoDao.lista(exercicioTreino.treinoId)
+            val seraTrocado = listaAtual.firstOrNull { it.ordem == posicaoNova }
+            seraTrocado?.let {
+                exercicioTreinoDao.atualiza(exercicioTreino.copy(ordem = posicaoNova).toEntity())
+                exercicioTreinoDao.atualiza(it.copy(ordem = exercicioTreino.ordem))
+                exercicioTreinoDao.lista(exercicioTreino.treinoId).toDomain()
+            } ?: run { return@wrapSuspend listaAtual.toDomain() }
+        }
     }
 
     override suspend fun adicionaPorTemplate(
         treinoId: Int, template: ExercicioTemplate
     ): Resultado<List<ExercicioTreino>> {
         TODO("Not yet implemented")
-    }
-
-    companion object {
-        private var contadorExercicioTreino = 0
-        private fun sequenciaExercicioTreino(): Int {
-            contadorExercicioTreino++
-            return contadorExercicioTreino
-        }
     }
 }

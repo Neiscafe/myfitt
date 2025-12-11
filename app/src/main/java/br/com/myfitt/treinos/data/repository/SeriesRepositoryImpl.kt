@@ -2,40 +2,33 @@ package br.com.myfitt.treinos.data.repository
 
 import br.com.myfitt.common.domain.Resultado
 import br.com.myfitt.common.domain.SerieExercicio
+import br.com.myfitt.common.domain.wrapSuspend
+import br.com.myfitt.treinos.data.dao.SerieExercicioDao
+import br.com.myfitt.treinos.data.mappers.toDomain
+import br.com.myfitt.treinos.data.mappers.toEntity
 import br.com.myfitt.treinos.domain.repository.SeriesRepository
-import kotlinx.coroutines.delay
 
-class SeriesRepositoryImpl : SeriesRepository {
-    private val series: MutableList<SerieExercicio> = mutableListOf()
-    private val seriesIndex = mutableMapOf<Int, Int>()
+class SeriesRepositoryImpl(val seriesDao: SerieExercicioDao) : SeriesRepository {
     override suspend fun todasDoTreino(treinoId: Int): Resultado<List<SerieExercicio>> {
-        return Resultado.Sucesso(series)
+        return wrapSuspend { seriesDao.listaTreino(treinoId).toDomain() }
     }
 
     override suspend fun lista(exercicioTreinoId: Int): Resultado<List<SerieExercicio>> {
-        delay(500)
-        return Resultado.Sucesso(series)
+        return wrapSuspend { seriesDao.lista(exercicioTreinoId).toDomain() }
     }
 
 
     override suspend fun cria(serie: SerieExercicio): Resultado<List<SerieExercicio>> {
-        delay(500)
-        val serieId = incrementaSequencia()
-        series.add(serie.copy(serieId = serieId))
-        seriesIndex[serieId] = series.size - 1
-        return Resultado.Sucesso(series.filter { it.exercicioTreinoId == serie.exercicioTreinoId })
+        return wrapSuspend {
+            seriesDao.cria(serie.toEntity())
+            seriesDao.lista(serie.exercicioTreinoId).toDomain()
+        }
     }
 
     override suspend fun altera(alterada: SerieExercicio): Resultado<List<SerieExercicio>> {
-        series[seriesIndex[alterada.serieId]!!] = alterada
-        return Resultado.Sucesso(series.filter { it.exercicioTreinoId==alterada.exercicioTreinoId })
-    }
-
-    companion object {
-        private var sequenciaSeries = 0
-        private fun incrementaSequencia(): Int {
-            sequenciaSeries++
-            return sequenciaSeries
+        return wrapSuspend {
+            seriesDao.altera(alterada.toEntity())
+            seriesDao.lista(alterada.exercicioTreinoId).toDomain()
         }
     }
 }

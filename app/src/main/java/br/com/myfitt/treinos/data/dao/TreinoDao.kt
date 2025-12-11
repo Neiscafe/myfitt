@@ -1,8 +1,31 @@
 package br.com.myfitt.treinos.data.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Update
+import br.com.myfitt.treinos.data.entities.TreinoEntity
 
 @Dao
 interface TreinoDao {
-
+    @Insert
+    suspend fun insere(treino: TreinoEntity): Long
+    @Query("""
+        SELECT
+        *
+        FROM treinos
+        WHERE treinoId = :treinoId
+    """)
+    suspend fun busca(treinoId: Int): TreinoEntity
+    @Update
+    suspend fun altera(treino: TreinoEntity)
+    @Query("""
+        SELECT
+            *
+        FROM
+            treinos
+        LIMIT :tamPag
+        OFFSET :tamPag*(:pag-1)
+    """)
+    suspend fun lista(tamPag: Int, pag: Int): List<TreinoEntity>
 }

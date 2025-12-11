@@ -37,7 +37,7 @@ class ListaTreinoViewModel(
         buscaTreinos()
     }
 
-    fun limpaEventos(){
+    fun limpaEventos() {
         _state.update { it.copy(erro = null) }
     }
 
@@ -76,11 +76,11 @@ class ListaTreinoViewModel(
                 return@startIO
             }
             val tipoExercicios = result2.dataOrNull!!
-            val itensTransformados = treinos.map {
+            val itensTransformados = tipoExercicios.map {
                 ListaTreinoModel(
-                    it,
-                    tipoExercicios.filter { (treinoId, _) -> treinoId == it.treinoId }
-                        .map { it.second })
+                    treino = result1.dataOrNull?.firstOrNull { it2 -> it.treinoId == it2.treinoId }!!,
+                    tipoExercicios = it.tipoExercicios
+                )
             }
             _state.update {
                 it.copy(

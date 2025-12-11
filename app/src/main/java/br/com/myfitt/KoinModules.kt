@@ -1,5 +1,11 @@
 package br.com.myfitt
 
+import br.com.myfitt.common.data.AppDatabase
+import br.com.myfitt.treinos.data.dao.ExercicioDao
+import br.com.myfitt.treinos.data.dao.ExercicioTreinoDao
+import br.com.myfitt.treinos.data.dao.SerieExercicioDao
+import br.com.myfitt.treinos.data.dao.TipoExercicioDao
+import br.com.myfitt.treinos.data.dao.TreinoDao
 import br.com.myfitt.treinos.data.repository.ExercicioRepositoryImpl
 import br.com.myfitt.treinos.data.repository.ExercicioTreinoRepositoryImpl
 import br.com.myfitt.treinos.data.repository.SeriesRepositoryImpl
@@ -24,17 +30,24 @@ import org.koin.core.scope.Scope
 import org.koin.dsl.module
 
 val databaseModule = module {
-
+    single<AppDatabase> {
+        androidApplication().deleteDatabase("AppDatabase.db")
+        AppDatabase.build(androidApplication()).build()
+    }
 }
 val daoModule = module {
-
+    single<TreinoDao> { get<AppDatabase>().treinoDao() }
+    single<TipoExercicioDao> { get<AppDatabase>().tipoExercicioDao() }
+    single<SerieExercicioDao> { get<AppDatabase>().serieExercicioDao() }
+    single<ExercicioDao> { get<AppDatabase>().exercicioDao() }
+    single<ExercicioTreinoDao> { get<AppDatabase>().exercicioTreinoDao() }
 }
 val repositoryModule = module {
-    single<ExercicioTreinoRepository> { ExercicioTreinoRepositoryImpl() }
-    single<ExercicioRepository> { ExercicioRepositoryImpl() }
-    single<TreinoRepository> { TreinoRepositoryImpl() }
-    single<TipoExercicioRepository> { TipoExercicioRepositoryImpl() }
-    single<SeriesRepository> { SeriesRepositoryImpl() }
+    single<ExercicioTreinoRepository> { ExercicioTreinoRepositoryImpl(get()) }
+    single<ExercicioRepository> { ExercicioRepositoryImpl(get()) }
+    single<TreinoRepository> { TreinoRepositoryImpl(get()) }
+    single<TipoExercicioRepository> { TipoExercicioRepositoryImpl(get()) }
+    single<SeriesRepository> { SeriesRepositoryImpl(get()) }
 }
 val facadeModule = module {
     single { CronometroFacade(application.appScope) }
@@ -43,7 +56,7 @@ val facadeModule = module {
 val viewModelModule = module {
     viewModel { ExerciciosTreinoViewModel(it[0], get(), get(), get()) }
     viewModel { ListaTreinoViewModel(get(), get()) }
-    viewModel { DetalhesExercicioViewModel(it[0],get()) }
+    viewModel { DetalhesExercicioViewModel(it[0], get()) }
     viewModel { ListaExerciciosViewModel(get()) }
     viewModel { MenuPrincipalViewModel(get()) }
     viewModel { SeriesExercicioViewModel(it[0], get(), get(), get(), get()) }

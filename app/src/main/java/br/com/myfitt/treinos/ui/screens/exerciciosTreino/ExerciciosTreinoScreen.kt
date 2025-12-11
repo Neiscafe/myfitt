@@ -271,7 +271,7 @@ private fun ListaExercicios(
                 }, onDragEnd = {
                     if (draggingItemIndex != null) {
                         interagir(
-                            Interacao.Reposicionar(it, (draggingItemIndex ?: 0) + 1)
+                            Interacao.Reposicionar(it, (draggingItemIndex ?: 0))
                         )
                     }
                     draggingItemIndex = null
