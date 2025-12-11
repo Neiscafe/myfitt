@@ -63,30 +63,13 @@ abstract class AppDatabase : RoomDatabase() {
                     db.execSQL("INSERT INTO tipos_exercicio (descricao) VALUES ('$descricao')")
                 }
 
-                val tiposTreino = listOf(
-                    "Corpo completo",
-                    "Superiores completo",
-                    "Inferiores completo",
-                    "Empurrar",
-                    "Puxar",
-                    "Braços",
-                    "Ombros",
-                    "Braços+Ombros",
-                    "Inferiores (anterior)",
-                    "Inferiores (posterior)",
-                    "Glúteos+Coxas"
-                )
-
-//                tiposTreino.forEach { descricao ->
-//                    db.execSQL("INSERT INTO tipos_treino (descricao) VALUES ('$descricao')")
-//                }
                 db.execSQL("""
                     INSERT INTO exercicios (nome, tipoExercicioId) VALUES 
                     -- 1. QUADRICEPS
-                    ('Agachamento Livre', 1),
-                    ('Leg Press 45º', 1),
+                    ('Agachamento', 1),
+                    ('Agachamento Sumo', 1),
                     ('Cadeira Extensora', 1),
-                    ('Afundo (Passada)', 1),
+                    ('Afundo', 1),
                     ('Agachamento Hack', 1),
 
                     -- 2. POSTERIOR DE COXA
@@ -95,45 +78,51 @@ abstract class AppDatabase : RoomDatabase() {
                     ('Stiff com Barra', 2),
 
                     -- 3. GLÚTEO
-                    ('Elevação Pélvica', 3),
-                    ('Glúteo na Polia (Cabo)', 3),
+                    ('Elevacao Pelvica', 3),
+                    ('Gluteo na Polia (Cabo)', 3),
                     ('Cadeira Abdutora', 3),
 
                     -- 4. PANTURRILHAS
                     ('Panturrilha Sentado (Gêmeos)', 4),
                     ('Panturrilha no Leg Press', 4),
                     ('Panturrilha em Pé (Máquina)', 4),
+                    ('Panturrilha Hack)', 4),
 
                     -- 5. ADUTORES
                     ('Cadeira Adutora', 5),
 
                     -- 6. PEITO
-                    ('Supino Reto com Barra', 6),
-                    ('Supino Inclinado com Halteres', 6),
-                    ('Crucifixo (Peck Deck)', 6),
-                    ('Crossover Polia Alta', 6),
+                    ('Supino Reto', 6),
+                    ('Supino Reto H.', 6),
+                    ('Supino Inclinado H.', 6),
+                    ('Crucifixo', 6),
+                    ('Voador', 6),
 
                     -- 7. OMBRO
-                    ('Desenvolvimento com Halteres', 7),
-                    ('Elevação Lateral', 7),
-                    ('Elevação Frontal', 7),
+                    ('Desenvolvimento H.', 7),
+                    ('Desenvolvimento.', 7),
+                    ('Elevacao Lateral', 7),
+                    ('Elevacao Frontal', 7),
                     ('Crucifixo Inverso', 7),
 
                     -- 8. TRÍCEPS
-                    ('Tríceps Corda (Polia)', 8),
-                    ('Tríceps Testa (Barra W)', 8),
-                    ('Tríceps Francês', 8),
-                    ('Mergulho (Paralelas)', 8),
+                    ('Triceps Corda', 8),
+                    ('Triceps Pulley', 8),
+                    ('Triceps Testa ', 8),
+                    ('Triceps Frances', 8),
+                    ('Paralela' 8),
 
                     -- 9. BÍCEPS
-                    ('Rosca Direta (Barra W)', 9),
+                    ('Rosca Direta H.', 9),
+                    ('Rosca Scott H.', 9),
+                    ('Rosca Scott M.', 9),
                     ('Rosca Alternada', 9),
-                    ('Rosca Scott', 9),
-                    ('Rosca Martelo', 9),
+                    ('Rosca Martelo H.', 9),
+                    ('Rosca Martelo M.', 9),
 
                     -- 10. ANTEBRAÇO
                     ('Rosca Inversa', 10),
-                    ('Flexão de Punho', 10),
+                    ('Flexao de Punho', 10),
 
                     -- 11. ABDÔMEN
                     ('Abdominal Supra', 11),
@@ -143,11 +132,12 @@ abstract class AppDatabase : RoomDatabase() {
                     -- 12. TRAPÉZIO
                     ('Encolhimento com Halteres', 12),
                     ('Remada Alta', 12),
+                    ('Remada Curvada', 12),
 
                     -- 13. DORSAL
-                    ('Puxada Alta (Frente)', 13),
-                    ('Remada Curvada', 13),
-                    ('Remada Baixa (Triângulo)', 13),
+                    ('Puxada Alta Aberta', 13),
+                    ('Puxada Alta Fechada', 13),
+                    ('Remada Baixa', 13),
                     ('Pulldown', 13),
 
                     -- 14. LOMBAR

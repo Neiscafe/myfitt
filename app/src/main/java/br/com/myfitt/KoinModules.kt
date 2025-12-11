@@ -31,7 +31,7 @@ import org.koin.dsl.module
 
 val databaseModule = module {
     single<AppDatabase> {
-        androidApplication().deleteDatabase("AppDatabase.db")
+//        androidApplication().deleteDatabase("AppDatabase.db")
         AppDatabase.build(androidApplication()).build()
     }
 }
