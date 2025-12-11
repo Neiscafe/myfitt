@@ -110,7 +110,7 @@ abstract class AppDatabase : RoomDatabase() {
                     ('Triceps Pulley', 8),
                     ('Triceps Testa ', 8),
                     ('Triceps Frances', 8),
-                    ('Paralela' 8),
+                    ('Paralela', 8),
 
                     -- 9. BÍCEPS
                     ('Rosca Direta H.', 9),
