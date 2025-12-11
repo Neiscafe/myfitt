@@ -6,6 +6,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -118,9 +119,16 @@ fun SeriesExercicioScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val cronometroState by viewModel.cronometroState.collectAsStateWithLifecycle()
     var exibeDialogFinalizaSerie by remember { mutableStateOf(false) }
+    BackHandler {
+        if (!state.carregando && !cronometroState.serieAtiva) {
+            popBackstack()
+        }
+    }
     Tela(
         irParaEditarSeries = irParaEditarSeries,
-        popBackstack = popBackstack,
+        popBackstack = {
+            !state.carregando && !cronometroState.serieAtiva && popBackstack()
+        },
         resetaEventos = viewModel::resetaEventos,
         pesoMudou = viewModel::pesoMudou,
         iniciaSerie = viewModel::inicioExecucao,

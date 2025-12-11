@@ -9,6 +9,7 @@ import br.com.myfitt.common.domain.onSucesso
 import br.com.myfitt.treinos.domain.repository.ExercicioRepository
 import br.com.myfitt.treinos.domain.repository.ExercicioTreinoRepository
 import br.com.myfitt.treinos.domain.repository.SeriesRepository
+import br.com.myfitt.treinos.domain.repository.TreinoRepository
 import br.com.myfitt.treinos.ui.CronometroFacade
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +27,7 @@ class SeriesExercicioViewModel(
     private val cronometroFacade: CronometroFacade,
     private val exercicioTreinoRepository: ExercicioTreinoRepository,
     private val exercicioRepository: ExercicioRepository,
+    private val treinoRepository: TreinoRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(SeriesExercicioState())
     val state = _state.asStateFlow()
@@ -40,6 +42,7 @@ class SeriesExercicioViewModel(
     private var _exercicioTreino: ExercicioTreino? = null
     val exercicioTreino get() = _exercicioTreino!!
     private val dadosIniciaisDeferred: Deferred<Boolean>
+    private var primeiroExercicio = false
 
     init {
         dadosIniciaisDeferred = viewModelScope.async(Dispatchers.IO) {
@@ -72,6 +75,7 @@ class SeriesExercicioViewModel(
                     return@async false
                 }
                 val seriesDoTreino = seriesResult.dataOrNull!!
+                primeiroExercicio = seriesDoTreino.isEmpty()
                 val outroExercicioEmAndamento =
                     seriesDoTreino.firstOrNull { it.exercicioTreinoId != exercicioTreinoId && it.serieEmAndamento }
                 val emAndamentoExercicio = seriesDoExercicio!!.firstOrNull { it.serieEmAndamento }
@@ -92,8 +96,8 @@ class SeriesExercicioViewModel(
         }
     }
 
-    fun atualiza(exercicio: Exercicio){
-        _state.update { it.copy(observacaoExercicio = exercicio.observacao?:"") }
+    fun atualiza(exercicio: Exercicio) {
+        _state.update { it.copy(observacaoExercicio = exercicio.observacao ?: "") }
     }
 
     private suspend fun nomeObservacaoExercicio(): Boolean {
@@ -145,9 +149,7 @@ class SeriesExercicioViewModel(
             val serieExercicio = serieExercicioFacade.repeticoes(repeticoes).get()
             val result = seriesRepository.altera(serieExercicio)
             serieExercicioFacade = SerieExercicioFacade.iniciar(
-                exercicioTreino.exercicioId,
-                exercicioTreinoId,
-                exercicioTreino.treinoId
+                exercicioTreino.exercicioId, exercicioTreinoId, exercicioTreino.treinoId
             ).descanso(serieExercicio.dhFimExecucao!!)
             _state.update {
                 it.copy(
@@ -163,6 +165,21 @@ class SeriesExercicioViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             if (!dadosIniciaisDeferred.await()) {
                 return@launch
+            }
+            if (primeiroExercicio) {
+                launch {
+                    val buscaTreinoResult = treinoRepository.busca(exercicioTreino.treinoId)
+                    buscaTreinoResult.erroOrNull?.let {
+                        _state.update { it2 -> it2.copy(erro = it) }
+                        return@launch
+                    }
+                    val atualizaTreinoResult =
+                        treinoRepository.altera(buscaTreinoResult.dataOrNull!!.copy(dhInicio = LocalDateTime.now()))
+                    atualizaTreinoResult.erroOrNull?.let {
+                        _state.update { it2 -> it2.copy(erro = it) }
+                        return@launch
+                    }
+                }
             }
             serieExercicioFacade.execucao(pesoKg).get().let {
                 _state.update { it.copy(carregando = true) }

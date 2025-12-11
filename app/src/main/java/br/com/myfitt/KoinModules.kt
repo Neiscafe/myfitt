@@ -59,7 +59,11 @@ val viewModelModule = module {
     viewModel { DetalhesExercicioViewModel(it[0], get()) }
     viewModel { ListaExerciciosViewModel(get()) }
     viewModel { MenuPrincipalViewModel(get()) }
-    viewModel { SeriesExercicioViewModel(it[0], get(), get(), get(), get()) }
+    viewModel {
+        SeriesExercicioViewModel(
+            it[0], get(), get(), get(), get(), get()
+        )
+    }
 }
 val Scope.application get() = (androidApplication() as MyFittApplication)
 val appModule = listOf(repositoryModule, daoModule, databaseModule, viewModelModule, facadeModule)
