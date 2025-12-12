@@ -17,6 +17,6 @@ data class SerieExercicio(
     val repeticoes: Int,
     val finalizado: Boolean
 ){
-    val serieEmAndamento get()= this.dhFimExecucao==null
+    val serieEmAndamento get()= this.dhInicioExecucao!=null && this.dhFimExecucao==null
     val descansando get() = this.dhInicioExecucao==null
 }

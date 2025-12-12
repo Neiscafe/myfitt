@@ -60,6 +60,7 @@ class MainActivity : ComponentActivity() {
                         SeriesExercicioNavigation.composeNavigation(this, navController)
                         ListaExerciciosNavigation.composeNavigation(this, navController)
                         ListaTreinoNavigation.composeNavigation(this, navController)
+                        EditarSerieNavigation.composeNavigation(this, navController)
                         DetalhesExercicioNavigation.composeNavigation(this, navController)
                     }
                 }

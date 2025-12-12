@@ -19,6 +19,7 @@ import br.com.myfitt.treinos.domain.repository.TipoExercicioRepository
 import br.com.myfitt.treinos.domain.repository.TreinoRepository
 import br.com.myfitt.treinos.ui.CronometroFacade
 import br.com.myfitt.treinos.ui.screens.detalhesExercicio.DetalhesExercicioViewModel
+import br.com.myfitt.treinos.ui.screens.editarSerie.EditarSerieViewModel
 import br.com.myfitt.treinos.ui.screens.exerciciosTreino.ExerciciosTreinoViewModel
 import br.com.myfitt.treinos.ui.screens.listaExercicios.ListaExerciciosViewModel
 import br.com.myfitt.treinos.ui.screens.listaTreinos.ListaTreinoViewModel
@@ -51,14 +52,15 @@ val repositoryModule = module {
 }
 val facadeModule = module {
     single { CronometroFacade(application.appScope) }
-    single { TreinoFacade(get(), get(), get()) }
+    single { TreinoFacade(get(), get(), get(), get()) }
 }
 val viewModelModule = module {
+    viewModel { EditarSerieViewModel(it[0], get()) }
     viewModel { ExerciciosTreinoViewModel(it[0], get(), get(), get()) }
     viewModel { ListaTreinoViewModel(get(), get()) }
     viewModel { DetalhesExercicioViewModel(it[0], get()) }
     viewModel { ListaExerciciosViewModel(get()) }
-    viewModel { MenuPrincipalViewModel(get()) }
+    viewModel { MenuPrincipalViewModel(get(), get()) }
     viewModel {
         SeriesExercicioViewModel(
             it[0], get(), get(), get(), get(), get()

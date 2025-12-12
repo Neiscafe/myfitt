@@ -5,19 +5,19 @@ import java.time.Duration
 import java.time.LocalDateTime
 import kotlin.math.abs
 
-class SerieExercicioFacade private constructor() {
+class GerenciaSerieTreino private constructor() {
     companion object {
-        fun iniciar(
+        fun criar(
             exercicioId: Int, exercicioTreinoId: Int, treinoId: Int
-        ): SerieExercicioFacade {
-            val builder = SerieExercicioFacade()
+        ): GerenciaSerieTreino {
+            val builder = GerenciaSerieTreino()
             return builder.iniciar(exercicioId, exercicioTreinoId, treinoId, 0)
         }
 
-        fun iniciar(
+        fun continuar(
             serieExercicio: SerieExercicio
-        ): SerieExercicioFacade {
-            val builder = SerieExercicioFacade()
+        ): GerenciaSerieTreino {
+            val builder = GerenciaSerieTreino()
             builder.iniciar(
                 serieExercicio.exercicioId,
                 serieExercicio.exercicioTreinoId,
@@ -41,14 +41,14 @@ class SerieExercicioFacade private constructor() {
     }
 
     fun get() = instancia.copy()
-    fun descanso(dhInicioDescanso: LocalDateTime = LocalDateTime.now()): SerieExercicioFacade {
+    fun descanso(dhInicioDescanso: LocalDateTime = LocalDateTime.now()): GerenciaSerieTreino {
         _instancia = _instancia?.copy(
             dhInicioDescanso = dhInicioDescanso
         )
         return this
     }
 
-    fun fimExecucao(dhFimExecucao: LocalDateTime = LocalDateTime.now()): SerieExercicioFacade {
+    fun fimExecucao(dhFimExecucao: LocalDateTime = LocalDateTime.now()): GerenciaSerieTreino {
         val now = dhFimExecucao
         _instancia = _instancia?.copy(
             dhFimExecucao = now,
@@ -57,7 +57,7 @@ class SerieExercicioFacade private constructor() {
         return this
     }
 
-    fun serieId(serieId: Int): SerieExercicioFacade {
+    fun serieId(serieId: Int): GerenciaSerieTreino {
         _instancia = _instancia?.copy(
             serieId = serieId
         )
@@ -67,7 +67,7 @@ class SerieExercicioFacade private constructor() {
     fun execucao(
         pesoKg: Float,
         dhInicioExecucao: LocalDateTime = LocalDateTime.now()
-    ): SerieExercicioFacade {
+    ): GerenciaSerieTreino {
         _instancia = _instancia?.copy(
             pesoKg = pesoKg,
             dhFimDescanso = dhInicioExecucao,
@@ -86,7 +86,7 @@ class SerieExercicioFacade private constructor() {
     private var _instancia: SerieExercicio? = null
     private fun iniciar(
         exercicioId: Int, exercicioTreinoId: Int, treinoId: Int, serieId: Int
-    ): SerieExercicioFacade {
+    ): GerenciaSerieTreino {
         _instancia = SerieExercicio(
             serieId = serieId,
             exercicioTreinoId = exercicioTreinoId,
@@ -105,7 +105,7 @@ class SerieExercicioFacade private constructor() {
         return this
     }
 
-    fun repeticoes(repeticoes: Int): SerieExercicioFacade {
+    fun repeticoes(repeticoes: Int): GerenciaSerieTreino {
         _instancia = _instancia?.copy(
             repeticoes = repeticoes, finalizado = true
         )

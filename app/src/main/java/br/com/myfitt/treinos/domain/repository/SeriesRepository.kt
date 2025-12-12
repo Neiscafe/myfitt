@@ -8,4 +8,5 @@ interface SeriesRepository {
     suspend fun lista(exercicioTreinoId: Int): Resultado<List<SerieExercicio>>
     suspend fun cria(serie: SerieExercicio): Resultado<List<SerieExercicio>>
     suspend fun altera(alterada: SerieExercicio): Resultado<List<SerieExercicio>>
+    suspend fun busca(serieId: Int): Resultado<SerieExercicio>
 }

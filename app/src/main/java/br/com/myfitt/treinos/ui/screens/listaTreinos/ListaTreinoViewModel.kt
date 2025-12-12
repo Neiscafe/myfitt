@@ -33,7 +33,6 @@ class ListaTreinoViewModel(
     val state = _state.asStateFlow()
 
     init {
-//        carregaFiltrosTipos()
         buscaTreinos()
     }
 

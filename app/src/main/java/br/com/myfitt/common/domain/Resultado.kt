@@ -12,13 +12,20 @@ sealed class Resultado<out T> {
     val erroOrNull get() = (this as? Erro)?.erro
     val dataOrNull get() = (this as? Sucesso)?.data
 }
-suspend fun <T> wrapSuspend(block: suspend () -> T): Resultado<T> {
+
+suspend fun <T> wrapSuspend(
+    labelNullPointer: String? = null,
+    block: suspend () -> T
+): Resultado<T> {
     val result = runCatching {
         block()
     }
     return result.getOrNull()?.let {
         Resultado.Sucesso(it)
     } ?: run {
+        if (result.exceptionOrNull() is NullPointerException && labelNullPointer != null) {
+            return Resultado.Erro("$labelNullPointer não encontrado!")
+        }
         LogTool.log(result.exceptionOrNull()!!)
         Resultado.Erro(result.exceptionOrNull()?.message)
     }

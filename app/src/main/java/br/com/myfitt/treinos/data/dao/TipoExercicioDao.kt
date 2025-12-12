@@ -32,5 +32,5 @@ interface TipoExercicioDao {
             a.treinoId in (:treinoIds)        
     """
     )
-    suspend fun doTreino(treinoIds: String): List<TipoExercicioTreinoDto>
+    suspend fun doTreino(vararg treinoIds: Int): List<TipoExercicioTreinoDto>
 }

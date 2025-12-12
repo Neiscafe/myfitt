@@ -3,6 +3,8 @@ package br.com.myfitt.treinos.ui.screens.menuPrincipal
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.myfitt.common.domain.Treino
+import br.com.myfitt.treinos.domain.facade.TreinoFacade
+import br.com.myfitt.treinos.domain.facade.TreinoFacadeState
 import br.com.myfitt.treinos.domain.repository.TreinoRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -12,11 +14,23 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class MenuPrincipalViewModel(private val treinoRepository: TreinoRepository) : ViewModel() {
+class MenuPrincipalViewModel(
+    private val treinoRepository: TreinoRepository,
+    val treinoFacade: TreinoFacade,
+) : ViewModel() {
     private val _state = MutableStateFlow(MenuPrincipalState())
     val state = _state.asStateFlow()
     private val _eventos = Channel<MenuPrincipalEvents>()
     val eventos = _eventos.receiveAsFlow()
+    private val _treinoFacadeState = MutableStateFlow<TreinoFacadeState?>(null)
+    val treinoAtualState = _treinoFacadeState.asStateFlow()
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            _treinoFacadeState.value = treinoFacade.buscarAtivo().dataOrNull
+        }
+    }
+
     fun novoTreino() {
         viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(carregando = true) }

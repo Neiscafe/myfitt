@@ -36,4 +36,8 @@ class TreinoRepositoryImpl(private val treinoDao: TreinoDao) : TreinoRepository 
     override suspend fun altera(novo: Treino): Resultado<Treino> {
         return wrapSuspend { treinoDao.altera(novo.toEntity()) }.map { novo }
     }
+
+    override suspend fun ativo(): Resultado<Treino> {
+        return wrapSuspend() { treinoDao.ativo().toDomain() }
+    }
 }

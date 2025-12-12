@@ -8,4 +8,5 @@ interface ExercicioRepository {
     suspend fun lista(pesquisa: String): Resultado<List<Exercicio>>
     suspend fun busca(exercicioId: Int): Resultado<Exercicio>
     suspend fun altera(novo: Exercicio): Resultado<Exercicio>
+    suspend fun doTreino(treinoId: Int): Resultado<List<Exercicio>>
 }

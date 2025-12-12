@@ -4,7 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.myfitt.common.domain.Exercicio
 import br.com.myfitt.common.domain.ExercicioTreino
-import br.com.myfitt.common.domain.builder.SerieExercicioFacade
+import br.com.myfitt.common.domain.SerieExercicio
+import br.com.myfitt.common.domain.builder.GerenciaSerieTreino
 import br.com.myfitt.common.domain.onSucesso
 import br.com.myfitt.treinos.domain.repository.ExercicioRepository
 import br.com.myfitt.treinos.domain.repository.ExercicioTreinoRepository
@@ -38,7 +39,7 @@ class SeriesExercicioViewModel(
     val cronometroState = cronometroFacade.ticksCronometro
     private var pesoKg: Float = 0f
     private var repeticoes = 0
-    private lateinit var serieExercicioFacade: SerieExercicioFacade
+    private lateinit var gerenciaSerieTreino: GerenciaSerieTreino
     private var _exercicioTreino: ExercicioTreino? = null
     val exercicioTreino get() = _exercicioTreino!!
     private val dadosIniciaisDeferred: Deferred<Boolean>
@@ -78,13 +79,21 @@ class SeriesExercicioViewModel(
                 primeiroExercicio = seriesDoTreino.isEmpty()
                 val outroExercicioEmAndamento =
                     seriesDoTreino.firstOrNull { it.exercicioTreinoId != exercicioTreinoId && it.serieEmAndamento }
-                val emAndamentoExercicio = seriesDoExercicio!!.firstOrNull { it.serieEmAndamento }
+                val serieDoExercicioEmAndamento =
+                    seriesDoExercicio?.firstOrNull { it.serieEmAndamento || it.descansando }
                 if (outroExercicioEmAndamento != null) {
                     _state.update { it.copy(erro = "Uma série já está em andamento: finalize ela para poder continuar.") }
-                } else if (emAndamentoExercicio != null) {
-                    serieExercicioFacade = SerieExercicioFacade.iniciar(emAndamentoExercicio)
+                } else if (serieDoExercicioEmAndamento != null) {
+                    gerenciaSerieTreino = GerenciaSerieTreino.continuar(serieDoExercicioEmAndamento)
+                    gerenciaSerieTreino.get().let {
+                        if (it.serieEmAndamento) {
+                            cronometroFacade.iniciaExercicio(it.dhInicioExecucao!!)
+                        } else if (it.descansando && it.dhInicioDescanso != null) {
+                            cronometroFacade.iniciaDescanso(it.dhInicioDescanso)
+                        }
+                    }
                 } else {
-                    serieExercicioFacade = SerieExercicioFacade.iniciar(
+                    gerenciaSerieTreino = GerenciaSerieTreino.criar(
                         exercicioId = exercicioTreino.exercicioId,
                         exercicioTreinoId = exercicioTreinoId,
                         treinoId = exercicioTreino.treinoId,
@@ -127,7 +136,7 @@ class SeriesExercicioViewModel(
                 return@launch
             }
             val fimUltimaSerie = LocalDateTime.now()
-            val serie = serieExercicioFacade.fimExecucao(fimUltimaSerie).get()
+            val serie = gerenciaSerieTreino.fimExecucao(fimUltimaSerie).get()
             _state.update { it.copy(carregando = true) }
             val result = seriesRepository.altera(serie)
             _state.update {
@@ -146,9 +155,9 @@ class SeriesExercicioViewModel(
     fun informaRepeticoes() {
         viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(carregando = true) }
-            val serieExercicio = serieExercicioFacade.repeticoes(repeticoes).get()
+            val serieExercicio = gerenciaSerieTreino.repeticoes(repeticoes).get()
             val result = seriesRepository.altera(serieExercicio)
-            serieExercicioFacade = SerieExercicioFacade.iniciar(
+            gerenciaSerieTreino = GerenciaSerieTreino.criar(
                 exercicioTreino.exercicioId, exercicioTreinoId, exercicioTreino.treinoId
             ).descanso(serieExercicio.dhFimExecucao!!)
             _state.update {
@@ -181,7 +190,7 @@ class SeriesExercicioViewModel(
                     }
                 }
             }
-            serieExercicioFacade.execucao(pesoKg).get().let {
+            gerenciaSerieTreino.execucao(pesoKg).get().let {
                 _state.update { it.copy(carregando = true) }
                 val result = seriesRepository.cria(it)
                 _state.update {
@@ -193,7 +202,7 @@ class SeriesExercicioViewModel(
                 }
                 result.onSucesso { seriesExercicio ->
                     val adicionada = seriesExercicio.last()
-                    serieExercicioFacade.serieId(adicionada.serieId)
+                    gerenciaSerieTreino.serieId(adicionada.serieId)
                     cronometroFacade.iniciaExercicio(it.dhInicioExecucao!!)
                 }
             }
@@ -211,5 +220,13 @@ class SeriesExercicioViewModel(
 
     fun resetaEventos() {
         _state.update { it.resetaEventos() }
+    }
+
+    fun atualizaEstado(seriesDoExercicio: List<SerieExercicio>) {
+        _state.update {
+            it.copy(
+                series = seriesDoExercicio,
+            )
+        }
     }
 }

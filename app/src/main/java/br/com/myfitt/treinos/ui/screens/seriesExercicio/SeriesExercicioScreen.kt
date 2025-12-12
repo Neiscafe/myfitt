@@ -2,11 +2,13 @@
 
 package br.com.myfitt.treinos.ui.screens.seriesExercicio
 
+import EditarSerieNavigation
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,7 +29,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
@@ -76,6 +77,7 @@ import br.com.myfitt.common.domain.SerieExercicio
 import br.com.myfitt.treinos.ui.TickCronometro
 import br.com.myfitt.treinos.ui.screens.detalhesExercicio.DetalhesExercicioNavigation
 import br.com.myfitt.treinos.ui.screens.detalhesExercicio.DetalhesExercicioViewModel
+import br.com.myfitt.treinos.ui.screens.editarSerie.EditarSerieViewModel
 import br.com.myfitt.treinos.ui.theme.MyFittTheme
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -97,7 +99,9 @@ object SeriesExercicioNavigation {
             val exercicioSerieId = getArg(it)
             SeriesExercicioScreen(
                 exercicioTreinoId = exercicioSerieId,
-                irParaEditarSeries = {},
+                irParaEditarSerie = {
+                    navController.navigate(EditarSerieNavigation.route + "/${it.serieId}")
+                },
                 popBackstack = navController::popBackStack,
                 irParaDetalhesExercicio = {
                     navController.navigate(DetalhesExercicioNavigation.route + "/${it}")
@@ -110,9 +114,9 @@ object SeriesExercicioNavigation {
 @Composable
 fun SeriesExercicioScreen(
     exercicioTreinoId: Int,
-    irParaEditarSeries: () -> Unit,
-    irParaDetalhesExercicio: (Int) -> Unit,
-    popBackstack: () -> Boolean
+    irParaEditarSerie: (SerieExercicio) -> Unit = {},
+    irParaDetalhesExercicio: (Int) -> Unit = {},
+    popBackstack: () -> Boolean = { true }
 ) {
     val viewModel: SeriesExercicioViewModel =
         koinViewModel(parameters = { parametersOf(exercicioTreinoId) })
@@ -125,7 +129,13 @@ fun SeriesExercicioScreen(
         }
     }
     Tela(
-        irParaEditarSeries = irParaEditarSeries,
+        irParaEditarSerie = {
+            EditarSerieViewModel.setCallback {
+                popBackstack()
+                viewModel.atualizaEstado(it)
+            }
+            irParaEditarSerie(it)
+        },
         popBackstack = {
             !state.carregando && !cronometroState.serieAtiva && popBackstack()
         },
@@ -281,15 +291,15 @@ internal fun Context.findActivity(): Activity {
 
 @Composable
 private fun Tela(
-    irParaEditarSeries: () -> Unit,
-    popBackstack: () -> Boolean,
-    resetaEventos: () -> Unit,
-    pesoMudou: (String) -> Unit,
-    iniciaSerie: () -> Unit,
-    finalizaSerie: () -> Unit,
-    irParaDetalhesExercicio: () -> Unit,
     cronometroState: TickCronometro,
-    state: SeriesExercicioState
+    state: SeriesExercicioState,
+    popBackstack: () -> Boolean = { true },
+    resetaEventos: () -> Unit = {},
+    pesoMudou: (String) -> Unit = {},
+    iniciaSerie: () -> Unit = {},
+    finalizaSerie: () -> Unit = {},
+    irParaDetalhesExercicio: () -> Unit = {},
+    irParaEditarSerie: (SerieExercicio) -> Unit = {},
 ) {
     var pesoText by remember { mutableStateOf(TextFieldValue("10", TextRange(2))) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -302,13 +312,6 @@ private fun Tela(
                 Icon(
                     Icons.AutoMirrored.Default.ArrowBack,
                     "Voltar para exercícios",
-                )
-            }
-        }, actions = {
-            IconButton(onClick = irParaEditarSeries) {
-                Icon(
-                    Icons.Outlined.Edit,
-                    "Editar séries",
                 )
             }
         })
@@ -349,7 +352,9 @@ private fun Tela(
                         }
                     }
                     itemsIndexed(items = state.series, key = { i, it -> it.serieId }) { i, it ->
-                        itemResumoSeries(i, it)
+                        itemResumoSeries(i, it) {
+                            irParaEditarSerie(it)
+                        }
                     }
                 }
             }
@@ -519,9 +524,14 @@ private fun Tela(
 }
 
 @Composable
-private fun itemResumoSeries(i: Int, it: SerieExercicio) {
+private fun itemResumoSeries(
+    i: Int, it: SerieExercicio, onClick: () -> Unit = {}
+) {
     OutlinedCard(
-        shape = RoundedCornerShape(0.dp), modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(0.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
     ) {
         Row(
             modifier = Modifier
@@ -553,7 +563,7 @@ private fun itemResumoSeries(i: Int, it: SerieExercicio) {
 private fun SeriesExercicioScreenPreview() {
     MyFittTheme {
         Tela(
-            irParaEditarSeries = {},
+            irParaEditarSerie = {},
             popBackstack = { true },
             resetaEventos = {},
             pesoMudou = {},

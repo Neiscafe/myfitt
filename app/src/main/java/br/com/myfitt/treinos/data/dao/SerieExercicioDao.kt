@@ -38,4 +38,14 @@ interface SerieExercicioDao {
 
     @Update
     suspend fun altera(toEntity: SerieExercicioEntity)
+
+    @Query("""
+        SELECT
+            *
+        FROM
+            series_exercicio
+        WHERE
+            serieId = :serieId
+    """)
+    suspend fun busca(serieId: Int): SerieExercicioEntity
 }

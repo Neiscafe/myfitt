@@ -22,4 +22,8 @@ class ExercicioRepositoryImpl(val exercicioDao: ExercicioDao) : ExercicioReposit
     override suspend fun altera(novo: Exercicio): Resultado<Exercicio> {
         return wrapSuspend { exercicioDao.altera(novo.toEntity()) }.map { novo }
     }
+
+    override suspend fun doTreino(treinoId: Int): Resultado<List<Exercicio>> {
+        return wrapSuspend { exercicioDao.doTreino(treinoId).toDomain() }
+    }
 }

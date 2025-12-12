@@ -20,7 +20,7 @@ class TipoExercicioRepositoryImpl(val tipoExercicioDao: TipoExercicioDao) :
     override suspend fun doTreino(treinoIds: List<Int>): Resultado<List<TipoExercicioTreino>> {
         return wrapSuspend {
             val a = mutableMapOf<Int, List<TipoExercicio>>()
-            tipoExercicioDao.doTreino(treinoIds.joinToString()).forEach {
+            tipoExercicioDao.doTreino(*(treinoIds.toIntArray())).forEach {
                 a[it.treinoId] = (a[it.treinoId] ?: emptyList()).plus(
                     TipoExercicio(
                         it.tipoExercicioId, it.descricao

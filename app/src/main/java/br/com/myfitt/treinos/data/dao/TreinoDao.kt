@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import br.com.myfitt.common.domain.Treino
 import br.com.myfitt.treinos.data.entities.TreinoEntity
 
 @Dao
@@ -14,7 +15,8 @@ interface TreinoDao {
         SELECT
         *
         FROM treinos
-        WHERE treinoId = :treinoId
+        WHERE treinoId = :treinoId AND dhInicio is not null
+        ORDER BY dhInicio
     """)
     suspend fun busca(treinoId: Int): TreinoEntity
     @Update
@@ -28,4 +30,14 @@ interface TreinoDao {
         OFFSET :tamPag*(:pag-1)
     """)
     suspend fun lista(tamPag: Int, pag: Int): List<TreinoEntity>
+    @Query("""
+        SELECT
+            *
+        FROM
+            treinos
+        WHERE
+            dhFim is null and dhInicio is not null
+        LIMIT 1
+    """)
+    suspend fun ativo(): TreinoEntity
 }

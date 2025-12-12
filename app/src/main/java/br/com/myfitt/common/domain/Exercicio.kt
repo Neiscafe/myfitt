@@ -7,6 +7,11 @@ data class Exercicio(
     val tipoExercicioId: Int? = null,
     val tipoExercicioDescr: String? = null
 ) {
+    fun tipo(): TipoExercicio?{
+        return this.tipoExercicioId?.let{
+            TipoExercicio(it, tipoExercicioDescr!!)
+        }
+    }
     override fun toString(): String {
         return this.nome
     }

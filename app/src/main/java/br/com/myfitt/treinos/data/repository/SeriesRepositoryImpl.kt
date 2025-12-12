@@ -31,4 +31,10 @@ class SeriesRepositoryImpl(val seriesDao: SerieExercicioDao) : SeriesRepository 
             seriesDao.lista(alterada.exercicioTreinoId).toDomain()
         }
     }
+
+    override suspend fun busca(serieId: Int): Resultado<SerieExercicio> {
+        return wrapSuspend("Série") {
+            seriesDao.busca(serieId).toDomain()
+        }
+    }
 }

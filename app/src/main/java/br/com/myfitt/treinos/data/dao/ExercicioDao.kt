@@ -31,4 +31,10 @@ interface ExercicioDao {
 
     @Update
     suspend fun altera(novo: ExercicioEntity)
+
+    @Query("""
+        SELECT a.* FROM exercicios a 
+        INNER JOIN exercicios_treino b ON b.exercicioId=a.exercicioId WHERE b.treinoId=:treinoId 
+    """)
+    fun doTreino(treinoId: Int): List<ExercicioComTipoRelation>
 }

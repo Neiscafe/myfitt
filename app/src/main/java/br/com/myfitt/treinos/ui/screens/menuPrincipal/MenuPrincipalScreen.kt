@@ -2,6 +2,7 @@ package br.com.myfitt.treinos.ui.screens.menuPrincipal
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -40,6 +42,9 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import br.com.myfitt.R
+import br.com.myfitt.common.utils.printSimpleDate
+import br.com.myfitt.common.utils.printSimpleTime
+import br.com.myfitt.treinos.domain.facade.TreinoFacadeState
 import br.com.myfitt.treinos.ui.screens.exerciciosTreino.ExerciciosTreinoNavigation
 import br.com.myfitt.treinos.ui.screens.listaTreinos.ListaTreinoNavigation
 import br.com.myfitt.treinos.ui.theme.MyFittTheme
@@ -55,7 +60,9 @@ object MenuPrincipalNavigation {
         ) {
             MenuPrincipalScreen(
                 navegaNovoTreino = { navController.navigate(ExerciciosTreinoNavigation.route + "/${it}") },
-                navegaListaTreinos = { navController.navigate(ListaTreinoNavigation.route) })
+                navegaListaTreinos = { navController.navigate(ListaTreinoNavigation.route) },
+                irParaTreino = { navController.navigate(ExerciciosTreinoNavigation.route + "/${it}") },
+            )
         }
     }
 
@@ -65,9 +72,11 @@ object MenuPrincipalNavigation {
 fun MenuPrincipalScreen(
     navegaNovoTreino: (Int) -> Unit,
     navegaListaTreinos: () -> Unit,
+    irParaTreino: (Int) -> Unit,
     viewModel: MenuPrincipalViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val treinoAtualState by viewModel.treinoAtualState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(lifecycleOwner) {
         viewModel.eventos.flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.STARTED)
@@ -80,17 +89,21 @@ fun MenuPrincipalScreen(
     }
     Tela(
         state = state,
+        treinoAtualState = treinoAtualState,
         resetaEventos = viewModel::resetaEventos,
         navegaListaTreinos = navegaListaTreinos,
-        novoTreinoClick = viewModel::novoTreino
+        novoTreinoClick = viewModel::novoTreino,
+        irParaTreino = irParaTreino
     )
 }
 
 @Composable
 private fun Tela(
     state: MenuPrincipalState,
+    treinoAtualState: TreinoFacadeState? = null,
     resetaEventos: () -> Unit,
     navegaListaTreinos: () -> Unit,
+    irParaTreino: (Int) -> Unit = {},
     novoTreinoClick: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -112,6 +125,41 @@ private fun Tela(
             Spacer(modifier = Modifier.height(24.dp))
             Text("Bem-vindo!", style = MaterialTheme.typography.headlineLarge)
             Text("O que vamos treinar hoje?", style = MaterialTheme.typography.bodyLarge)
+            treinoAtualState?.let {
+                OutlinedCard(
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = { irParaTreino(it.treino.treinoId) })
+                ) {
+                    Row(Modifier.fillMaxWidth()) {
+                        Column(
+                            Modifier
+                                .padding(8.dp)
+                                .fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text("Treino em andamento")
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                it.exercicios.mapNotNull { it.tipo() }.toSet().forEach {
+                                    Text(
+                                        it.descricao,
+                                        Modifier
+                                            .background(
+                                                MaterialTheme.colorScheme.surfaceVariant,
+                                                MaterialTheme.shapes.medium
+                                            )
+                                            .padding(
+                                                8.dp, 0.dp
+                                            ),
+                                    )
+                                }
+                            }
+                            Text("Início: ${it.treino.dhInicio?.printSimpleDate()} ${it.treino.dhInicio?.printSimpleTime()}")
+                        }
+
+                    }
+                }
+            }
             Spacer(modifier = Modifier.height(24.dp))
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth()
@@ -177,6 +225,6 @@ private fun Tela(
 @Composable
 private fun MenuPrincipalScreenPreview() {
     MyFittTheme {
-        Tela(MenuPrincipalState(false, null), {}, {}, {})
+        Tela(MenuPrincipalState(false, null), treinoAtualState = null, {}, {}, {}, {})
     }
 }
