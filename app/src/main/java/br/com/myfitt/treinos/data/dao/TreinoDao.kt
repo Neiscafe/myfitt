@@ -15,10 +15,10 @@ interface TreinoDao {
         SELECT
         *
         FROM treinos
-        WHERE treinoId = :treinoId AND dhInicio is not null
+        WHERE treinoId = :treinoId
         ORDER BY dhInicio
     """)
-    suspend fun busca(treinoId: Int): TreinoEntity
+    suspend fun busca(treinoId: Int): TreinoEntity?
     @Update
     suspend fun altera(treino: TreinoEntity)
     @Query("""
@@ -39,5 +39,5 @@ interface TreinoDao {
             dhFim is null and dhInicio is not null
         LIMIT 1
     """)
-    suspend fun ativo(): TreinoEntity
+    suspend fun ativo(): TreinoEntity?
 }

@@ -3,6 +3,8 @@ package br.com.myfitt.treinos.ui.screens.menuPrincipal
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.myfitt.common.domain.Treino
+import br.com.myfitt.common.domain.onErro
+import br.com.myfitt.common.domain.onSucesso
 import br.com.myfitt.treinos.domain.facade.TreinoFacade
 import br.com.myfitt.treinos.domain.facade.TreinoFacadeState
 import br.com.myfitt.treinos.domain.repository.TreinoRepository
@@ -22,12 +24,16 @@ class MenuPrincipalViewModel(
     val state = _state.asStateFlow()
     private val _eventos = Channel<MenuPrincipalEvents>()
     val eventos = _eventos.receiveAsFlow()
-    private val _treinoFacadeState = MutableStateFlow<TreinoFacadeState?>(null)
+    private val _treinoFacadeState = MutableStateFlow(TreinoFacadeState())
     val treinoAtualState = _treinoFacadeState.asStateFlow()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            _treinoFacadeState.value = treinoFacade.buscarAtivo().dataOrNull
+            treinoFacade.buscarAtivo().onSucesso {
+                _treinoFacadeState.value = it
+            }.onErro { erro ->
+                _state.update { it.copy(erro = erro) }
+            }
         }
     }
 

@@ -20,13 +20,10 @@ suspend fun <T> wrapSuspend(
     val result = runCatching {
         block()
     }
-    return result.getOrNull()?.let {
-        Resultado.Sucesso(it)
-    } ?: run {
-        if (result.exceptionOrNull() is NullPointerException && labelNullPointer != null) {
-            return Resultado.Erro("$labelNullPointer não encontrado!")
-        }
-        LogTool.log(result.exceptionOrNull()!!)
+    return if(result.isSuccess){
+         Resultado.Sucesso(result.getOrNull()) as Resultado<T>
+    }else{
+        LogTool.log(result.exceptionOrNull()?.stackTraceToString() ?: "Exception sem stacktrace!")
         Resultado.Erro(result.exceptionOrNull()?.message)
     }
 }
@@ -35,17 +32,24 @@ inline fun <T> wrap(block: () -> T): Resultado<T> {
     val result = runCatching {
         block()
     }
-    return result.getOrNull()?.let {
-        Resultado.Sucesso(it)
-    } ?: run {
-        LogTool.log(result.exceptionOrNull()!!)
+    return if(result.isSuccess){
+        Resultado.Sucesso(result.getOrNull()) as Resultado<T>
+    }else{
+        LogTool.log(result.exceptionOrNull()?.stackTraceToString() ?: "Exception sem stacktrace!")
         Resultado.Erro(result.exceptionOrNull()?.message)
     }
 }
 
+inline fun <T> Resultado<T>.onErro(block: (String) -> Unit): Resultado<T> {
+    if (!sucesso) {
+        block(this.erroOrNull ?: "Erro desconhecido!")
+    }
+    return this
+}
+
 inline fun <T> Resultado<T>.onSucesso(block: (T) -> Unit): Resultado<T> {
     if (sucesso) {
-        block(this.dataOrNull!!)
+        block(this.dataOrNull as T)
     }
     return this
 }

@@ -29,15 +29,17 @@ class TreinoRepositoryImpl(private val treinoDao: TreinoDao) : TreinoRepository 
         }.map { treino.copy(treinoId = it.toInt()) }
     }
 
-    override suspend fun busca(treinoId: Int): Resultado<Treino> {
-        return wrapSuspend { treinoDao.busca(treinoId).toDomain() }
+    override suspend fun busca(treinoId: Int): Resultado<Treino?> {
+        return wrapSuspend { treinoDao.busca(treinoId)?.toDomain() }
     }
 
     override suspend fun altera(novo: Treino): Resultado<Treino> {
         return wrapSuspend { treinoDao.altera(novo.toEntity()) }.map { novo }
     }
 
-    override suspend fun ativo(): Resultado<Treino> {
-        return wrapSuspend() { treinoDao.ativo().toDomain() }
+    override suspend fun ativo(): Resultado<Treino?> {
+        return wrapSuspend() {
+            treinoDao.ativo()?.toDomain()
+        }
     }
 }

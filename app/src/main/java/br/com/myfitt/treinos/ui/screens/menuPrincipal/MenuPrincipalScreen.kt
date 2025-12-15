@@ -125,7 +125,10 @@ private fun Tela(
             Spacer(modifier = Modifier.height(24.dp))
             Text("Bem-vindo!", style = MaterialTheme.typography.headlineLarge)
             Text("O que vamos treinar hoje?", style = MaterialTheme.typography.bodyLarge)
-            treinoAtualState?.let {
+            treinoAtualState.let {
+                if (it?.treino == null) {
+                    return@let
+                }
                 OutlinedCard(
                     Modifier
                         .fillMaxWidth()

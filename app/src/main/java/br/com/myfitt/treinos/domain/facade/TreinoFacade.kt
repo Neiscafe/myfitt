@@ -16,10 +16,10 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 
 data class TreinoFacadeState(
-    val treino: Treino,
-    val exerciciosTreino: List<ExercicioTreino>,
-    val exercicios: List<Exercicio>,
-    val series: List<SerieExercicio>,
+    val treino: Treino? = null,
+    val exerciciosTreino: List<ExercicioTreino> = emptyList(),
+    val exercicios: List<Exercicio> = emptyList(),
+    val series: List<SerieExercicio> = emptyList(),
 ) {
     fun seriesParaExercicio(exercicioTreinoId: Int) =
         series.filter { it.exercicioTreinoId == exercicioTreinoId }
@@ -50,6 +50,9 @@ class TreinoFacade(
         if (!treino.sucesso) {
             return treino.map()
         }
+        if (treino.dataOrNull == null) {
+            return Resultado.Sucesso(TreinoFacadeState())
+        }
         val treinoId = treino.dataOrNull!!.treinoId
         val exerciciosTreino = async {
             exercicioTreinoRepository.lista(treinoId)
@@ -72,7 +75,7 @@ class TreinoFacade(
             exerciciosResult.map()
         } else Resultado.Sucesso(
             TreinoFacadeState(
-                treino = treino.dataOrNull!!,
+                treino = treino.dataOrNull,
                 exerciciosTreino = exercicioTreinoResult.dataOrNull!!,
                 series = seriesTreinoResult.dataOrNull!!,
                 exercicios = exerciciosResult.dataOrNull!!,
