@@ -45,6 +45,10 @@ class ExerciciosTreinoViewModel(
                         }
                     } ?: "Não iniciado",
                     exercicioEmAndamento = result.dataOrNull?.exerciciosTreino?.firstOrNull { result.dataOrNull?.series?.lastOrNull()?.exercicioTreinoId == it.exercicioTreinoId },
+                    proximoExercicio = result.dataOrNull?.exerciciosTreino?.firstOrNull {
+                        result.dataOrNull?.series?.filter { serie -> it.exercicioTreinoId == serie.exercicioTreinoId }
+                            .isNullOrEmpty()
+                    },
                 )
             }
             while (true) {

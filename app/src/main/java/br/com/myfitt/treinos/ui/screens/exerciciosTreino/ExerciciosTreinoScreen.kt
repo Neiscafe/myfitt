@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
@@ -32,12 +33,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -174,16 +175,16 @@ private fun Tela(
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
         floatingActionButton = {
-            Button(
-                finalizaTreino,
-                enabled = !state.carregando && state.exercicios.isNotEmpty(),
-                shape = RoundedCornerShape(12.dp),
-                contentPadding = PaddingValues(16.dp)
-            ) {
-                Icon(Icons.Default.Check, "Finalizar treino")
-                Text("Finalizar treino")
-            }
-        },
+        Button(
+            finalizaTreino,
+            enabled = !state.carregando && state.exercicios.isNotEmpty(),
+            shape = RoundedCornerShape(12.dp),
+            contentPadding = PaddingValues(16.dp)
+        ) {
+            Icon(Icons.Default.Check, "Finalizar treino")
+            Text("Finalizar treino")
+        }
+    },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = { TopAppBar(state, voltar = voltar) }) { innerPadding ->
         state.erro?.let {
@@ -201,7 +202,7 @@ private fun Tela(
         }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxSize(),
         ) {
             ListaExercicios(
                 innerPadding = innerPadding,
@@ -211,27 +212,33 @@ private fun Tela(
                 voltar = voltar,
                 interagir = interagir,
             )
-            Row(
-                modifier = Modifier.padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.Start
             ) {
                 state.exercicioEmAndamento?.let {
-                    OutlinedButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        contentPadding = PaddingValues(12.dp),
+                    TextButton(
                         onClick = {
                             irParaSeries(it)
                         }) {
+                        Icon(Icons.AutoMirrored.Default.KeyboardArrowRight, "")
                         Text("Continuar ${state.exercicioEmAndamento.nomeExercicio}")
                     }
                 }
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentPadding = PaddingValues(9.dp),
+                state.proximoExercicio?.let {
+                    TextButton(
+                        onClick = {
+                            irParaSeries(it)
+                        }) {
+                        Icon(Icons.AutoMirrored.Default.KeyboardArrowRight, "")
+                        Text("Começar ${state.proximoExercicio.nomeExercicio}")
+                    }
+                }
+
+                TextButton(
                     onClick = {
                         irParaExercicios()
                     }) {
@@ -359,11 +366,10 @@ private fun ExercicioTreinoItem(
     graphicsLayer: GraphicsLayerScope.() -> Unit,
     modifier: Modifier = Modifier
 ) {
-    OutlinedCard(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(true) { irParaSeries(it) }
-            .graphicsLayer(graphicsLayer),
+    OutlinedCard(modifier = modifier
+        .fillMaxWidth()
+        .clickable(true) { irParaSeries(it) }
+        .graphicsLayer(graphicsLayer),
         shape = RoundedCornerShape(0.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation)) {
         Row(Modifier.padding(8.dp, 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -419,12 +425,21 @@ private fun ExerciciosTreinoScreenPreview() {
     MyFittTheme {
         Tela(
             state = ExerciciosTreinoState(
-                mensagemDuracao = "20min",
-                exercicios = listOf(ExercicioTreino(1, 1, 1, nomeExercicio = "Supino reto")),
-                carregando = true,
-                erro = "TESTE ERRO",
-                exercicioEmAndamento = ExercicioTreino(1, 1, 1, 1, 1, "Rosca direta"),
+            mensagemDuracao = "20min",
+            exercicios = listOf(
+                ExercicioTreino(1, 1, 1, nomeExercicio = "Supino reto"),
+                ExercicioTreino(2, 1, 1, nomeExercicio = "Supino reto"),
+                ExercicioTreino(3, 1, 1, nomeExercicio = "Supino reto"),
+                ExercicioTreino(4, 1, 1, nomeExercicio = "Supino reto"),
+                ExercicioTreino(5, 1, 1, nomeExercicio = "Supino reto"),
+                ExercicioTreino(6, 1, 1, nomeExercicio = "Supino reto"),
+                ExercicioTreino(7, 1, 1, nomeExercicio = "Supino reto"),
+                ExercicioTreino(8, 1, 1, nomeExercicio = "Supino reto"),
             ),
+            carregando = true,
+            erro = "TESTE ERRO",
+            exercicioEmAndamento = ExercicioTreino(1, 1, 1, 1, 1, "Rosca direta"),
+        ),
             voltar = { true },
             interagir = {},
             irParaExercicios = { },
