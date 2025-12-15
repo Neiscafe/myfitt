@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -42,8 +44,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import br.com.myfitt.R
-import br.com.myfitt.common.utils.printSimpleDate
-import br.com.myfitt.common.utils.printSimpleTime
 import br.com.myfitt.treinos.domain.facade.TreinoFacadeState
 import br.com.myfitt.treinos.ui.screens.exerciciosTreino.ExerciciosTreinoNavigation
 import br.com.myfitt.treinos.ui.screens.listaTreinos.ListaTreinoNavigation
@@ -120,11 +120,14 @@ private fun Tela(
             modifier = Modifier
                 .fillMaxSize()
                 .background(color = MaterialTheme.colorScheme.background)
-                .padding(innerPadding)
+                .padding(innerPadding),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
-            Text("Bem-vindo!", style = MaterialTheme.typography.headlineLarge)
-            Text("O que vamos treinar hoje?", style = MaterialTheme.typography.bodyLarge)
+            val modifier = remember { Modifier.fillMaxWidth() }
+            Column {
+                Text("Bem-vindo!", style = MaterialTheme.typography.headlineLarge)
+                Text("O que vamos treinar hoje?", style = MaterialTheme.typography.bodyLarge)
+            }
             treinoAtualState.let {
                 if (it?.treino == null) {
                     return@let
@@ -132,38 +135,49 @@ private fun Tela(
                 OutlinedCard(
                     Modifier
                         .fillMaxWidth()
-                        .clickable(onClick = { irParaTreino(it.treino.treinoId) })
+                        .clickable(onClick = { irParaTreino(it.treino.treinoId) }),
                 ) {
-                    Row(Modifier.fillMaxWidth()) {
-                        Column(
-                            Modifier
-                                .padding(8.dp)
-                                .fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                    Column(modifier.padding(8.dp)) {
+                        Row(
+                            modifier, horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Treino em andamento")
-                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                it.exercicios.mapNotNull { it.tipo() }.toSet().forEach {
-                                    Text(
-                                        it.descricao,
-                                        Modifier
-                                            .background(
-                                                MaterialTheme.colorScheme.surfaceVariant,
-                                                MaterialTheme.shapes.medium
-                                            )
-                                            .padding(
-                                                8.dp, 0.dp
-                                            ),
-                                    )
-                                }
+                            Row {
+                                Icon(Icons.Default.PlayArrow, "")
+                                Text(
+                                    "Continuar treino", style = MaterialTheme.typography.titleMedium
+                                )
                             }
-                            Text("Início: ${it.treino.dhInicio?.printSimpleDate()} ${it.treino.dhInicio?.printSimpleTime()}")
+                            Text(
+                                "${
+                                    (it.treino.segundosDuracao / 60) / 60
+                                }h${
+                                    (it.treino.segundosDuracao / 60 ) % 60
+                                }m", Modifier
+                                    .background(
+                                        MaterialTheme.colorScheme.surfaceVariant,
+                                        MaterialTheme.shapes.large
+                                    )
+                                    .padding(4.dp, 0.dp)
+                            )
                         }
-
+                        Row(modifier) {
+                            it.exercicios.mapNotNull { it.tipo() }.toSet().forEach {
+                                Text(
+                                    it.descricao,
+                                    Modifier
+                                        .background(
+                                            MaterialTheme.colorScheme.surfaceVariant,
+                                            MaterialTheme.shapes.medium
+                                        )
+                                        .padding(
+                                            8.dp, 0.dp
+                                        ),
+                                )
+                            }
+                        }
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth()
 

@@ -11,10 +11,10 @@ data class Treino(
     val dhFim: LocalDateTime? = null
 ) {
     val segundosDuracao
-        get() = if (dhInicio == null || dhFim == null) 0 else abs(
+        get() = if (dhInicio == null) 0 else abs(
             Duration.between(
                 dhInicio,
-                dhFim
+                (dhFim ?: LocalDateTime.now())
             ).seconds
         ).toInt()
 }
