@@ -22,8 +22,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -45,6 +47,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -306,18 +309,23 @@ private fun Tela(
     LaunchedEffect(Unit) {
         pesoMudou(pesoText.text)
     }
-    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
-        TopAppBar({ Text(state.nomeExercicio) }, navigationIcon = {
-            IconButton(onClick = { popBackstack() }) {
-                Icon(
-                    Icons.AutoMirrored.Default.ArrowBack,
-                    "Voltar para exercícios",
-                )
-            }
-        })
-    }) { innerPadding ->
+    Scaffold(
+        Modifier.padding(0.dp, 0.dp, 0.dp, 32.dp),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            TopAppBar({ Text(state.nomeExercicio) }, navigationIcon = {
+                IconButton(onClick = { popBackstack() }) {
+                    Icon(
+                        Icons.AutoMirrored.Default.ArrowBack,
+                        "Voltar para exercícios",
+                    )
+                }
+            })
+        }) { innerPadding ->
         Column(
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
