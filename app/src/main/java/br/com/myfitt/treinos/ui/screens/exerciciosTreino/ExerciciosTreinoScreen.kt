@@ -366,7 +366,7 @@ private fun ExercicioTreinoItem(
             .graphicsLayer(graphicsLayer),
         shape = RoundedCornerShape(0.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.padding(8.dp, 8.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(
                 modifier = Modifier.pointerInput(index, dragCallback), onClick = { }) {
                 Icon(
@@ -380,19 +380,19 @@ private fun ExercicioTreinoItem(
                     Icons.Filled.Delete, contentDescription = "Remover exercício"
                 )
             }
-            IconButton({
-                ListaExerciciosViewModel.setCallback { novo ->
-                    interagir(Interacao.Substituir(novo, it))
-                    voltar()
-                }
-                irParaExercicios()
-            }) {
-                Icon(
-                    painter = painterResource(R.drawable.swap_horiz_24dp_e3e3e3_fill0_wght400_grad0_opsz24),
-                    contentDescription = "Substituir exercício",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
+//            IconButton({
+//                ListaExerciciosViewModel.setCallback { novo ->
+//                    interagir(Interacao.Substituir(novo, it))
+//                    voltar()
+//                }
+//                irParaExercicios()
+//            }) {
+//                Icon(
+//                    painter = painterResource(R.drawable.swap_horiz_24dp_e3e3e3_fill0_wght400_grad0_opsz24),
+//                    contentDescription = "Substituir exercício",
+//                    tint = MaterialTheme.colorScheme.onBackground
+//                )
+//            }
         }
     }
 }
