@@ -17,6 +17,7 @@ interface SerieExercicioDao {
             series_exercicio
         where
             treinoId = :treinoId
+        order by serieId
     """
     )
     suspend fun listaTreino(treinoId: Int): List<SerieExercicioEntity>
@@ -29,6 +30,7 @@ interface SerieExercicioDao {
             series_exercicio
         where
             exercicioTreinoId = :exercicioTreinoId
+        order by serieId
     """
     )
     suspend fun lista(exercicioTreinoId: Int): List<SerieExercicioEntity>

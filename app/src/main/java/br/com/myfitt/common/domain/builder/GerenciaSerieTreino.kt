@@ -8,10 +8,13 @@ import kotlin.math.abs
 class GerenciaSerieTreino private constructor() {
     companion object {
         fun criar(
-            exercicioId: Int, exercicioTreinoId: Int, treinoId: Int
+            exercicioId: Int,
+            exercicioTreinoId: Int,
+            treinoId: Int,
+            dhInicioDescanso: LocalDateTime?
         ): GerenciaSerieTreino {
             val builder = GerenciaSerieTreino()
-            return builder.iniciar(exercicioId, exercicioTreinoId, treinoId, 0)
+            return builder.iniciar(exercicioId, exercicioTreinoId, treinoId, 0, dhInicioDescanso)
         }
 
         fun continuar(
@@ -22,7 +25,8 @@ class GerenciaSerieTreino private constructor() {
                 serieExercicio.exercicioId,
                 serieExercicio.exercicioTreinoId,
                 serieExercicio.treinoId,
-                serieExercicio.serieId
+                serieExercicio.serieId,
+                serieExercicio.dhInicioDescanso
             )
             serieExercicio.dhInicioDescanso?.let {
                 builder.descanso(it)
@@ -65,16 +69,17 @@ class GerenciaSerieTreino private constructor() {
     }
 
     fun execucao(
-        pesoKg: Float,
-        dhInicioExecucao: LocalDateTime = LocalDateTime.now()
+        pesoKg: Float, dhInicioExecucao: LocalDateTime = LocalDateTime.now()
     ): GerenciaSerieTreino {
         _instancia = _instancia?.copy(
             pesoKg = pesoKg,
             dhFimDescanso = dhInicioExecucao,
             segundosDescanso = instancia.dhInicioDescanso?.let {
-                abs((Duration.between(
-                    dhInicioExecucao, it
-                ).seconds).toInt())
+                abs(
+                    (Duration.between(
+                        dhInicioExecucao, it
+                    ).seconds).toInt()
+                )
             } ?: 0,
             dhInicioExecucao = dhInicioExecucao,
         )
@@ -85,7 +90,11 @@ class GerenciaSerieTreino private constructor() {
     private val instancia get() = _instancia!!
     private var _instancia: SerieExercicio? = null
     private fun iniciar(
-        exercicioId: Int, exercicioTreinoId: Int, treinoId: Int, serieId: Int
+        exercicioId: Int,
+        exercicioTreinoId: Int,
+        treinoId: Int,
+        serieId: Int,
+        dhInicioDescanso: LocalDateTime?
     ): GerenciaSerieTreino {
         _instancia = SerieExercicio(
             serieId = serieId,
@@ -94,7 +103,7 @@ class GerenciaSerieTreino private constructor() {
             treinoId = treinoId,
             dhInicioExecucao = null,
             dhFimExecucao = null,
-            dhInicioDescanso = null,
+            dhInicioDescanso = dhInicioDescanso,
             dhFimDescanso = null,
             duracaoSegundos = 0,
             segundosDescanso = 0,

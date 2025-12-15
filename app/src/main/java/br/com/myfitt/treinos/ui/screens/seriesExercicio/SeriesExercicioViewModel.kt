@@ -79,25 +79,30 @@ class SeriesExercicioViewModel(
                 primeiroExercicio = seriesDoTreino.isEmpty()
                 val outroExercicioEmAndamento =
                     seriesDoTreino.firstOrNull { it.exercicioTreinoId != exercicioTreinoId && it.serieEmAndamento }
-                val serieDoExercicioEmAndamento =
-                    seriesDoExercicio?.firstOrNull { it.serieEmAndamento || it.descansando }
                 if (outroExercicioEmAndamento != null) {
                     _state.update { it.copy(erro = "Uma série já está em andamento: finalize ela para poder continuar.") }
-                } else if (serieDoExercicioEmAndamento != null) {
-                    gerenciaSerieTreino = GerenciaSerieTreino.continuar(serieDoExercicioEmAndamento)
-                    gerenciaSerieTreino.get().let {
-                        if (it.serieEmAndamento) {
-                            cronometroFacade.iniciaExercicio(it.dhInicioExecucao!!)
-                        } else if (it.descansando && it.dhInicioDescanso != null) {
-                            cronometroFacade.iniciaDescanso(it.dhInicioDescanso)
-                        }
-                    }
+                    return@async true
+                }
+                val dhInicioDescanso =
+                    seriesDoTreino.lastOrNull { it.dhFimExecucao != null }?.dhFimExecucao
+                val ultimaSerie = seriesDoExercicio?.lastOrNull()
+                val continuaSerieAtual = ultimaSerie?.serieEmAndamento ?: false
+                if (continuaSerieAtual) {
+                    gerenciaSerieTreino = GerenciaSerieTreino.continuar(ultimaSerie)
                 } else {
                     gerenciaSerieTreino = GerenciaSerieTreino.criar(
                         exercicioId = exercicioTreino.exercicioId,
                         exercicioTreinoId = exercicioTreinoId,
                         treinoId = exercicioTreino.treinoId,
+                        dhInicioDescanso = dhInicioDescanso
                     )
+                }
+                gerenciaSerieTreino.get().let {
+                    if (it.serieEmAndamento) {
+                        cronometroFacade.iniciaExercicio(it.dhInicioExecucao!!)
+                    } else if (it.descansando && it.dhInicioDescanso != null) {
+                        cronometroFacade.iniciaDescanso(it.dhInicioDescanso)
+                    }
                 }
                 return@async true
             }
@@ -158,8 +163,8 @@ class SeriesExercicioViewModel(
             val serieExercicio = gerenciaSerieTreino.repeticoes(repeticoes).get()
             val result = seriesRepository.altera(serieExercicio)
             gerenciaSerieTreino = GerenciaSerieTreino.criar(
-                exercicioTreino.exercicioId, exercicioTreinoId, exercicioTreino.treinoId
-            ).descanso(serieExercicio.dhFimExecucao!!)
+                exercicioTreino.exercicioId, exercicioTreinoId, exercicioTreino.treinoId, serieExercicio.dhFimExecucao
+            )
             _state.update {
                 it.copy(
                     carregando = false,
