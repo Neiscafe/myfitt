@@ -3,6 +3,8 @@ package br.com.myfitt.treinos.ui.screens.listaTreinos
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.myfitt.common.domain.TipoExercicio
+import br.com.myfitt.common.domain.Treino
+import br.com.myfitt.common.domain.onSucesso
 import br.com.myfitt.treinos.domain.repository.TipoExercicioRepository
 import br.com.myfitt.treinos.domain.repository.TreinoRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -87,6 +89,15 @@ class ListaTreinoViewModel(
                     pagina = paginaNova,
                     ultimaPagina = itensTransformados.isEmpty()
                 )
+            }
+        }
+    }
+
+    fun deletar(treino: Treino){
+        launchCoroutine {
+            val result = treinoRepository.deleta(treino)
+            result.onSucesso {
+                _state.update { it.copy(treinos = it.treinos.filter { it.treino.treinoId!=result.dataOrNull!!.treinoId }) }
             }
         }
     }

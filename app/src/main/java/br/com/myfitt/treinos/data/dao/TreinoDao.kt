@@ -1,6 +1,7 @@
 package br.com.myfitt.treinos.data.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
@@ -26,6 +27,7 @@ interface TreinoDao {
             *
         FROM
             treinos
+        ORDER BY treinoId DESC
         LIMIT :tamPag
         OFFSET :tamPag*(:pag-1)
     """)
@@ -40,4 +42,6 @@ interface TreinoDao {
         LIMIT 1
     """)
     suspend fun ativo(): TreinoEntity?
-}
+
+    @Delete
+    suspend fun deleta(treinoEntity: TreinoEntity) }

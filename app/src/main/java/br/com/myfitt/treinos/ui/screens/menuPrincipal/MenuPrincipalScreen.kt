@@ -78,6 +78,7 @@ fun MenuPrincipalScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val treinoAtualState by viewModel.treinoAtualState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
+    val currentLifecycleState = lifecycleOwner.lifecycle.currentStateFlow.collectAsStateWithLifecycle()
     LaunchedEffect(lifecycleOwner) {
         viewModel.eventos.flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.STARTED)
             .collect {
@@ -87,6 +88,12 @@ fun MenuPrincipalScreen(
                 }
             }
     }
+    LaunchedEffect(currentLifecycleState.value) {
+        if(currentLifecycleState.value== Lifecycle.State.RESUMED){
+            viewModel.atualizarTreinoAtual()
+        }
+    }
+
     Tela(
         state = state,
         treinoAtualState = treinoAtualState,

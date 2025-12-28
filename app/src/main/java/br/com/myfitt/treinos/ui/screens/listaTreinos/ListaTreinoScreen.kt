@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -73,6 +74,7 @@ fun ListaTreinosScreen(navController: NavController) {
         irParaTreino = {
             navController.navigate(ExerciciosTreinoNavigation.route + "/${it.treinoId}")
         },
+        deletar = viewModel::deletar,
         voltar = { navController.popBackStack() }
     )
 }
@@ -82,6 +84,7 @@ fun Tela(
     state: ListaTreinoState,
     limpaEventos: () -> Unit,
     irParaTreino: (Treino) -> Unit,
+    deletar: (Treino)->Unit = {},
     voltar: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
@@ -114,7 +117,7 @@ fun Tela(
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 itemsIndexed(
                     items = state.treinos, key = { i, it -> it.treino.treinoId }) { i, it ->
-                    ListaTreinoItem(it, i) { irParaTreino(it.treino) }
+                    ListaTreinoItem(it, i, onClick = { irParaTreino(it.treino) }, deletar)
                 }
                 if (state.carregando) {
                     item {
@@ -129,21 +132,21 @@ fun Tela(
 }
 
 @Composable
-fun ListaTreinoItem(it: ListaTreinoModel, i: Int, onClick: () -> Unit) {
+fun ListaTreinoItem(it: ListaTreinoModel, i: Int, onClick: () -> Unit = {}, deletar: (Treino)->Unit = {}) {
     val cardWidthModifier = Modifier.fillMaxWidth()
     ElevatedCard(
         cardWidthModifier.padding(16.dp)
     ) {
         Column(
             modifier = cardWidthModifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             val textStyle = MaterialTheme.typography.bodySmall
             val rowSpacing = Arrangement.spacedBy(8.dp)
             Row(
                 modifier = cardWidthModifier,
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(horizontalArrangement = rowSpacing) {
                     Icon(
@@ -151,22 +154,25 @@ fun ListaTreinoItem(it: ListaTreinoModel, i: Int, onClick: () -> Unit) {
                         "Id treino"
                     )
                     Text(
-                        "Treino ${it.treino.treinoId}", style = MaterialTheme.typography.titleMedium
+                        "Treino ${it.treino.treinoId}", style = MaterialTheme.typography.titleLarge
                     )
                 }
-                Text(
-                    "${
-                        if (it.treino.dhInicio == null) "Não iniciado" else it.treino.dhInicio.format(
-                            DateTimeFormatter.ofPattern("dd/MM/yyyy")
-                        )
-                    }",
-                    style = textStyle.copy(MaterialTheme.colorScheme.inverseOnSurface),
-                    modifier = Modifier
-                        .background(
-                            MaterialTheme.colorScheme.inverseSurface, MaterialTheme.shapes.medium
-                        )
-                        .padding(8.dp, 4.dp)
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "${
+                            if (it.treino.dhInicio == null) "Não iniciado" else it.treino.dhInicio.format(
+                                DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                            )
+                        }",
+                        style = textStyle.copy(MaterialTheme.colorScheme.inverseOnSurface),
+                        modifier = Modifier
+                            .background(
+                                MaterialTheme.colorScheme.inverseSurface, MaterialTheme.shapes.medium
+                            )
+                            .padding(8.dp, 4.dp)
+                    )
+                    IconButton({deletar(it.treino)}) { Icon(Icons.Default.Delete, "Deletar") }
+                }
             }
             LazyRow {
                 items(items = it.tipoExercicios, key = { it.tipoExercicioId }) {
@@ -205,7 +211,7 @@ fun ListaTreinoItem(it: ListaTreinoModel, i: Int, onClick: () -> Unit) {
                 Column {
                     Text("Duração:", style = textStyle)
                     Text(
-                        "${it.treino.segundosDuracao / 60 / 60}h${(it.treino.segundosDuracao / 60) % 60}m",
+                        "${it.treino.segundosDuracao / 60 / 60}h${it.treino.segundosDuracao % 60}m",
                         style = textStyle
                     )
                 }
@@ -229,7 +235,7 @@ private fun ListaTreinoItemPreview() {
                     dhFim = LocalDateTime.now()
                 ), emptyList()
             ), 0
-        ) {}
+        )
     }
 }
 
@@ -249,6 +255,6 @@ private fun TelaPreview() {
                     )
                 ),
                 0,
-            ), {}, {})
+            ), {}, {}, {})
     }
 }

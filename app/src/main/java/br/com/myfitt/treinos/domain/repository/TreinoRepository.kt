@@ -17,4 +17,5 @@ interface TreinoRepository {
     suspend fun busca(treinoId: Int): Resultado<Treino?>
     suspend fun altera(novo: Treino): Resultado<Treino>
     suspend fun ativo(): Resultado<Treino?>
+    suspend fun deleta(treino: Treino): Resultado<Treino>
 }

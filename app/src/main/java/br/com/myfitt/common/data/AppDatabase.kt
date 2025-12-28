@@ -32,6 +32,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         fun build(context: Context): Builder<AppDatabase> {
+//            .createFromAsset("AppDatabase.db")
             return Room.databaseBuilder(context, AppDatabase::class.java, "AppDatabase.db").addCallback(PopulaOnCreate)
         }
     }

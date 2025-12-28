@@ -42,4 +42,10 @@ class TreinoRepositoryImpl(private val treinoDao: TreinoDao) : TreinoRepository 
             treinoDao.ativo()?.toDomain()
         }
     }
+
+    override suspend fun deleta(treino: Treino): Resultado<Treino> {
+        return wrapSuspend {
+        treinoDao.deleta(treino.toEntity())
+        }.map { treino }
+    }
 }

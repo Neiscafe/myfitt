@@ -1,5 +1,6 @@
 package br.com.myfitt.treinos.ui.screens.menuPrincipal
 
+import androidx.compose.runtime.DisposableEffect
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.myfitt.common.domain.Treino
@@ -10,6 +11,7 @@ import br.com.myfitt.treinos.domain.facade.TreinoFacadeState
 import br.com.myfitt.treinos.domain.repository.TreinoRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -26,8 +28,25 @@ class MenuPrincipalViewModel(
     val eventos = _eventos.receiveAsFlow()
     private val _treinoFacadeState = MutableStateFlow(TreinoFacadeState())
     val treinoAtualState = _treinoFacadeState.asStateFlow()
+    var primeiroFetch = true
 
     init {
+        buscaTreinoAtual()
+        viewModelScope.launch(Dispatchers.IO) {
+            delay(60000)
+            buscaTreinoAtual()
+        }
+    }
+
+    fun atualizarTreinoAtual(){
+        if(!primeiroFetch) {
+            buscaTreinoAtual()
+        }else{
+            primeiroFetch = false
+        }
+    }
+
+    private fun buscaTreinoAtual() {
         viewModelScope.launch(Dispatchers.IO) {
             treinoFacade.buscarAtivo().onSucesso {
                 _treinoFacadeState.value = it
