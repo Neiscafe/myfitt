@@ -55,6 +55,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -304,7 +305,7 @@ private fun Tela(
         pesoMudou(pesoText.text)
     }
     Scaffold(
-        Modifier.padding(0.dp, 0.dp, 0.dp, 32.dp),
+        Modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar({ Text(state.nomeExercicio) }, navigationIcon = {
@@ -487,7 +488,7 @@ private fun Tela(
             OutlinedCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp, 0.dp)
+                    .padding(24.dp, 0.dp, 24.dp, 24.dp)
             ) {
                 Text(
                     "Resumo das séries",
