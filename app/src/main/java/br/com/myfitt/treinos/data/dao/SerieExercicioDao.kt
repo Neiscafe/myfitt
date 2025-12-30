@@ -50,4 +50,20 @@ interface SerieExercicioDao {
             serieId = :serieId
     """)
     suspend fun busca(serieId: Int): SerieExercicioEntity
+
+    @Query("""
+        SELECT 
+            b.*
+        FROM
+            exercicios_treino a
+        INNER JOIN
+            series_exercicio b
+        ON b.exercicioTreinoId = a.exercicioTreinoId
+        WHERE
+            a.exercicioId = :exercicioId
+        LIMIT 1
+    """)
+    suspend fun topSerie(exercicioId: Int) {
+
+    }
 }

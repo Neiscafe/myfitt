@@ -9,6 +9,10 @@ import br.com.myfitt.treinos.data.mappers.toEntity
 import br.com.myfitt.treinos.domain.repository.SeriesRepository
 
 class SeriesRepositoryImpl(val seriesDao: SerieExercicioDao) : SeriesRepository {
+    override suspend fun topSerie(exercicioId: Int): Resultado<SerieExercicio> {
+        seriesDao.topSerie()
+    }
+
     override suspend fun todasDoTreino(treinoId: Int): Resultado<List<SerieExercicio>> {
         return wrapSuspend { seriesDao.listaTreino(treinoId).toDomain() }
     }
