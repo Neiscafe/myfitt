@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,8 +21,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -47,7 +46,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -100,15 +98,11 @@ object SeriesExercicioNavigation {
             arguments = argList,
         ) {
             val exercicioSerieId = getArg(it)
-            SeriesExercicioScreen(
-                exercicioTreinoId = exercicioSerieId,
-                irParaEditarSerie = {
-                    navController.navigate(EditarSerieNavigation.route + "/${it.serieId}")
-                },
-                popBackstack = navController::popBackStack,
-                irParaDetalhesExercicio = {
-                    navController.navigate(DetalhesExercicioNavigation.route + "/${it}")
-                })
+            SeriesExercicioScreen(exercicioTreinoId = exercicioSerieId, irParaEditarSerie = {
+                navController.navigate(EditarSerieNavigation.route + "/${it.serieId}")
+            }, popBackstack = navController::popBackStack, irParaDetalhesExercicio = {
+                navController.navigate(DetalhesExercicioNavigation.route + "/${it}")
+            })
         }
 
     }
@@ -329,89 +323,15 @@ private fun Tela(
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(240.dp)
-                    .padding(24.dp, 0.dp)
-            ) {
-                Text(
-                    "Resumo das séries",
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(0.dp, 8.dp),
-                    textAlign = TextAlign.Center
-                )
-                if (state.series.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Aguardando início das séries...")
-                    }
-                }
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center
-                ) {
-                    item {
-                        Row(modifier = Modifier.padding(16.dp, 0.dp)) {
-                            Text("", modifier = Modifier.weight(0.5f))
-                            Text("Peso", modifier = Modifier.weight(1f))
-                            Text("Reps", modifier = Modifier.weight(1f))
-                            Text("Interv.", modifier = Modifier.weight(1f))
-                        }
-                    }
-                    itemsIndexed(items = state.series, key = { i, it -> it.serieId }) { i, it ->
-                        itemResumoSeries(i, it) {
-                            irParaEditarSerie(it)
-                        }
-                    }
-                }
-            }
-
-            OutlinedCard(
-                modifier = Modifier
-                    .height(IntrinsicSize.Min)
-                    .fillMaxWidth()
-                    .padding(24.dp, 0.dp),
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-
-                    if (state.observacaoExercicio.isNotBlank()) {
-                        Icon(Icons.Default.Info, "Observações exercício")
-                        Text(
-                            text = state.observacaoExercicio,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
-                    } else {
-                        TextButton(
-                            onClick = irParaDetalhesExercicio, modifier = Modifier.fillMaxSize()
-                        ) {
-                            Icon(Icons.Default.Edit, "Adicionar observação")
-                            Text("Observação")
-                        }
-                    }
-                }
-            }
-
-
             if (cronometroState.descansoAtivo || cronometroState.serieAtiva) {
                 OutlinedCard(
                     modifier = Modifier
-                        .height(IntrinsicSize.Min)
                         .fillMaxWidth()
                         .padding(24.dp, 0.dp)
                 ) {
                     Column(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(8.dp),
+                            .fillMaxSize().padding(0.dp, 8.dp, 0.dp, 0.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
@@ -422,6 +342,7 @@ private fun Tela(
                         if (cronometroState.descansoAtivo) {
                             Text(
                                 "Descansando: ${cronometroState.numero / 60}m${cronometroState.numero % 60}",
+                                Modifier.padding(0.dp, 0.dp, 0.dp, 8.dp),
                                 style = MaterialTheme.typography.titleMedium
                             )
                         }
@@ -430,18 +351,23 @@ private fun Tela(
                                 "Duração: ${cronometroState.numero / 60}m${cronometroState.numero % 60}",
                                 style = MaterialTheme.typography.titleMedium
                             )
-                            HorizontalDivider()
-                            TextButton(
-                                finalizaSerie,
-                                modifier = Modifier.fillMaxWidth(),
-                                contentPadding = PaddingValues(24.dp)
-                            ) {
-                                Text("Terminei a série!")
+                            Column(Modifier.fillMaxWidth()) {
+                                HorizontalDivider()
+                                TextButton(
+                                    finalizaSerie,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(MaterialTheme.colorScheme.surfaceContainer),
+                                    contentPadding = PaddingValues(24.dp)
+                                ) {
+                                    Text("Terminei a série!")
+                                }
                             }
                         }
                     }
                 }
             }
+
             if (!cronometroState.serieAtiva) {
                 OutlinedCard(
                     modifier = Modifier.padding(24.dp, 0.dp)
@@ -513,10 +439,80 @@ private fun Tela(
                         HorizontalDivider()
                         TextButton(
                             iniciaSerie,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surfaceContainer),
                             contentPadding = PaddingValues(24.dp)
                         ) {
                             Text("Iniciar série")
+                        }
+                    }
+                }
+            }
+
+            OutlinedCard(
+                modifier = Modifier
+                    .height(IntrinsicSize.Min)
+                    .fillMaxWidth()
+                    .padding(24.dp, 0.dp),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+
+                    if (state.observacaoExercicio.isNotBlank()) {
+                        Icon(Icons.Default.Info, "Observações exercício")
+                        Text(
+                            text = state.observacaoExercicio,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                    } else {
+                        TextButton(
+                            onClick = irParaDetalhesExercicio, modifier = Modifier.fillMaxSize()
+                        ) {
+                            Icon(Icons.Default.Edit, "Adicionar observação")
+                            Text("Observação")
+                        }
+                    }
+                }
+            }
+
+
+            OutlinedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp, 0.dp)
+            ) {
+                Text(
+                    "Resumo das séries",
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(0.dp, 8.dp),
+                    textAlign = TextAlign.Center
+                )
+                if (state.series.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Aguardando início das séries...")
+                    }
+                } else {
+                    Column(verticalArrangement = Arrangement.Top) {
+                        Row(modifier = Modifier.padding(16.dp, 0.dp)) {
+                            Text("", modifier = Modifier.weight(0.5f))
+                            Text("Peso", modifier = Modifier.weight(1f))
+                            Text("Reps", modifier = Modifier.weight(1f))
+                            Text("Interv.", modifier = Modifier.weight(1f))
+                        }
+                        state.series.forEachIndexed { i, it ->
+                            itemResumoSeries(i, it) {
+                                irParaEditarSerie(it)
+                            }
                         }
                     }
                 }
@@ -557,7 +553,6 @@ private fun itemResumoSeries(
             Text(
                 "${it.repeticoes}", modifier = Modifier.weight(1f)
             )
-            VerticalDivider()
             Text(
                 "${it.segundosDescanso / 60}m${it.segundosDescanso % 60}s",
                 modifier = Modifier.weight(1f)
@@ -598,7 +593,7 @@ private fun SeriesExercicioScreenPreview() {
                 nomeExercicio = "Supino reto",
                 observacaoExercicio = "Fazer pensando na morte da bezerra"
             ),
-            cronometroState = TickCronometro(1, Instant.now(), true, false),
+            cronometroState = TickCronometro(1, Instant.now(), false, true),
             irParaDetalhesExercicio = {},
         )
     }
