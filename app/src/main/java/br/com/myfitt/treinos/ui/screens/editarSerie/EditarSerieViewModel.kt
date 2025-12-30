@@ -13,10 +13,12 @@ import kotlinx.coroutines.withContext
 
 class EditarSerieViewModel(val serieId: Int, val seriesRepository: SeriesRepository) : ViewModel() {
 
-    private val _peso = MutableStateFlow(0f)
+    private val _peso = MutableStateFlow<String>("")
     val peso = _peso.asStateFlow()
-    private val _repeticoes = MutableStateFlow(0)
+    val pesoFloat get() = peso.value.replace(",", ".").toFloatOrNull() ?: 0f
+    private val _repeticoes = MutableStateFlow<String>("")
     val repeticoes = _repeticoes.asStateFlow()
+    val repeticoesInt get() = repeticoes.value.toIntOrNull() ?: 0
 
     private val _state = MutableStateFlow(EditarSerieState())
     val state = _state.asStateFlow()
@@ -28,8 +30,8 @@ class EditarSerieViewModel(val serieId: Int, val seriesRepository: SeriesReposit
             _state.update { it.copy(carregando = true) }
             val result = seriesRepository.altera(
                 serie.copy(
-                    pesoKg = peso.value,
-                    repeticoes = repeticoes.value,
+                    pesoKg = pesoFloat,
+                    repeticoes = repeticoesInt,
                 )
             )
             _state.update { it.copy(erro = result.erroOrNull) }
@@ -46,13 +48,19 @@ class EditarSerieViewModel(val serieId: Int, val seriesRepository: SeriesReposit
     }
 
     fun pesoChanged(peso: String) {
-        _peso.update { peso.replace(",", ".").toFloatOrNull() ?: 0f }
-        _state.update { it.copy(salvarHabilitado = this.peso.value > 0 && repeticoes.value > 0) }
+        _peso.update { peso }
+        validaInput()
+    }
+
+    private fun validaInput() {
+        _state.update {
+            it.copy(salvarHabilitado = pesoFloat > 0f && repeticoesInt > 0)
+        }
     }
 
     fun repeticoesChanged(repeticoes: String) {
-        _repeticoes.update { repeticoes.toIntOrNull() ?: 0 }
-        _state.update { it.copy(salvarHabilitado = this.peso.value > 0 && this.repeticoes.value > 0) }
+        _repeticoes.update { repeticoes }
+        validaInput()
     }
 
     fun limpaEventos() {
@@ -67,8 +75,11 @@ class EditarSerieViewModel(val serieId: Int, val seriesRepository: SeriesReposit
                     erro = result.erroOrNull, carregando = false, salvarHabilitado = result.sucesso
                 )
             }
-            _peso.update { result.dataOrNull!!.pesoKg }
-            _repeticoes.update { result.dataOrNull!!.repeticoes }
+            if (result.sucesso) {
+                _serie = result.dataOrNull
+            }
+            _peso.update { String.format("%.1f", result.dataOrNull!!.pesoKg).replace(".", ",") }
+            _repeticoes.update { result.dataOrNull!!.repeticoes.toString() }
         }
     }
 

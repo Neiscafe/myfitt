@@ -60,8 +60,8 @@ fun EditarSerieScreen(serieId: Int, navController: NavController) {
     val peso by viewModel.peso.collectAsStateWithLifecycle()
     Tela(
         state = state,
-        pesoKg = String.format("%.1f", peso),
-        repeticoes = repeticoes.toString(),
+        pesoKg = peso,
+        repeticoes = repeticoes,
         onPesoChanged = viewModel::pesoChanged,
         onRepChanged = viewModel::repeticoesChanged,
         salvar = viewModel::salvar,
