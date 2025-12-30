@@ -175,16 +175,16 @@ private fun Tela(
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
         floatingActionButton = {
-        Button(
-            finalizaTreino,
-            enabled = !state.carregando && state.exercicios.isNotEmpty(),
-            shape = RoundedCornerShape(12.dp),
-            contentPadding = PaddingValues(16.dp)
-        ) {
-            Icon(Icons.Default.Check, "Finalizar treino")
-            Text("Finalizar treino")
-        }
-    },
+            Button(
+                finalizaTreino,
+                enabled = !state.carregando && state.exercicios.isNotEmpty(),
+                shape = RoundedCornerShape(12.dp),
+                contentPadding = PaddingValues(16.dp)
+            ) {
+                Icon(Icons.Default.Check, "Finalizar treino")
+                Text("Finalizar treino")
+            }
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = { TopAppBar(state, voltar = voltar) }) { innerPadding ->
         state.erro?.let {
@@ -212,10 +212,10 @@ private fun Tela(
                 voltar = voltar,
                 interagir = interagir,
             )
+            val modifier = Modifier
+                .fillMaxWidth()
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.Start
             ) {
@@ -223,7 +223,8 @@ private fun Tela(
                     TextButton(
                         onClick = {
                             irParaSeries(it)
-                        }) {
+                        }, modifier
+                    ) {
                         Icon(Icons.AutoMirrored.Default.KeyboardArrowRight, "")
                         Text("Continuar ${state.exercicioEmAndamento.nomeExercicio}")
                     }
@@ -232,7 +233,8 @@ private fun Tela(
                     TextButton(
                         onClick = {
                             irParaSeries(it)
-                        }) {
+                        }, modifier
+                    ) {
                         Icon(Icons.AutoMirrored.Default.KeyboardArrowRight, "")
                         Text("Começar ${state.proximoExercicio.nomeExercicio}")
                     }
@@ -241,7 +243,7 @@ private fun Tela(
                 TextButton(
                     onClick = {
                         irParaExercicios()
-                    }) {
+                    },modifier) {
                     Icon(Icons.Default.Add, "Adicionar exercício")
                     Text("Exercício")
                 }
@@ -366,10 +368,11 @@ private fun ExercicioTreinoItem(
     graphicsLayer: GraphicsLayerScope.() -> Unit,
     modifier: Modifier = Modifier
 ) {
-    OutlinedCard(modifier = modifier
-        .fillMaxWidth()
-        .clickable(true) { irParaSeries(it) }
-        .graphicsLayer(graphicsLayer),
+    OutlinedCard(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(true) { irParaSeries(it) }
+            .graphicsLayer(graphicsLayer),
         shape = RoundedCornerShape(0.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation)) {
         Row(Modifier.padding(8.dp, 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -425,21 +428,21 @@ private fun ExerciciosTreinoScreenPreview() {
     MyFittTheme {
         Tela(
             state = ExerciciosTreinoState(
-            mensagemDuracao = "20min",
-            exercicios = listOf(
-                ExercicioTreino(1, 1, 1, nomeExercicio = "Supino reto"),
-                ExercicioTreino(2, 1, 1, nomeExercicio = "Supino reto"),
-                ExercicioTreino(3, 1, 1, nomeExercicio = "Supino reto"),
-                ExercicioTreino(4, 1, 1, nomeExercicio = "Supino reto"),
-                ExercicioTreino(5, 1, 1, nomeExercicio = "Supino reto"),
-                ExercicioTreino(6, 1, 1, nomeExercicio = "Supino reto"),
-                ExercicioTreino(7, 1, 1, nomeExercicio = "Supino reto"),
-                ExercicioTreino(8, 1, 1, nomeExercicio = "Supino reto"),
+                mensagemDuracao = "20min",
+                exercicios = listOf(
+                    ExercicioTreino(1, 1, 1, nomeExercicio = "Supino reto"),
+                    ExercicioTreino(2, 1, 1, nomeExercicio = "Supino reto"),
+                    ExercicioTreino(3, 1, 1, nomeExercicio = "Supino reto"),
+                    ExercicioTreino(4, 1, 1, nomeExercicio = "Supino reto"),
+                    ExercicioTreino(5, 1, 1, nomeExercicio = "Supino reto"),
+                    ExercicioTreino(6, 1, 1, nomeExercicio = "Supino reto"),
+                    ExercicioTreino(7, 1, 1, nomeExercicio = "Supino reto"),
+                    ExercicioTreino(8, 1, 1, nomeExercicio = "Supino reto"),
+                ),
+                carregando = true,
+                erro = null,
+                exercicioEmAndamento = ExercicioTreino(1, 1, 1, 1, 1, "Rosca direta"),
             ),
-            carregando = true,
-            erro = "TESTE ERRO",
-            exercicioEmAndamento = ExercicioTreino(1, 1, 1, 1, 1, "Rosca direta"),
-        ),
             voltar = { true },
             interagir = {},
             irParaExercicios = { },
