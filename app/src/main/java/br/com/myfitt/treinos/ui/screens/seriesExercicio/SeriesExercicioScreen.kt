@@ -129,12 +129,12 @@ fun SeriesExercicioScreen(
     }
     Tela(
         irParaEditarSerie = {
-            EditarSerieViewModel.setCallback {
-                popBackstack()
-                viewModel.atualizaEstado(it)
-            }
-            irParaEditarSerie(it)
-        },
+        EditarSerieViewModel.setCallback {
+            popBackstack()
+            viewModel.atualizaEstado(it)
+        }
+        irParaEditarSerie(it)
+    },
         popBackstack = {
             !state.carregando && !cronometroState.serieAtiva && popBackstack()
         },
@@ -153,7 +153,9 @@ fun SeriesExercicioScreen(
                 popBackstack()
             }
             irParaDetalhesExercicio(viewModel.exercicioTreino.exercicioId)
-        })
+        },
+        seriesDestaque = state.serieDestaques
+    )
     if (exibeDialogFinalizaSerie) {
         DialogRepeticoes(
             onDismiss = { exibeDialogFinalizaSerie = false },
@@ -307,19 +309,16 @@ private fun Tela(
     LaunchedEffect(Unit) {
         pesoMudou(pesoText.text)
     }
-    Scaffold(
-        Modifier,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            TopAppBar({ Text(state.nomeExercicio) }, navigationIcon = {
-                IconButton(onClick = { popBackstack() }) {
-                    Icon(
-                        Icons.AutoMirrored.Default.ArrowBack,
-                        "Voltar para exercícios",
-                    )
-                }
-            })
-        }) { innerPadding ->
+    Scaffold(Modifier, snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
+        TopAppBar({ Text(state.nomeExercicio) }, navigationIcon = {
+            IconButton(onClick = { popBackstack() }) {
+                Icon(
+                    Icons.AutoMirrored.Default.ArrowBack,
+                    "Voltar para exercícios",
+                )
+            }
+        })
+    }) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -469,17 +468,24 @@ private fun Tela(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Icon(Icons.Default.Person, "Observações exercício")
-                        if(seriesDestaque.isEmpty()){
-                            Text("Assim que tivermos dados, aqui aparecerão estatísticas sobre este exercício...")
+                        if (seriesDestaque.isEmpty()) {
+                            Text(
+                                "Assim que tivermos dados, aqui aparecerão estatísticas sobre este exercício...",
+                                Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
                         }
                         seriesDestaque.forEach {
                             Text(
-                                text = state.observacaoExercicio,
+                                text = it.categoriaDestaque,
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center
                             )
-                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Text(
                                     text = "1RM: ${String.format("%.0f", it.umRepMaxPorcentagem)}%",
                                     style = MaterialTheme.typography.titleMedium,
@@ -499,8 +505,7 @@ private fun Tela(
                                     textAlign = TextAlign.Center
                                 )
                                 IconButton(
-                                    onClick = { irParaTreino(it.serie.treinoId) }
-                                ) {
+                                    onClick = { irParaTreino(it.serie.treinoId) }) {
                                     Icon(
                                         Icons.AutoMirrored.Default.ExitToApp,
                                         "Ir para treino de série destaque"

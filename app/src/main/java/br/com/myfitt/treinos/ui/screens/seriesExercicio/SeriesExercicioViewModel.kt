@@ -83,6 +83,13 @@ class SeriesExercicioViewModel(
                     _state.update { it.copy(erro = "Uma série já está em andamento: finalize ela para poder continuar.") }
                     return@async true
                 }
+                launch {
+                    val result = seriesRepository.seriesDestaqueExercicio(
+                        exercicioTreino.exercicioId,
+                        exercicioTreino.treinoId
+                    )
+                    _state.update { it.copy(serieDestaques = result.dataOrNull) }
+                }
                 val dhInicioDescanso =
                     seriesDoTreino.lastOrNull { it.dhFimExecucao != null }?.dhFimExecucao
                 val ultimaSerie = seriesDoExercicio?.lastOrNull()
@@ -163,7 +170,10 @@ class SeriesExercicioViewModel(
             val serieExercicio = gerenciaSerieTreino.repeticoes(repeticoes).get()
             val result = seriesRepository.altera(serieExercicio)
             gerenciaSerieTreino = GerenciaSerieTreino.criar(
-                exercicioTreino.exercicioId, exercicioTreinoId, exercicioTreino.treinoId, serieExercicio.dhFimExecucao
+                exercicioTreino.exercicioId,
+                exercicioTreinoId,
+                exercicioTreino.treinoId,
+                serieExercicio.dhFimExecucao
             )
             _state.update {
                 it.copy(

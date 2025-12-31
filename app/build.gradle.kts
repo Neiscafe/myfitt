@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "br.com.myfitt"
-        minSdk = 26
+        minSdk = 30
         //noinspection ExpiredTargetSdkVersion
         targetSdk = 31
         versionCode = 1

@@ -16,7 +16,7 @@ class SeriesRepositoryImpl(val seriesDao: SerieExercicioDao) : SeriesRepository 
                 SeriesDestaqueExercicio(
                     it.categoria,
                     it.serie(),
-                    umRepMaxAbsoluto = it.umRmEstimado
+                    umRepMaxPorcentagem = it.umRmEstimado
                 )
             }
         }

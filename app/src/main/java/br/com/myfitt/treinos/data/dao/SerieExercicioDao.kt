@@ -52,35 +52,33 @@ interface SerieExercicioDao {
     suspend fun busca(serieId: Int): SerieExercicioEntity
 
     @Query("""
-       WITH C AS (
+        SELECT * FROM (
             SELECT 
-                B.*,
-                -- Cálculo do 1RM usando Epley: Peso * (1 + Reps/30)
-                ( B.pesoKg * (1 + (B.repeticoes / 30.0))) AS um_rm_estimado
-            FROM exercicios A
-            INNER JOIN series_exercicio B
-            ON B.exercicioId = A.exercicioId
-            WHERE A.exercicioId = :exercicioId-- Filtre pelo exercício desejado
-            AND B.treinoId != :treinoId
-        ),
-        D AS (
-            SELECT C.*,
-                -- Rank por data (mais recente)
-                ROW_NUMBER() OVER (ORDER BY C.dhFimExecucao DESC) as rank_recente,
-                -- Rank por carga (maior 1RM)
-                ROW_NUMBER() OVER (ORDER BY C.um_rm_estimado DESC) as rank_forca
-            FROM C
+                'Última Série' as categoria,
+                b.exercicioTreinoId, b.serieId, b.exercicioId, b.treinoId,
+                b.dhInicioExecucao, b.dhFimExecucao, b.dhInicioDescanso, b.dhFimDescanso,
+                b.duracaoSegundos, b.segundosDescanso, b.pesoKg, b.repeticoes, b.finalizado,
+                (b.pesoKg * (1.0 + (b.repeticoes / 30.0))) AS umRmEstimado
+            FROM series_exercicio b
+            WHERE b.exercicioId = :exercicioId AND b.treinoId != :treinoId
+            ORDER BY b.dhFimExecucao DESC
+            LIMIT 1
         )
-      SELECT 
-        CASE 
-            WHEN D.rank_recente = 1 AND rank_forca = 1 THEN 'Última e Melhor Marca'
-            WHEN D.rank_recente = 1 THEN 'Última Série'
-            WHEN D.rank_forca = 1 THEN 'Recorde de Força (Mais próximo do 1RM)'
-        END as categoria,
-        D.*
-, ROUND(D.um_rm_estimado, 2) as um_rm_estimado
-FROM D
-WHERE D.rank_recente = 1 OR D.rank_forca = 1;
+        
+        UNION ALL
+        
+        SELECT * FROM (
+            SELECT 
+                'Recorde de Força' as categoria,
+                b.exercicioTreinoId, b.serieId, b.exercicioId, b.treinoId,
+                b.dhInicioExecucao, b.dhFimExecucao, b.dhInicioDescanso, b.dhFimDescanso,
+                b.duracaoSegundos, b.segundosDescanso, b.pesoKg, b.repeticoes, b.finalizado,
+                (b.pesoKg * (1.0 + (b.repeticoes / 30.0))) AS umRmEstimado
+            FROM series_exercicio b
+            WHERE b.exercicioId = :exercicioId AND b.treinoId != :treinoId
+            ORDER BY umRmEstimado DESC
+            LIMIT 1
+        );
     """)
     suspend fun seriesDestaqueExercicio(exercicioId: Int, treinoId: Int): List<DestaquesExercicioDto>
 }
