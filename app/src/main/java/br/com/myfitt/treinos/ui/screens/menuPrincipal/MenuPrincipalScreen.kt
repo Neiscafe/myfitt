@@ -139,12 +139,12 @@ private fun Tela(
                 if (it?.treino == null) {
                     return@let
                 }
-                OutlinedCard(
+                ElevatedCard(
                     Modifier
                         .fillMaxWidth()
                         .clickable(onClick = { irParaTreino(it.treino.treinoId) }),
                 ) {
-                    Column(modifier.padding(8.dp)) {
+                    Column(modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(
                             modifier, horizontalArrangement = Arrangement.SpaceBetween
                         ) {
