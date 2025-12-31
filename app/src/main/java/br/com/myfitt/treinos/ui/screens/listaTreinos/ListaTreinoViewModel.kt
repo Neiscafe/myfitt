@@ -77,12 +77,14 @@ class ListaTreinoViewModel(
                 return@startIO
             }
             val tipoExercicios = result2.dataOrNull!!
-            val itensTransformados = tipoExercicios.map {
-                ListaTreinoModel(
-                    treino = result1.dataOrNull?.firstOrNull { it2 -> it.treinoId == it2.treinoId }!!,
-                    tipoExercicios = it.tipoExercicios
-                )
-            }
+            val itensTransformados = result1.dataOrNull?.let { treinos ->
+                treinos.map { treino ->
+                    ListaTreinoModel(treino,
+                        tipoExercicios.firstOrNull { it.treinoId == treino.treinoId }?.tipoExercicios
+                            ?: emptyList()
+                    )
+                }
+            } ?: emptyList()
             _state.update {
                 it.copy(
                     treinos = it.treinos + itensTransformados,
@@ -93,11 +95,11 @@ class ListaTreinoViewModel(
         }
     }
 
-    fun deletar(treino: Treino){
+    fun deletar(treino: Treino) {
         launchCoroutine {
             val result = treinoRepository.deleta(treino)
             result.onSucesso {
-                _state.update { it.copy(treinos = it.treinos.filter { it.treino.treinoId!=result.dataOrNull!!.treinoId }) }
+                _state.update { it.copy(treinos = it.treinos.filter { it.treino.treinoId != result.dataOrNull!!.treinoId }) }
             }
         }
     }
