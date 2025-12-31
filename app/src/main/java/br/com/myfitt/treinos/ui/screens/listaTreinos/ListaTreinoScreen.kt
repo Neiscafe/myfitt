@@ -196,7 +196,7 @@ fun ListaTreinoItem(it: ListaTreinoModel, i: Int, onClick: () -> Unit = {}, dele
                         "Início", style = textStyle
                     )
                     Text(
-                        "${if(it.treino.dhInicio==null) "00:00" else it.treino.dhInicio?.format(DateTimeFormatter.ofPattern("hh:mm"))}",
+                        "${if(it.treino.dhInicio==null) "00:00" else it.treino.dhInicio.format(DateTimeFormatter.ofPattern("HH:mm"))}",
                         style = textStyle
                     )
                 }
@@ -211,7 +211,7 @@ fun ListaTreinoItem(it: ListaTreinoModel, i: Int, onClick: () -> Unit = {}, dele
                 Column {
                     Text("Duração:", style = textStyle)
                     Text(
-                        "${it.treino.segundosDuracao / 60 / 60}h${it.treino.segundosDuracao % 60}m",
+                        "${it.treino.segundosDuracao / 60 / 60}h${it.treino.segundosDuracao / 60 %60}m",
                         style = textStyle
                     )
                 }
@@ -249,8 +249,8 @@ private fun TelaPreview() {
                     ListaTreinoModel(
                         Treino(
                             1,
-                            dhInicio = LocalDateTime.now().minusHours(2).minusMinutes(2),
-                            dhFim = LocalDateTime.now()
+                            dhInicio = LocalDateTime.of(2025, 12, 31, 11, 56, 0),
+                            dhFim = LocalDateTime.of(2025, 12, 31, 12, 55, 0)
                         ), listOf(TipoExercicio(1, "Bíceps"))
                     )
                 ),
