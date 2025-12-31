@@ -27,9 +27,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
@@ -46,7 +48,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,7 +56,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -76,6 +76,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import br.com.myfitt.R
 import br.com.myfitt.common.domain.SerieExercicio
+import br.com.myfitt.treinos.domain.model.SeriesDestaqueExercicio
 import br.com.myfitt.treinos.ui.TickCronometro
 import br.com.myfitt.treinos.ui.screens.detalhesExercicio.DetalhesExercicioNavigation
 import br.com.myfitt.treinos.ui.screens.detalhesExercicio.DetalhesExercicioViewModel
@@ -298,6 +299,8 @@ private fun Tela(
     finalizaSerie: () -> Unit = {},
     irParaDetalhesExercicio: () -> Unit = {},
     irParaEditarSerie: (SerieExercicio) -> Unit = {},
+    seriesDestaque: List<SeriesDestaqueExercicio>? = emptyList(),
+    irParaTreino: (Int) -> Unit = {}
 ) {
     var pesoText by remember { mutableStateOf(TextFieldValue("10", TextRange(2))) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -332,7 +335,8 @@ private fun Tela(
                 ) {
                     Column(
                         modifier = Modifier
-                            .fillMaxSize().padding(0.dp, 8.dp, 0.dp, 0.dp),
+                            .fillMaxSize()
+                            .padding(0.dp, 8.dp, 0.dp, 0.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
@@ -450,7 +454,63 @@ private fun Tela(
                     }
                 }
             }
-
+            seriesDestaque?.let {
+                OutlinedCard(
+                    modifier = Modifier
+                        .height(IntrinsicSize.Min)
+                        .fillMaxWidth()
+                        .padding(24.dp, 0.dp),
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Icon(Icons.Default.Person, "Observações exercício")
+                        if(seriesDestaque.isEmpty()){
+                            Text("Assim que tivermos dados, aqui aparecerão estatísticas sobre este exercício...")
+                        }
+                        seriesDestaque.forEach {
+                            Text(
+                                text = state.observacaoExercicio,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center
+                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                Text(
+                                    text = "1RM: ${String.format("%.0f", it.umRepMaxPorcentagem)}%",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = "Reps: ${it.serie.repeticoes}",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = "Peso: ${String.format("%.1f", it.serie.pesoKg)}Kg",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                                IconButton(
+                                    onClick = { irParaTreino(it.serie.treinoId) }
+                                ) {
+                                    Icon(
+                                        Icons.AutoMirrored.Default.ExitToApp,
+                                        "Ir para treino de série destaque"
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             OutlinedCard(
                 modifier = Modifier
                     .height(IntrinsicSize.Min)

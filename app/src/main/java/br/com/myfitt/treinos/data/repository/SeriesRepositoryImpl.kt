@@ -6,11 +6,20 @@ import br.com.myfitt.common.domain.wrapSuspend
 import br.com.myfitt.treinos.data.dao.SerieExercicioDao
 import br.com.myfitt.treinos.data.mappers.toDomain
 import br.com.myfitt.treinos.data.mappers.toEntity
+import br.com.myfitt.treinos.domain.model.SeriesDestaqueExercicio
 import br.com.myfitt.treinos.domain.repository.SeriesRepository
 
 class SeriesRepositoryImpl(val seriesDao: SerieExercicioDao) : SeriesRepository {
-    override suspend fun topSerie(exercicioId: Int): Resultado<SerieExercicio> {
-        seriesDao.topSerie()
+    override suspend fun seriesDestaqueExercicio(exercicioId: Int, treinoId: Int): Resultado<List<SeriesDestaqueExercicio>> {
+        return wrapSuspend {
+            seriesDao.seriesDestaqueExercicio(exercicioId, treinoId).map {
+                SeriesDestaqueExercicio(
+                    it.categoria,
+                    it.serie(),
+                    umRepMaxAbsoluto = it.umRmEstimado
+                )
+            }
+        }
     }
 
     override suspend fun todasDoTreino(treinoId: Int): Resultado<List<SerieExercicio>> {
