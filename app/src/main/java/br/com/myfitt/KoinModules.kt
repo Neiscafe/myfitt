@@ -63,7 +63,7 @@ val viewModelModule = module {
     viewModel { MenuPrincipalViewModel(get(), get()) }
     viewModel {
         SeriesExercicioViewModel(
-            it[0], get(), get(), get(), get(), get()
+            it[0], it[1], get(), get(), get(), get()
         )
     }
 }

@@ -3,6 +3,7 @@ package br.com.myfitt.treinos.ui.screens.exerciciosTreino
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.myfitt.common.domain.ExercicioTreino
+import br.com.myfitt.common.domain.Treino
 import br.com.myfitt.treinos.domain.facade.TreinoFacade
 import br.com.myfitt.treinos.domain.repository.ExercicioTreinoRepository
 import br.com.myfitt.treinos.domain.repository.TreinoRepository
@@ -24,12 +25,15 @@ class ExerciciosTreinoViewModel(
 ) : ViewModel() {
     private val _state = MutableStateFlow(ExerciciosTreinoState())
     val state = _state.asStateFlow()
+    private var _treino: Treino? = null
+    private val treino get()= _treino!!
     private var inicializacao = true
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(carregando = true) }
             val result = treinoFacade.buscar(treinoId)
+            _treino = result.dataOrNull?.treino
             _state.update {
                 it.copy(
                     erro = result.erroOrNull,
@@ -51,6 +55,9 @@ class ExerciciosTreinoViewModel(
                     },
                 )
             }
+            if(treino.dhFim!=null){
+                return@launch
+            }
             while (true) {
                 delay(60000L)
                 atualizaTreino()
@@ -60,6 +67,7 @@ class ExerciciosTreinoViewModel(
 
     private suspend fun atualizaTreino() {
         val result = treinoFacade.buscar(treinoId)
+        _treino = result.dataOrNull?.treino
         _state.update {
             it.copy(
                 erro = result.erroOrNull,

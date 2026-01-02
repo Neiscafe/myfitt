@@ -5,17 +5,14 @@ import androidx.lifecycle.viewModelScope
 import br.com.myfitt.common.domain.Exercicio
 import br.com.myfitt.common.domain.ExercicioTreino
 import br.com.myfitt.common.domain.SerieExercicio
-import br.com.myfitt.common.domain.builder.GerenciaSerieTreino
+import br.com.myfitt.common.domain.Treino
+import br.com.myfitt.common.domain.onErro
 import br.com.myfitt.common.domain.onSucesso
-import br.com.myfitt.treinos.domain.repository.ExercicioRepository
-import br.com.myfitt.treinos.domain.repository.ExercicioTreinoRepository
+import br.com.myfitt.treinos.domain.facade.TreinoFacade
 import br.com.myfitt.treinos.domain.repository.SeriesRepository
 import br.com.myfitt.treinos.domain.repository.TreinoRepository
 import br.com.myfitt.treinos.ui.CronometroFacade
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -24,96 +21,63 @@ import java.time.LocalDateTime
 
 class SeriesExercicioViewModel(
     val exercicioTreinoId: Int,
+    val treinoId: Int,
     private val seriesRepository: SeriesRepository,
     private val cronometroFacade: CronometroFacade,
-    private val exercicioTreinoRepository: ExercicioTreinoRepository,
-    private val exercicioRepository: ExercicioRepository,
+    private val treinoFacade: TreinoFacade,
     private val treinoRepository: TreinoRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(SeriesExercicioState())
     val state = _state.asStateFlow()
 
-
-    //    private val _cronometroState = MutableStateFlow(CronometroState())
-//    val cronometroState = _cronometroState.asStateFlow()
     val cronometroState = cronometroFacade.ticksCronometro
     private var pesoKg: Float = 0f
     private var repeticoes = 0
-    private lateinit var gerenciaSerieTreino: GerenciaSerieTreino
+    private var serieMaisRecente: SerieExercicio? = null
+        @Synchronized get
+        @Synchronized set
     private var _exercicioTreino: ExercicioTreino? = null
     val exercicioTreino get() = _exercicioTreino!!
-    private val dadosIniciaisDeferred: Deferred<Boolean>
+    private var _treino: Treino? = null
+    val treino get() = _treino!!
+    private var _exercicio: Exercicio? = null
+    val exercicio get() = _exercicio!!
     private var primeiroExercicio = false
 
     init {
-        dadosIniciaisDeferred = viewModelScope.async(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(carregando = true) }
-
-            val exercicioTreinoResult = exercicioTreinoRepository.busca(exercicioTreinoId)
-            state.value.copy(
-                erro = exercicioTreinoResult.erroOrNull, carregando = exercicioTreinoResult.sucesso
-            )
-            if (!exercicioTreinoResult.sucesso) {
-                return@async false
-            }
-            _exercicioTreino = exercicioTreinoResult.dataOrNull
-
-            val exercicioDeferred = async {
-                nomeObservacaoExercicio()
-            }
-            val seriesDeferred = async {
-                val seriesResult = seriesRepository.todasDoTreino(exercicioTreino.treinoId)
-                val seriesDoExercicio =
-                    seriesResult.dataOrNull?.filter { it.exercicioTreinoId == exercicioTreinoId }
-                _state.update {
-                    it.copy(
-                        series = seriesDoExercicio ?: state.value.series,
-                        erro = seriesResult.erroOrNull,
-                        carregando = false
+            treinoFacade.buscar(treinoId).onErro {
+                _state.update { state -> state.copy(erro = it) }
+                return@launch
+            }.onSucesso {
+                _exercicioTreino =
+                    it.exerciciosTreino.firstOrNull { it.exercicioTreinoId == exercicioTreinoId }
+                _exercicio =
+                    it.exercicios.firstOrNull { it.exercicioId == exercicioTreino.exercicioId }
+                _treino = it.treino
+                val seriesExercicio = it.series.filter { it.exercicioTreinoId == exercicioTreinoId }
+                serieMaisRecente =
+                    it.series.lastOrNull()
+                _state.update { state ->
+                    state.copy(
+                        series = seriesExercicio,
+                        nomeExercicio = exercicio.nome,
+                        observacaoExercicio = exercicio.observacao ?: "",
+                        carregando = false,
                     )
                 }
-                if (!seriesResult.sucesso) {
-                    return@async false
-                }
-                val seriesDoTreino = seriesResult.dataOrNull!!
-                primeiroExercicio = seriesDoTreino.isEmpty()
-                val outroExercicioEmAndamento =
-                    seriesDoTreino.firstOrNull { it.exercicioTreinoId != exercicioTreinoId && it.serieEmAndamento }
-                if (outroExercicioEmAndamento != null) {
-                    _state.update { it.copy(erro = "Uma série já está em andamento: finalize ela para poder continuar.") }
-                    return@async true
-                }
-                launch {
-                    val result = seriesRepository.seriesDestaqueExercicio(
-                        exercicioTreino.exercicioId,
-                        exercicioTreino.treinoId
-                    )
-                    _state.update { it.copy(serieDestaques = result.dataOrNull) }
-                }
-                val dhInicioDescanso =
-                    seriesDoTreino.lastOrNull { it.dhFimExecucao != null }?.dhFimExecucao
-                val ultimaSerie = seriesDoExercicio?.lastOrNull()
-                val continuaSerieAtual = ultimaSerie?.serieEmAndamento ?: false
-                if (continuaSerieAtual) {
-                    gerenciaSerieTreino = GerenciaSerieTreino.continuar(ultimaSerie)
-                } else {
-                    gerenciaSerieTreino = GerenciaSerieTreino.criar(
-                        exercicioId = exercicioTreino.exercicioId,
-                        exercicioTreinoId = exercicioTreinoId,
-                        treinoId = exercicioTreino.treinoId,
-                        dhInicioDescanso = dhInicioDescanso
-                    )
-                }
-                gerenciaSerieTreino.get().let {
-                    if (it.serieEmAndamento) {
-                        cronometroFacade.iniciaExercicio(it.dhInicioExecucao!!)
-                    } else if (it.descansando && it.dhInicioDescanso != null) {
-                        cronometroFacade.iniciaDescanso(it.dhInicioDescanso)
-                    }
-                }
-                return@async true
+                val result =
+                    seriesRepository.seriesDestaqueExercicio(exercicio.exercicioId, treino.treinoId)
+                _state.update { it.copy(serieDestaques = result.dataOrNull) }
             }
-            listOf(exercicioDeferred, seriesDeferred).awaitAll().all { it }
+            if (serieMaisRecente?.serieEmAndamento == true) {
+                cronometroFacade.iniciaExercicio(serieMaisRecente?.dhInicioExecucao!!)
+            } else if (serieMaisRecente?.descansando == true) {
+                cronometroFacade.iniciaDescanso(serieMaisRecente?.dhInicioDescanso!!)
+            } else if (serieMaisRecente != null) {
+                cronometroFacade.iniciaDescanso(serieMaisRecente?.dhFimExecucao!!)
+            }
         }
     }
 
@@ -121,36 +85,12 @@ class SeriesExercicioViewModel(
         _state.update { it.copy(observacaoExercicio = exercicio.observacao ?: "") }
     }
 
-    private suspend fun nomeObservacaoExercicio(): Boolean {
-        val exercicioResult = exercicioRepository.busca(exercicioTreino.exercicioId)
-        _state.update {
-            it.copy(
-                erro = exercicioResult.erroOrNull, carregando = exercicioResult.sucesso
-            )
-        }
-        if (!exercicioResult.sucesso) {
-            return false
-        }
-        val exercicio = exercicioResult.dataOrNull
-        _state.update {
-            it.copy(
-                observacaoExercicio = exercicio?.observacao ?: "",
-                carregando = false,
-                nomeExercicio = exercicio?.nome ?: ""
-            )
-        }
-        return true
-    }
-
     fun fimExecucao() {
         viewModelScope.launch(Dispatchers.IO) {
-            if (!dadosIniciaisDeferred.await()) {
-                return@launch
-            }
             val fimUltimaSerie = LocalDateTime.now()
-            val serie = gerenciaSerieTreino.fimExecucao(fimUltimaSerie).get()
+            serieMaisRecente = serieMaisRecente?.finaliza(fimUltimaSerie)
             _state.update { it.copy(carregando = true) }
-            val result = seriesRepository.altera(serie)
+            val result = seriesRepository.altera(serieMaisRecente!!)
             _state.update {
                 it.copy(
                     erro = result.erroOrNull,
@@ -167,14 +107,8 @@ class SeriesExercicioViewModel(
     fun informaRepeticoes() {
         viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(carregando = true) }
-            val serieExercicio = gerenciaSerieTreino.repeticoes(repeticoes).get()
-            val result = seriesRepository.altera(serieExercicio)
-            gerenciaSerieTreino = GerenciaSerieTreino.criar(
-                exercicioTreino.exercicioId,
-                exercicioTreinoId,
-                exercicioTreino.treinoId,
-                serieExercicio.dhFimExecucao
-            )
+            serieMaisRecente = serieMaisRecente?.copy(repeticoes = repeticoes)!!
+            val result = seriesRepository.altera(serieMaisRecente!!)
             _state.update {
                 it.copy(
                     carregando = false,
@@ -187,40 +121,37 @@ class SeriesExercicioViewModel(
 
     fun inicioExecucao() {
         viewModelScope.launch(Dispatchers.IO) {
-            if (!dadosIniciaisDeferred.await()) {
-                return@launch
-            }
-            if (primeiroExercicio) {
-                launch {
-                    val buscaTreinoResult = treinoRepository.busca(exercicioTreino.treinoId)
-                    buscaTreinoResult.erroOrNull?.let {
-                        _state.update { it2 -> it2.copy(erro = it) }
-                        return@launch
-                    }
-                    val atualizaTreinoResult =
-                        treinoRepository.altera(buscaTreinoResult.dataOrNull!!.copy(dhInicio = LocalDateTime.now()))
-                    atualizaTreinoResult.erroOrNull?.let {
-                        _state.update { it2 -> it2.copy(erro = it) }
-                        return@launch
-                    }
+            _state.update { it.copy(carregando = true) }
+            if (serieMaisRecente == null) {
+                val buscaTreinoResult = treinoRepository.busca(exercicioTreino.treinoId)
+                buscaTreinoResult.erroOrNull?.let {
+                    _state.update { it2 -> it2.copy(erro = it) }
+                    return@launch
+                }
+                val atualizaTreinoResult =
+                    treinoRepository.altera(buscaTreinoResult.dataOrNull!!.copy(dhInicio = LocalDateTime.now()))
+                atualizaTreinoResult.erroOrNull?.let {
+                    _state.update { it2 -> it2.copy(erro = it) }
+                    return@launch
                 }
             }
-            gerenciaSerieTreino.execucao(pesoKg).get().let {
-                _state.update { it.copy(carregando = true) }
-                val result = seriesRepository.cria(it)
-                _state.update {
-                    it.copy(
-                        carregando = false,
-                        series = result.dataOrNull ?: it.series,
-                        erro = result.erroOrNull
-                    )
-                }
-                result.onSucesso { seriesExercicio ->
-                    val adicionada = seriesExercicio.last()
-                    gerenciaSerieTreino.serieId(adicionada.serieId)
-                    cronometroFacade.iniciaExercicio(it.dhInicioExecucao!!)
-                }
+            val result = seriesRepository.cria(
+                SerieExercicio(
+                    serieId = 0,
+                    exercicioTreinoId = exercicioTreino.exercicioTreinoId,
+                    exercicioId = exercicio.exercicioId,
+                    treinoId = treino.treinoId
+                ).iniciaExecucao(pesoKg, serieMaisRecente?.dhFimExecucao)
+            )
+            _state.update {
+                it.copy(
+                    carregando = false,
+                    series = result.dataOrNull ?: it.series,
+                    erro = result.erroOrNull
+                )
             }
+            serieMaisRecente = result.dataOrNull?.lastOrNull() ?: return@launch
+            cronometroFacade.iniciaExercicio(serieMaisRecente?.dhInicioExecucao!!)
         }
     }
 

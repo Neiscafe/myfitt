@@ -89,22 +89,32 @@ import java.time.LocalDateTime
 
 object SeriesExercicioNavigation {
     const val arg1 = "exercicioTreinoId"
+    const val arg2 = "treinoId"
     const val route = "seriesExercicio"
-    const val routeWithArg = "$route/{$arg1}"
-    val argList = listOf(navArgument(arg1) { type = NavType.IntType })
+    const val routeWithArg = "$route/{$arg1}/{$arg2}"
+    val argList = listOf(navArgument(arg1) { type = NavType.IntType }, navArgument(arg2) {
+        type = NavType.IntType
+    })
 
-    fun getArg(entry: NavBackStackEntry) = entry.arguments?.getInt(arg1) ?: -1
+    fun getArg1(entry: NavBackStackEntry) = entry.arguments?.getInt(arg1) ?: -1
+    fun getArg2(entry: NavBackStackEntry) = entry.arguments?.getInt(arg2) ?: -1
     fun composeNavigation(builder: NavGraphBuilder, navController: NavController) {
         builder.composable(
             route = routeWithArg,
             arguments = argList,
         ) {
-            val exercicioSerieId = getArg(it)
-            SeriesExercicioScreen(exercicioTreinoId = exercicioSerieId, irParaEditarSerie = {
-                navController.navigate(EditarSerieNavigation.route + "/${it.serieId}")
-            }, popBackstack = navController::popBackStack, irParaDetalhesExercicio = {
-                navController.navigate(DetalhesExercicioNavigation.route + "/${it}")
-            })
+            val exercicioSerieId = getArg1(it)
+            val treinoId = getArg2(it)
+            SeriesExercicioScreen(
+                exercicioTreinoId = exercicioSerieId,
+                treinoId = treinoId,
+                irParaEditarSerie = {
+                    navController.navigate(EditarSerieNavigation.route + "/${it.serieId}")
+                },
+                popBackstack = navController::popBackStack,
+                irParaDetalhesExercicio = {
+                    navController.navigate(DetalhesExercicioNavigation.route + "/${it}")
+                })
         }
 
     }
@@ -113,12 +123,13 @@ object SeriesExercicioNavigation {
 @Composable
 fun SeriesExercicioScreen(
     exercicioTreinoId: Int,
+    treinoId: Int,
     irParaEditarSerie: (SerieExercicio) -> Unit = {},
     irParaDetalhesExercicio: (Int) -> Unit = {},
     popBackstack: () -> Boolean = { true }
 ) {
     val viewModel: SeriesExercicioViewModel =
-        koinViewModel(parameters = { parametersOf(exercicioTreinoId) })
+        koinViewModel(parameters = { parametersOf(exercicioTreinoId, treinoId) })
     val state by viewModel.state.collectAsStateWithLifecycle()
     val cronometroState by viewModel.cronometroState.collectAsStateWithLifecycle()
     var exibeDialogFinalizaSerie by remember { mutableStateOf(false) }

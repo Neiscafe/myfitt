@@ -95,7 +95,7 @@ object ExerciciosTreinoNavigation {
             ExerciciosTreinoScreen(
                 treinoId = getArg(it),
                 voltar = navController::popBackStack,
-                irParaSeries = { navController.navigate(SeriesExercicioNavigation.route + "/$it") },
+                irParaSeries = { exercicioTreinoId, treinoId->navController.navigate(SeriesExercicioNavigation.route + "/$exercicioTreinoId"+"/$treinoId") },
                 irParaListaExercicios = { navController.navigate(ListaExerciciosNavigation.route) },
             )
         }
@@ -107,7 +107,7 @@ object ExerciciosTreinoNavigation {
 fun ExerciciosTreinoScreen(
     treinoId: Int,
     voltar: () -> Boolean,
-    irParaSeries: (Int) -> Unit = {},
+    irParaSeries: (Int, Int) -> Unit = {_,_->},
     irParaListaExercicios: () -> Unit = {},
     viewModel: ExerciciosTreinoViewModel = koinViewModel(parameters = {
         parametersOf(treinoId)
@@ -132,7 +132,7 @@ fun ExerciciosTreinoScreen(
             }
             irParaListaExercicios()
         },
-        irParaSeries = { irParaSeries(it.exercicioTreinoId) },
+        irParaSeries = { irParaSeries(it.exercicioTreinoId, it.treinoId) },
         finalizaTreino = viewModel::finalizarTreino,
         limpaEventos = viewModel::limpaEvents
     )
