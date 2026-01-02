@@ -33,8 +33,10 @@ class MenuPrincipalViewModel(
     init {
         buscaTreinoAtual()
         viewModelScope.launch(Dispatchers.IO) {
-            delay(60000)
-            buscaTreinoAtual()
+            while(true) {
+                delay(60000)
+                buscaTreinoAtual()
+            }
         }
     }
 
