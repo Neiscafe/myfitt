@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -51,6 +52,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -82,6 +84,7 @@ import br.com.myfitt.treinos.ui.screens.detalhesExercicio.DetalhesExercicioNavig
 import br.com.myfitt.treinos.ui.screens.detalhesExercicio.DetalhesExercicioViewModel
 import br.com.myfitt.treinos.ui.screens.editarSerie.EditarSerieViewModel
 import br.com.myfitt.treinos.ui.theme.MyFittTheme
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import java.time.Instant
@@ -133,6 +136,7 @@ fun SeriesExercicioScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val cronometroState by viewModel.cronometroState.collectAsStateWithLifecycle()
     var exibeDialogFinalizaSerie by remember { mutableStateOf(false) }
+    var exibeInicioSerie by remember { mutableStateOf(false) }
     BackHandler {
         if (!state.carregando && !cronometroState.serieAtiva) {
             popBackstack()
@@ -140,18 +144,20 @@ fun SeriesExercicioScreen(
     }
     Tela(
         irParaEditarSerie = {
-        EditarSerieViewModel.setCallback {
-            popBackstack()
-            viewModel.atualizaEstado(it)
-        }
-        irParaEditarSerie(it)
-    },
+            EditarSerieViewModel.setCallback {
+                popBackstack()
+                viewModel.atualizaEstado(it)
+            }
+            irParaEditarSerie(it)
+        },
         popBackstack = {
             !state.carregando && !cronometroState.serieAtiva && popBackstack()
         },
         resetaEventos = viewModel::resetaEventos,
         pesoMudou = viewModel::pesoMudou,
-        iniciaSerie = viewModel::inicioExecucao,
+        iniciaSerie = {
+            exibeInicioSerie = true
+        },
         state = state,
         cronometroState = cronometroState,
         finalizaSerie = {
@@ -175,6 +181,64 @@ fun SeriesExercicioScreen(
                 viewModel.informaRepeticoes()
                 exibeDialogFinalizaSerie = false
             })
+    }
+    if (exibeInicioSerie) {
+        DialogInicioSerie(onDismiss = { exibeInicioSerie = false }, iniciaSerie = {
+            viewModel.inicioExecucao()
+            exibeInicioSerie = false
+        })
+    }
+
+}
+
+@Composable
+private fun DialogInicioSerie(
+    onDismiss: () -> Unit = {}, iniciaSerie: () -> Unit = {}
+) {
+    var segundosPreparo by remember { mutableIntStateOf(10) }
+    BasicAlertDialog(
+        onDismissRequest = onDismiss, properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false,
+            usePlatformDefaultWidth = true
+        )
+    ) {
+        LaunchedEffect(segundosPreparo) {
+            delay(1000L)
+            if (segundosPreparo == 1) {
+                iniciaSerie()
+            }
+            segundosPreparo--
+        }
+        ElevatedCard() {
+            Column(
+                modifier = Modifier.padding(32.dp, 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Icon(
+                    painterResource(R.drawable.exclamation_24dp_000000_fill0_wght400_grad0_opsz24),
+                    "Série finalizada"
+                )
+                Text("Prepare-se para começar!")
+                Text("$segundosPreparo", style = MaterialTheme.typography.displayLarge)
+                Button(
+                    {
+                        onDismiss()
+                    }, Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors().copy(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    ), contentPadding = PaddingValues(16.dp)
+                ) {
+                    Text("Cancelar")
+                }
+                Button(
+                    {
+                        iniciaSerie()
+                    }, Modifier.fillMaxWidth(), contentPadding = PaddingValues(16.dp)
+                ) { Text("Pular preparo") }
+            }
+        }
     }
 }
 
@@ -300,6 +364,7 @@ internal fun Context.findActivity(): Activity {
     }
     throw IllegalStateException("Permissions should be called in the context of an Activity")
 }
+
 
 @Composable
 private fun Tela(
@@ -635,6 +700,14 @@ private fun itemResumoSeries(
                 modifier = Modifier.weight(1f)
             )
         }
+    }
+}
+
+@Preview(showSystemUi = true, showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun DialogInicioSeriePreview() {
+    MyFittTheme {
+        DialogInicioSerie()
     }
 }
 
